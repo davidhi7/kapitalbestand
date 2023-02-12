@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.btn {
+    @apply rounded-sm
+        bg-main-dark
+        p-2
+        text-main
+        dark:bg-main
+        dark:text-main-dark
+        transition-colors;
+
+    &:hover, &:active {
+        @apply bg-tertiary-dark dark:bg-tertiary transition-colors;
+    }
+
+    &:active {
+        transform: translateY(-1px);
+    }
+}
+
+.bg-branding {
+    @apply bg-gradient-to-r from-branding-0 to-branding-1 dark:from-branding-0-dark dark:to-branding-1-dark;
+}
+
+:root {
+    --green-1: #2c8730;
+    --green-2: #b5d5b7;
+
+    --red-1: #c42b2b;
+    --red-2: #e0a2a2;
+
+    --yellow-1: #d9ad00;
+    --yellow-2: #e8da8e;
+
+    --text-main: #444;
+    --text-secondary: #888;
+    --text-tertiary: #666;
+
+    --palette-1: #984447;
+    --palette-2: #add9f4;
+    --palette-3: #476c9b;
+    --palette-4: hsl(188, 36%, 40%);
+    --palette-4-medium: hsl(188, 36%, 48%);
+    --palette-4-light: hsl(188, 36%, 55%);
+
+    --background-main: white;
+    --background-2: hsl(0, 0%, 93%);
+    --background-3: hsl(0, 0%, 85%);
+    --background-4: hsl(0, 0%, 75%);
+
+    --gradient-colors-main: #0f2027, #203a43, #2c5364;
+
+    accent-color: var(--palette-3);
+    box-sizing: border-box;
+}
+
+body {
+    @apply bg-main-bg text-main dark:bg-main-bg-dark dark:text-main-dark;
+    font-family: BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans',
+        'Droid Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+}
+
+input[type='text'],
+input[type='password'],
+input[type='date'] {
+    @apply dark:bg-[rgb(13,17,17)];
+    padding: 8px;
+    margin: 4px;
+    border-color: var(--palette-3);
+    border-width: 0 0 2px 0;
+    box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.06);
+    @apply dark:shadow-none;
+}
+
+input:required {
+    border-color: var(--red-1);
+}
+
+input[type='text']:hover,
+input[type='password']:hover,
+input[type='date']:hover {
+    box-shadow: 0 0 15px 4px rgba(0, 0, 0, 0.08);
+}
+
+input[type='text']:focus-visible,
+input[type='password']:focus-visible,
+input[type='date']:focus-visible {
+    outline: none;
+    border-width: 0 0 4px 0;
+    /* compensate two pixel wider lower border with one pixel smaller padding and margin */
+    padding-bottom: 7px;
+    margin-bottom: 3px;
+    border-radius: 0;
+}
+
+/* todo: dark mode support */
+@media (prefers-color-scheme: dark) {
+}
+
+@media (prefers-color-scheme: light) {
+}

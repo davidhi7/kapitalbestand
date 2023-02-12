@@ -1,0 +1,41 @@
+{
+  "name": "backend",
+  "version": "0.1.0",
+  "description": "Expense tracker backend",
+  "type": "module",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "NODE_ENV=production node src/app.js",
+    "dev": "NODE_ENV=development nodemon src/app.js",
+    "mem-db": "NODE_ENV=test nodemon src/app.js",
+    "test": "NODE_ENV=test c8 mocha --require test/hooks.js 'src/**/*.test.js'",
+    "test-debug": "NODE_ENV=test mocha --no-timeouts --require test/hooks.js 'src/**/*.test.js'"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "argon2": "^0.30.3",
+    "connect-session-sequelize": "^7.1.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.1",
+    "express-session": "^1.17.3",
+    "express-validator": "^6.14.2",
+    "lodash": "^4.17.21",
+    "memorystore": "^1.6.7",
+    "morgan": "^1.10.0",
+    "pg": "^8.8.0",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.23.2",
+    "typescript": "^4.9.5",
+    "validator": "^13.7.0"
+  },
+  "devDependencies": {
+    "c8": "^7.12.0",
+    "chai": "^4.3.6",
+    "chai-as-promised": "^7.1.1",
+    "mocha": "^10.1.0",
+    "nodemon": "^2.0.20",
+    "sinon": "^14.0.1",
+    "sqlite3": "^5.1.2",
+    "supertest": "^6.3.1"
+  }
+}

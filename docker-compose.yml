@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  postgres:
+    container_name: postgres-expenses
+    image: postgres
+    environment:
+      POSTGRES_DB: Expenses
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+
+  expense-tracker:
+    container_name: expense-tracker
+    image: expense-tracker
+    environment:
+      DB_DBMS: postgres
+      DB_USER: user
+      DB_PASSWORD: password
+      DB_DATABASE: Expenses
+      DB_HOST: postgres
+      NODE_ENV: production
+    ports:
+      - 8080:8080
+

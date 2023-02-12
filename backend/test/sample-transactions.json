@@ -1,0 +1,106 @@
+{
+    "oneoffTransactions": [
+        {
+            "isExpense": true,
+            "amount": 2500,
+            "category": "groceries",
+            "shop": "supermarket",
+            "date": "2022-12-03"
+        },
+        {
+            "isExpense": false,
+            "amount": 1000,
+            "category": "random stuff",
+            "shop": "street",
+            "description": "found 10€ bill on street",
+            "date": "2021-12-01"
+        },
+        {
+            "isExpense": true,
+            "amount": 32500,
+            "category": "electronics",
+            "shop": "local electronic market",
+            "description": "new phone",
+            "date": "2020-03-11"
+        },
+        {
+            "isExpense": true,
+            "amount": 28000,
+            "category": "electronics",
+            "shop": "hardware store",
+            "description": "graphics card",
+            "date": "2018-09-17"
+        },
+        {
+            "isExpense": true,
+            "amount": 400,
+            "category": "food",
+            "shop": "kebap",
+            "description": "Döner back when Döner prices where normal",
+            "date": "2016-06-15"
+        },
+        {
+            "isExpense": false,
+            "amount": 10000,
+            "category": "gifts",
+            "shop": "family",
+            "description": "gifted money for birthday",
+            "date": "2016-03-17"
+        },
+        {
+            "isExpense": true,
+            "amount": 12000,
+            "category": "travel",
+            "shop": "national airline",
+            "description": "flight to Istanbul",
+            "date": "2022-12-04"
+        },
+        {
+            "isExpense": true,
+            "amount": 65000000,
+            "category": "property",
+            "shop": "whoever",
+            "description": "new home",
+            "date": "2022-12-04"
+        }
+    ],
+    "monthlyTransactions": [
+        {
+            "isExpense": false,
+            "amount": 160000,
+            "category": "income",
+            "shop": "work",
+            "monthFrom": "2014-5",
+            "monthTo": "2020-03"
+        },
+        {
+            "isExpense": true,
+            "amount": 1500,
+            "category": "streaming",
+            "shop": "video streaming",
+            "monthFrom": "2018-06"
+        },
+        {
+            "isExpense": true,
+            "amount": 80000,
+            "category": "rent",
+            "monthFrom": "2020-10",
+            "monthTo": "2024-12"
+        },
+        {
+            "isExpense": true,
+            "amount": 999,
+            "category": "music",
+            "shop": "music streaming",
+            "monthFrom": "2022-1",
+            "monthTo": "2022-10"
+        },
+        {
+            "isExpense": false,
+            "amount": 300000,
+            "category": "income",
+            "shop": "work",
+            "monthFrom": "2022-9"
+        }
+    ]
+}

@@ -1,0 +1,27 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "args": [
+                "mocha",
+                "--no-timeouts",
+                "--require",
+                "${workspaceFolder}/backend/test/hooks.js",
+                "--colors",
+                "${workspaceFolder}/backend/src/**/*.test.js"
+            ],
+            "internalConsoleOptions": "openOnSessionStart",
+            "name": "Backend tests",
+            "program": "/usr/bin/npx",
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "env": {
+                "NODE_ENV": "test"
+            },
+            "cwd": "${workspaceFolder}/backend/",
+            "type": "node"
+        }
+    ]
+}
