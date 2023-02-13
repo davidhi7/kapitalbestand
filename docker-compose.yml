@@ -10,8 +10,8 @@ services:
       POSTGRES_PASSWORD: password
 
   expense-tracker:
-    container_name: expense-tracker
-    image: expense-tracker
+    container_name: kapitalbetrag 
+    build: .
     environment:
       DB_DBMS: postgres
       DB_USER: user
