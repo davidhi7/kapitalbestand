@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 
 const config = {
@@ -19,8 +19,8 @@ const config = {
         }
     },
     paths: {
-        static: join(__dirname, 'static'),
-        session_secret: join(__dirname, '.session_secret')
+        static: join(projectRoot, 'static'),
+        session_secret: join(projectRoot, '.session_secret')
     }
 };
 
@@ -52,7 +52,7 @@ if (process.env.NODE_ENV === 'production') {
         try {
             secret = readFileSync(session_secret_path, 'utf8');
         } catch (err) {
-            console.error('Failed to read session secret');
+            console.error('Failed to read session secret file');
             console.error(err);
         }
     }
