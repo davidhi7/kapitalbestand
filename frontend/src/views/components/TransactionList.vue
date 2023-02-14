@@ -117,7 +117,7 @@ export default {
             </tr>
         </tbody>
         <tbody v-else>
-            <td class="full-row centre">
+            <td class="full-row text-center">
                 Keine Einträge
             </td>
         </tbody>

@@ -1,5 +1,6 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
+import { Vue3Mq } from 'vue3-mq';
 
 import { eventEmitter } from '@/views/components/Notification.vue';
 import router from '@/router';
@@ -17,6 +18,9 @@ const app = createApp(App);
 const pinia = createPinia();
 app.use(router);
 app.use(pinia);
+app.use(Vue3Mq, {
+    preset: 'tailwind'
+});
 app.mount('div#app');
 const AuthStateStore = useAuthStateStore();
 const CategoryShopStore = useCategoryShopStore();

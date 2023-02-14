@@ -64,7 +64,7 @@ async function submit() {
 </script>
 
 <template>
-    <form @submit.prevent="submit" class="mt-8 flex flex-col items-center gap-4">
+    <form @submit.prevent="submit" class="flex flex-col items-center gap-4">
         <h1 class="bg-branding w-full bg-clip-text text-7xl font-bold leading-tight text-transparent text-center">
             Kapital&shy;bestand
         </h1>

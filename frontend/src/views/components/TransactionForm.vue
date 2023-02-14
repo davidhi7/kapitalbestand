@@ -187,52 +187,49 @@ export default {
 
 <template>
     <form @submit.prevent="submit">
-        <section v-if="showTypeSection">
-            <h3>Es handelt sich um einen</h3>
-            <div class="form-indented">
+        <section class="my-4" v-if="showTypeSection">
+            <h2>Es handelt sich um einen</h2>
+            <div class="mx-4">
                 <label for="transaction-type-expense">
                     <input type="radio" id="transaction-type-expense" v-model="content.isExpense" value="true" />
                     Geldausgang
                 </label>
-                <br />
+                <br>
                 <label for="transaction-type-income">
                     <input type="radio" id="transaction-type-income" v-model="content.isExpense" value="false" />
                     Geldeingang
                 </label>
-                <p>
-                    <label for="transaction-repeating" v-if="fixedFrequency === transactionFormTypes.Default">
-                        <input type="checkbox" id="transaction-repeating" v-model="form.monthlyTransactionChecked" />
-                        Monatlicher Umsatz
-                    </label>
-                </p>
+                <br class="mb-2">
+                <label for="transaction-repeating" v-if="fixedFrequency === transactionFormTypes.Default">
+                    <input type="checkbox" id="transaction-repeating" v-model="form.monthlyTransactionChecked" />
+                    Monatlicher Umsatz
+                </label>
+                <br>
             </div>
         </section>
 
-        <section v-if="!computedIsMonthlyTransaction">
-            <h3>Datum</h3>
-            <div class="form-indented">
+        <section v-if="!computedIsMonthlyTransaction" class="my-4">
+            <h2>Datum</h2>
+            <div class="mx-4">
                 <label for="current-date-radio">
                     <input type="radio" id="current-date-radio" v-model="form.dateInputPreference" value="today" />
                     Heute:
-                    <time class="current-date">{{ formattedDate }}</time> </label
-                ><br />
+                    <time class="text-secondary dark:text-secondary-dark">{{ formattedDate }}</time>
+                </label>
+                <br>
                 <label for="manual-date-radio">
                     <input type="radio" id="manual-date-radio" v-model="form.dateInputPreference" value="custom" />
                     am
-                    <input
-                        type="date"
-                        id="manual-date-input"
-                        v-model="form.manuallyEnteredDate"
+                    <input type="date" id="manual-date-input" v-model="form.manuallyEnteredDate"
                         :required="form.dateInputPreference === 'custom'"
-                        @click="form.dateInputPreference = 'custom'"
-                    />
+                        @click="form.dateInputPreference = 'custom'" />
                 </label>
             </div>
         </section>
 
-        <section v-else>
-            <h3>Zeitraum</h3>
-            <GridForm class="form-indented">
+        <section v-else class="my-4">
+            <h2>Zeitraum</h2>
+            <GridForm class="mx-4">
                 <label for="transaction-first">Erster Umsatz</label>
                 <input type="date" id="transaction-first" v-model="form.monthFrom" required="true" />
                 <label for="transaction-last">Letzter Umsatz</label>
@@ -240,35 +237,23 @@ export default {
             </GridForm>
         </section>
 
-        <section>
-            <h3>Transaktion</h3>
-            <GridForm class="form-indented">
+        <section class="my-4">
+            <h2>Transaktion</h2>
+            <GridForm class="mx-4">
                 <label for="amount">Betrag</label>
-                <input
-                    type="text"
-                    id="amount"
-                    placeholder="0,00 €"
-                    required
-                    @focus="prepareAmountInput"
-                    @focusout="finishAmountInput"
-                    ref="amountInput"
-                />
+                <input type="text" id="amount" placeholder="0,00 €" required @focus="prepareAmountInput"
+                    @focusout="finishAmountInput" ref="amountInput" />
 
                 <label for="category">Kategorie</label>
-                <input
-                    type="text"
-                    id="category"
-                    v-model.lazy.trim="content.category"
-                    list="category-suggestions"
-                    required
-                />
-                
+                <input type="text" id="category" v-model.lazy.trim="content.category" list="category-suggestions"
+                    required />
+
                 <label for="shop">Ort/Geschäft</label>
                 <input type="text" id="shop" v-model.lazy.trim="content.shop" list="shop-suggestions" />
-                
+
                 <label for="description">Beschreibung</label>
                 <input type="text" id="description" v-model.lazy.trim="content.description" />
-                
+
                 <datalist id="shop-suggestions">
                     <option v-for="name in CategoryShopStore.shopNames" :value="name"></option>
                 </datalist>
@@ -278,22 +263,14 @@ export default {
             </GridForm>
         </section>
 
-        <div class="centre">
+        <div class="flex justify-center">
             <button type="submit" class="btn" :disabled="requestPending">Speichern</button>
         </div>
     </form>
 </template>
 
 <style scoped lang="less">
-section {
-    margin: 10px 0 10px 0;
-}
-
-.form-indented {
-    margin: 0 10px 0 10px;
-}
-
-.current-date {
-    color: var(--text-tertiary);
+h2 {
+    @apply text-xl;
 }
 </style>
