@@ -30,7 +30,7 @@ defineEmits(['logout']);
         </section>
         <!-- Main pages -->
         <section class="flex flex-col sm:flex-row" :class="{ 'msm:hidden': !display_menu }">
-            <IconRouterLink @click="display_menu = false" to="/" icon="home" :label="mq.current === 'sm' ? null : 'Start'"></IconRouterLink>
+            <IconRouterLink @click="display_menu = false" to="/" icon="home" :label="mq.current === 'xs' ? 'Start' : null"></IconRouterLink>
             <IconRouterLink @click="display_menu = false" to="/new" icon="add" label="Neue Transaktion">
             </IconRouterLink>
             <IconRouterLink @click="display_menu = false" to="/list" icon="list" label="Liste"></IconRouterLink>
