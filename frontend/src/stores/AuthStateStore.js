@@ -12,14 +12,18 @@ export const useAuthStateStore = defineStore('AuthState', {
         async requestWhoAmI() {
             const response = await fetch('/api/auth/whoami');
             if (response.status >= 400) {
-                this.authenticated = false;
-                this.username = null;
-                this.sessionTimeout = NaN;
+                this.$patch({
+                    authenticated: false,
+                    username: null,
+                    sessionTimeout: NaN
+                });
             } else {
                 const body = await response.json();
-                this.authenticated = true;
-                this.username = body.data.username;
-                this.sessionTimeout = body.data.sessionTimeout;
+                this.$patch({
+                    authenticated: true,
+                    username: body.data.username,
+                    sessionTimeout: body.data.sessionTimeout
+                });
             }
         },
         async refresh() {
