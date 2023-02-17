@@ -25,13 +25,13 @@ export default {
     <component :is="to ? 'router-link' : 'a'" class="flex flex-row sm:flex-col cursor-pointer hover:text-secondary-dark" :to="to">
         <div class="w-1 sm:w-auto sm:h-1"></div>
         <div class="flex items-center grow pt-2 sm:pt-1 pl-1 sm:pl-2 pb-2 pr-2 content">
-            <span class="text-xl mx-0.5" v-if="label && labelLeft">
+            <span class="text-[1em] mx-0.5" v-if="label && labelLeft">
                 {{ label }}
             </span>
-            <span class="material-symbols-outlined text-2xl mx-0.5" v-if="icon">
+            <span class="material-symbols-outlined text-[1.25em] mx-0.5" v-if="icon">
                 {{ icon }}
             </span>
-            <span class="text-xl mx-0.5" v-if="label && !labelLeft">
+            <span class="text-[1em] mx-0.5" v-if="label && !labelLeft">
                 {{ label }}
             </span>
         </div>

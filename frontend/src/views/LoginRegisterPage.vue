@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { useAuthStateStore } from '../stores/AuthStateStore';
+import { useAuthStateStore } from '@/stores/AuthStateStore';
 import { eventEmitter as $notificationBus } from '@/views/components/Notification.vue';
 import GridForm from '@/views/components/GridForm.vue';
 
@@ -93,7 +93,7 @@ async function submit() {
             </button>
             <span>
                 Oder
-                <button @click="toggleFormType"
+                <button @click="toggleFormType" type="button"
                     class="cursor-pointer text-inherit underline decoration-1 hover:text-secondary dark:hover:text-secondary-dark">
                     {{ isRegisterForm ? 'anmelden' : 'neu registrieren' }} </button>?
             </span>

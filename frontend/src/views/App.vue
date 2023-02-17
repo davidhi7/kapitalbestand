@@ -15,7 +15,7 @@ function logout() {
 </script>
 
 <template>
-    <Notification class="mt-16"/>
+    <Notification :class="{ 'mt-16': AuthStateStore.authenticated }"/>
     <MenuBar v-if="AuthStateStore.authenticated" :username="AuthStateStore.username" @logout="logout"/>
     <div class="sm:w-[600px] sm:mx-auto mx-2 mt-16">
         <Login v-if="!AuthStateStore.authenticated"></Login>

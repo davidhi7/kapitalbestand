@@ -22,25 +22,28 @@ defineEmits(['logout']);
 </script>
 
 <template>
-    <nav
-        class="fixed top-0 msm:pb-1 w-full flex flex-col sm:flex-row justify-between bg-header-bg dark:bg-header-bg-dark text-main-dark">
+    <nav class="fixed top-0 w-full flex flex-col sm:flex-row justify-between bg-header-bg dark:bg-header-bg-dark text-main-dark text-xl"
+        :class="{ 'msm:pb-1': display_menu }">
         <!-- Button to toggle the menu, only visible on portrait devices -->
         <section class="sm:hidden">
-            <IconRouterLink :icon="display_menu ? 'close' : 'menu'" @click="display_menu = !display_menu"></IconRouterLink>
+            <IconRouterLink class="text-2xl relative -left-0.5" :icon="display_menu ? 'close' : 'menu'"
+                @click="display_menu = !display_menu">
+            </IconRouterLink>
         </section>
         <!-- Main pages -->
-        <section class="flex flex-col sm:flex-row" :class="{ 'msm:hidden': !display_menu }">
-            <IconRouterLink @click="display_menu = false" to="/" icon="home" :label="mq.current === 'xs' ? 'Start' : null"></IconRouterLink>
-            <IconRouterLink @click="display_menu = false" to="/new" icon="add" label="Neue Transaktion">
+        <section class="flex flex-col sm:flex-row" :class="{ 'msm:hidden': !display_menu }"
+            @click="display_menu = false">
+            <IconRouterLink to="/" icon="home" :label="mq.current === 'xs' ? 'Start' : null"></IconRouterLink>
+            <IconRouterLink to="/new" icon="add" label="Neue Transaktion">
             </IconRouterLink>
-            <IconRouterLink @click="display_menu = false" to="/list" icon="list" label="Liste"></IconRouterLink>
+            <IconRouterLink to="/list" icon="list" label="Liste"></IconRouterLink>
         </section>
         <!-- Separator between main pages and logout; only on mobile -->
-        <div class="mx-2 my-1 w-auto h-[1px] bg-white dark:bg-main-bg-dark sm:hidden" :class="{ 'hidden': !display_menu }"></div>
+        <div class="mx-2 my-1 w-auto h-[1px] bg-main-dark sm:hidden" :class="{ 'hidden': !display_menu }"></div>
         <!-- Account settings & logout -->
         <section class="flex flex-row msm:justify-between" :class="{ 'msm:hidden': !display_menu }">
             <IconRouterLink @click="display_menu = false" to="/account" icon="manage_accounts" :label="props.username"
-                :label-left="true"></IconRouterLink>
+                :label-left="mq.current !== 'xs'"></IconRouterLink>
             <IconRouterLink icon="logout" @click="$emit('logout')"></IconRouterLink>
         </section>
     </nav>
