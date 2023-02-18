@@ -8,6 +8,7 @@ import App from '@/views/App.vue';
 
 import { useAuthStateStore } from '@/stores/AuthStateStore';
 import { useCategoryShopStore } from '@/stores/CategoryShopStore';
+import { useTransactionsStore } from './stores/TransactionsStore';
 
 import '@/assets/base.less';
 import '@/assets/icons.css';
@@ -24,9 +25,12 @@ app.use(Vue3Mq, {
 app.mount('div#app');
 const AuthStateStore = useAuthStateStore();
 const CategoryShopStore = useCategoryShopStore();
+const TransactionsStore = useTransactionsStore();
+
 
 AuthStateStore.requestWhoAmI();
 // TODO: do this on login
 CategoryShopStore.fetch();
+TransactionsStore.fetch();
 
 app.config.globalProperties.$notificationBus = eventEmitter;

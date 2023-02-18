@@ -1,3 +1,7 @@
 {
-    "less.lint.unknownAtRules": "ignore"
+    "less.lint.unknownAtRules": "ignore",
+    "css.lint.unknownAtRules": "ignore",
+    "[css]": {
+        "editor.defaultFormatter": "bradlc.vscode-tailwindcss"
+    }
 }

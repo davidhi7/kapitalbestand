@@ -1,5 +1,4 @@
 <script setup>
-import { ref } from 'vue';
 import { useAuthStateStore } from '@/stores/AuthStateStore';
 
 import MenuBar from './MenuBar.vue';

@@ -16,8 +16,13 @@ module.exports = {
                 'main-dark': '#DDD',
                 'secondary-dark': '#AAA',
                 'tertiary-dark': '#CCC',
-                'main-bg': '#FFF',
+                
+                'main-bg': 'hsl(0, 0%, 100%)',
+                'secondary-bg': 'hsl(0, 0%, 90%)',
+                'tertiary-bg': 'hsl(0, 0%, 95%)',
                 'main-bg-dark': 'hsl(0, 0%, 10%)',
+                'secondary-bg-dark': 'hsl(0, 0%, 20%)',
+                'tertiary-bg-dark': 'hsl(0, 0%, 13%)',
                 'header-bg': 'hsl(0, 0%, 10%)',
                 'header-bg-dark': 'hsl(0, 0%, 5%)'
             },

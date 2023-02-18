@@ -35,8 +35,8 @@ export default {
         Transaktion wirklich löschen?
     </div>
     <div>
-        <button :disabled="requestPending" @click="del">Ja</button>
-        <button :disabled="requestPending" @click="cancel">Abbrechen</button>
+        <button class="btn" :disabled="requestPending" @click="del">Ja</button>
+        <button class="btn" :disabled="requestPending" @click="cancel">Abbrechen</button>
     </div>
 </template>
 
