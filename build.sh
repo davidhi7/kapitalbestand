@@ -3,4 +3,4 @@
 cd frontend/
 npm run build
 cd ..
-sudo docker build . -t expense-tracker
+sudo docker build . -t kapitalbestand

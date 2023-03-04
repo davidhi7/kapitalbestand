@@ -7,4 +7,6 @@ COPY backend/src/ ./src/
 COPY frontend/dist ./static/
 
 EXPOSE 8080
+VOLUME /usr/src/app
+ENV NODE_ENV=production
 CMD [ "node", "src/app.js" ]
