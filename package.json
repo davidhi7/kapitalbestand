@@ -9,7 +9,19 @@
   "license": "MIT",
   "dependencies": {
     "concurrently": "^7.6.0",
-    "prettier": "^2.8.4",
-    "prettier-plugin-tailwindcss": "^0.2.2"
+    "prettier": "^2.8.4"
+  },
+  "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^4.1.1"
+  },
+  "prettier": {
+    "printWidth": 120,
+    "tabWidth": 4,
+    "trailingComma": "none",
+    "singleQuote": true,
+    "semi": true,
+    "importOrder": ["^@core/(.*)$", "^@server/(.*)$", "^@ui/(.*)$", "^[./]"],
+    "importOrderSeparation": true,
+    "importOrderSortSpecifiers": true
   }
 }
