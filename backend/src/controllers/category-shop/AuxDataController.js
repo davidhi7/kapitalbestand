@@ -48,6 +48,32 @@ class AuxDataController {
             return instance.id;
         }
     }
+
+    /**
+     * Validate the given id. Return true if there is a corresponding instance that belongs to the user.
+     * If `allowNull` is true and the id is null, return also true.
+     * Otherwise, return false.
+     * @param {*} user 
+     * @param {*} id 
+     * @param {*} allowNull 
+     * @returns validation result 
+     */
+    async validateId(user, id, allowNull) {
+        if (id === null) {
+            return !!allowNull;
+        }
+        if (!Number.isInteger(id)) {
+            return false;
+        }
+        const instance = await this.model.findOne({
+            where: {
+                UserId: user.id,
+                id: id
+            }
+        });
+        return instance !== null;
+    }
+
 }
 
 export const categoryController = new AuxDataController(Category);
@@ -66,11 +92,10 @@ export const categoryShopIdResolver = async (user, body) => {
     body = { ...body };
     try {
         const [CategoryId, ShopId] = await sequelize.transaction(async (transaction) => {
-            const promises = [
+            return await Promise.all([
                 categoryController.resolveName(user, body.category, transaction),
                 shopController.resolveName(user, body.shop, transaction)
-            ];
-            return await Promise.all(promises);
+            ]);
         });
 
         body.CategoryId = CategoryId;
@@ -81,8 +106,4 @@ export const categoryShopIdResolver = async (user, body) => {
         console.error(error);
     }
     return body;
-};
-
-export const categoryShopIdValidator = async (user, body) => {
-    // TODO impl
 };
