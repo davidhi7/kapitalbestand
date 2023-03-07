@@ -18,7 +18,7 @@ Update the one-off transaction with the provided id.
 
 | Attribute     | Format             | Required | Description                                                                  |
 | ------------- | ------------------ | :------: | ---------------------------------------------------------------------------- |
-| `date`        | `YYYY-MM-DD`       |    x     | Date on which the transaction occurred.                                      |
+| `date`        | `YYYY-MM-DD`       |          | Date on which the transaction occurred.                                      |
 | `amount`      | `int` (cent value) |          | Amount of money of the transaction in cents.                                 |
 | `category`    | `string`           |          | Name of the category                                                         |
 | `CategoryId`  | `int`              |          | ID of the category. If `category` is provided, `CategoryId` will be ignored. |
