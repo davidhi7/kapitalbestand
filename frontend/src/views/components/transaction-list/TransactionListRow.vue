@@ -2,7 +2,13 @@
 import { inject, computed, ref } from 'vue';
 
 import { format_currency as formatCurrency, format_month as formatMonth } from '@/common';
-import { ExpandAction, EditAction, DeleteAction } from '.';
+import { ActionContainer } from '.';
+
+const actions = {
+    EXPAND: 'ExpandAction',
+    EDIT: 'EditAction',
+    DELETE: 'DeleteAction'
+};
 
 const props = defineProps({
     transaction: {
@@ -11,30 +17,24 @@ const props = defineProps({
     }
 });
 
-const actions = {
-    EXPAND: 'ExpandAction',
-    EDIT: 'EditAction',
-    DELETE: 'DeleteAction'
-};
-// assigning components directly to the reactive `enabledAction` is discouraged due to possible performance issues
-const actionComponents = {
-    ExpandAction,
-    EditAction,
-    DeleteAction
-}
 let enabledAction = ref(null);
 function toggle(action) {
-    enabledAction.value = enabledAction.value === action ? null : action;
+    const newValue = enabledAction.value === action ? null : action;
+    enabledAction.value = null;
+    // by setting the enabled action later, the new action is displayed with a transition. Otherwise, there would be no transition.
+    requestAnimationFrame(() => {
+        enabledAction.value = newValue;
+    });
 }
 const expandEnabled = computed(() => enabledAction.value === actions.EXPAND);
 const editEnabled = computed(() => enabledAction.value === actions.EDIT);
-const deleteEnabled = computed(() => enabledAction.value === actions.DELETE)
+const deleteEnabled = computed(() => enabledAction.value === actions.DELETE);
 
 const frequency = inject('frequency');
 </script>
 
 <template>
-    <tr class="contents">
+    <tr class="contents child:even:bg-main-bg dark:child:even:bg-main-bg-dark child:odd:bg-secondary-bg dark:child:odd:bg-secondary-bg-dark">
         <td v-if="frequency === 'oneoff'">
             {{ props.transaction.date }}
         </td>
@@ -50,64 +50,40 @@ const frequency = inject('frequency');
         <td>
             {{ formatCurrency(props.transaction.Transaction.amount) }}
         </td>
-        <td class="!p-0 flex justify-end">
-            <button :class="{ 'active': expandEnabled }" class="expand" @click="toggle(actions.EXPAND)">
+        <td class="!py-1 flex msm:col-span-full justify-center msm:justify-end">
+            <!-- Disable animation on hiding to avoid unneccessary distractions -->
+            <!-- <button :class="{ 'child:rotate-180 child:transition-transform child:duration-200': expandEnabled }" class="child:transition-transform child:duration-200" @click="toggle(actions.EXPAND)"> -->
+            <button :class="{ 'child:rotate-180 child:transition-transform child:duration-200': expandEnabled }" @click="toggle(actions.EXPAND)">
                 <span class="material-symbols-outlined">expand_more</span>
             </button>
-            <button :class="{ 'active': editEnabled }" @click="toggle(actions.EDIT)">
-                <span class="material-symbols-outlined">edit</span>
+            <button @click="toggle(actions.EDIT)">
+                <span class="material-symbols-outlined" :class="{ 'material-symbols-filled': editEnabled }" >edit</span>
             </button>
-            <button :class="{ 'active': deleteEnabled }" @click="toggle(actions.DELETE)">
-                <span class="material-symbols-outlined">delete</span>
+            <button :class="{ active: deleteEnabled }" @click="toggle(actions.DELETE)">
+                <span class="material-symbols-outlined" :class="{ 'material-symbols-filled': deleteEnabled }" >delete</span>
             </button>
         </td>
-        <td class="col-span-full" v-if="enabledAction != null">
-            <component :is="actionComponents[enabledAction]" :transaction="props.transaction"></component>
+        <td class="col-span-full !p-0">
+            <ActionContainer :action="enabledAction" :transaction="props.transaction" @done="toggle(null)" />
         </td>
     </tr>
 </template>
 
 <style lang="less" scoped>
-tr:nth-child(even) td {
-    @apply bg-tertiary-bg dark:bg-tertiary-bg-dark;
-}
-
-tr:first-child {
-    text-align: left;
-}
-
-tr > td:not(:first-child):not(:last-child) {
-    text-align: center;
-}
-
 td {
-    @apply p-3 text-ellipsis;
-    /* TODO: research following options */
-    @apply overflow-hidden whitespace-nowrap;
+    @apply p-2 text-ellipsis overflow-hidden whitespace-nowrap text-center;
 }
 
-td > button {
-    @apply aspect-square flex-grow;
+
+td>button {
+    @apply aspect-square grid content-center;
 
     &:hover {
-        @apply bg-secondary-bg dark:bg-secondary-bg-dark;
+        @apply bg-tertiary-bg dark:bg-tertiary-bg-dark;
     }
 
-    & > span {
-        @apply text-xl;
-    }
-
-    &.active > span {
-        font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 200, 'opsz' 20;
-    }
-
-    &.expand > span {
-        transition: all .3s;
-    }
-
-    &.expand.active > span {
-        transform: rotate(180deg);
-        transition: all .3s;
+    &>span {
+        @apply !text-xl p-1;
     }
 }
 </style>

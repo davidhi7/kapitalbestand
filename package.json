@@ -1,27 +1,40 @@
 {
-  "name": "expense-tracker",
-  "version": "0.1.0",
-  "description": "",
-  "scripts": {
-    "dev": "concurrently 'cd backend && npm run dev' 'cd frontend && npm run dev'",
-    "dev-mem-db": "concurrently 'cd backend && npm run mem-db' 'cd frontend && npm run dev'"
-  },
-  "license": "MIT",
-  "dependencies": {
-    "concurrently": "^7.6.0",
-    "prettier": "^2.8.4"
-  },
-  "devDependencies": {
-    "@trivago/prettier-plugin-sort-imports": "^4.1.1"
-  },
-  "prettier": {
-    "printWidth": 120,
-    "tabWidth": 4,
-    "trailingComma": "none",
-    "singleQuote": true,
-    "semi": true,
-    "importOrder": ["^@core/(.*)$", "^@server/(.*)$", "^@ui/(.*)$", "^[./]"],
-    "importOrderSeparation": true,
-    "importOrderSortSpecifiers": true
-  }
+    "name": "expense-tracker",
+    "version": "0.1.0",
+    "description": "",
+    "scripts": {
+        "dev": "concurrently 'cd backend && npm run dev' 'cd frontend && npm run dev'",
+        "dev-mem-db": "concurrently 'cd backend && npm run mem-db' 'cd frontend && npm run dev'"
+    },
+    "license": "MIT",
+    "dependencies": {
+        "concurrently": "^7.6.0",
+        "prettier": "^2.8.4"
+    },
+    "devDependencies": {
+        "@trivago/prettier-plugin-sort-imports": "^4.1.1"
+    },
+    "prettier": {
+        "printWidth": 120,
+        "tabWidth": 4,
+        "trailingComma": "none",
+        "singleQuote": true,
+        "semi": true,
+        "importOrder": [
+            "^@core/(.*)$",
+            "^@server/(.*)$",
+            "^@ui/(.*)$",
+            "^[./]"
+        ],
+        "importOrderSeparation": true,
+        "importOrderSortSpecifiers": true,
+        "overrides": [
+            {
+                "files": "*.less",
+                "options": {
+                    "parser": "postcss"
+                }
+            }
+        ]
+    }
 }

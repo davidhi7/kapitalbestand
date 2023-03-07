@@ -22,9 +22,14 @@ export default {
 </script>
 
 <template>
-    <component :is="to ? 'router-link' : 'a'" class="flex flex-row sm:flex-col cursor-pointer hover:text-secondary-dark" :to="to">
-        <div class="w-1 sm:w-auto sm:h-1"></div>
-        <div class="flex items-center grow pt-2 sm:pt-1 pl-1 sm:pl-2 pb-2 pr-2 content">
+    <component :is="to ? 'router-link' : 'button'" :to="to" class="flex flex-row sm:flex-col cursor-pointer hover:bg-tertiary-bg-dark dark:hover:bg-secondary-bg-dark">
+        <!--
+            Indicator visible if the current url matches the link; Located on wide screens on the top, on mobile devices on the left
+            If the router 'link' is only a button, don't show this
+        -->
+        <div v-if="to != null" class="w-1 sm:w-auto sm:h-1"></div>
+        <!-- Container for the icon and label, respecting the space occupied by the indicator. -->
+        <div class="flex items-center grow pt-2 sm:pt-1 pl-1 sm:pl-2 pb-2 pr-2 content" :class="{ 'pl-2 sm:pt-2': to == null }">
             <span class="text-[1em] mx-0.5" v-if="label && labelLeft">
                 {{ label }}
             </span>
@@ -41,8 +46,5 @@ export default {
 <style scoped lang="less">
 a.router-link-exact-active > :first-child {
     @apply bg-main-dark;
-}
-a.router-link-exact-active:hover > :first-child {
-    @apply bg-secondary-dark;
 }
 </style>

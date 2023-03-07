@@ -11,7 +11,7 @@ import { useCategoryShopStore } from '@/stores/CategoryShopStore';
 import { useTransactionsStore } from './stores/TransactionsStore';
 
 import '@/assets/base.less';
-import '@/assets/icons.css';
+import '@/assets/icons.less';
 
 
 

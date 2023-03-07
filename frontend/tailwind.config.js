@@ -11,18 +11,18 @@ module.exports = {
                     '1-dark': '#1FDF7F'
                 },
                 main: '#444',
-                secondary: '#888',
-                tertiary: '#666',
+                secondary: '#666',
+                tertiary: '#888',
                 'main-dark': '#DDD',
-                'secondary-dark': '#AAA',
-                'tertiary-dark': '#CCC',
+                'secondary-dark': '#CCC',
+                'tertiary-dark': '#AAA',
                 
                 'main-bg': 'hsl(0, 0%, 100%)',
-                'secondary-bg': 'hsl(0, 0%, 90%)',
-                'tertiary-bg': 'hsl(0, 0%, 95%)',
+                'secondary-bg': 'hsl(0, 0%, 95%)',
+                'tertiary-bg': 'hsl(0, 0%, 90%)',
                 'main-bg-dark': 'hsl(0, 0%, 10%)',
-                'secondary-bg-dark': 'hsl(0, 0%, 20%)',
-                'tertiary-bg-dark': 'hsl(0, 0%, 13%)',
+                'secondary-bg-dark': 'hsl(0, 0%, 13%)',
+                'tertiary-bg-dark': 'hsl(0, 0%, 20%)',
                 'header-bg': 'hsl(0, 0%, 10%)',
                 'header-bg-dark': 'hsl(0, 0%, 5%)'
             },
@@ -36,5 +36,10 @@ module.exports = {
             }
         }
     },
-    plugins: []
+    plugins: [
+        // https://stackoverflow.com/a/71795600
+        function ({ addVariant }) {
+            addVariant('child', '& > *');
+        }    
+    ]
 };

@@ -4,7 +4,7 @@
     src: url('/MaterialSymbolsOutlined[FILL\,GRAD\,opsz\,wght].woff2') format('woff');
 }
 
-.material-symbols-outlined {
+.material-symbols {
     font-family: 'Material Symbols Outlined';
     font-weight: normal;
     font-style: normal;
@@ -15,5 +15,14 @@
     word-wrap: normal;
     white-space: nowrap;
     direction: ltr;
-    font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 200, 'opsz' 20
+}
+
+.material-symbols-outlined {
+    .material-symbols;
+    font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 200, 'opsz' 20;
+}
+
+.material-symbols-filled {
+    .material-symbols;
+    font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 200, 'opsz' 20 !important;
 }

@@ -1,14 +1,15 @@
 import { Model, Sequelize } from 'sequelize';
-import {
-    user,
-    transaction,
-    singleTransaction,
-    monthlyTransaction,
-    category,
-    shop,
-    associations
-} from '../models/index.js';
+
 import config from '../config.js';
+import {
+    associations,
+    category,
+    monthlyTransaction,
+    shop,
+    singleTransaction,
+    transaction,
+    user
+} from '../models/index.js';
 
 const sequelize = new Sequelize(config.db);
 

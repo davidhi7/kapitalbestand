@@ -10,15 +10,18 @@ body {
 
 .btn {
     @apply rounded-sm
-        bg-main-dark
-        p-2
+        bg-secondary-bg
+        py-2
+        px-4
+        font-semibold
         text-main
-        dark:bg-main
-        dark:text-main-dark
-        transition-colors;
+        transition-colors
+        dark:bg-secondary-bg-dark
+        dark:text-main-dark;
 
-    &:hover, &:active {
-        @apply bg-tertiary-dark dark:bg-tertiary transition-colors;
+    &:hover,
+    &:active {
+        @apply bg-tertiary-bg transition-colors dark:bg-tertiary-bg-dark;
     }
 
     &:active {
@@ -26,12 +29,20 @@ body {
     }
 }
 
+.btn-red {
+    @apply !bg-red-600 !text-main-bg hover:!bg-red-500;
+}
+
+.btn-green {
+    @apply !bg-green-700 !text-main-bg hover:!bg-green-600;
+}
+
 .bg-branding {
     @apply bg-gradient-to-r from-branding-0 to-branding-1 dark:from-branding-0-dark dark:to-branding-1-dark;
 }
 
 h1 {
-    @apply text-4xl font-semibold text-center;
+    @apply text-center text-4xl font-semibold;
 }
 
 :root {
@@ -65,7 +76,6 @@ h1 {
     accent-color: var(--palette-3);
     box-sizing: border-box;
 }
-
 
 input[type='text'],
 input[type='password'],

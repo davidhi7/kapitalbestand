@@ -12,18 +12,18 @@ export default {
             const { createdAt, updatedAt, id, Transaction } = this.transaction;
             const { Category, Shop, isExpense } = Transaction;
             const isMonthly = this.frequency === 'monthly';
-            let typeString
+            let type
             if (isMonthly) {
                 if (Boolean(isExpense)) {
-                    typeString = 'monatliche Ausgabe';
+                    type = 'monatliche Ausgabe';
                 } else {
-                    typeString = 'monatliches Einkommen';
+                    type = 'monatliches Einkommen';
                 }
             } else {
                 if (Boolean(isExpense)) {
-                    typeString = 'einmalige Ausgabe';
+                    type = 'einmalige Ausgabe';
                 } else {
-                    typeString = 'einmaliges Einkommen';
+                    type = 'einmaliges Einkommen';
                 }
             }
 
@@ -33,43 +33,22 @@ export default {
                 'aktualisiert': new Date(updatedAt).toLocaleString('de-DE'),
                 'Ort/Geschäft': Shop ? Shop.name : '-',
                 'Identifikation': id,
-                'Typ': typeString
+                'Typ': type
             }
         }
-    }
+    },
+    emits: ['done']
 };
 </script>
 
 <template>
-    <section class="description" v-if="transaction.Transaction.description">
+    <section v-if="transaction.Transaction.description" class="text-ellipsis overflow-hidden">
         {{ transaction.Transaction.description }}
     </section>
-    <section class="data-grid">
-        <div v-for="(value, key, index) in keyValuePairs" :key="index">
-            <span class="data-key">{{ key }}</span>
-            <span class="data-value">{{ value }}</span>
+    <section class="grid grid-cols-2">
+        <div v-for="(value, key, index) in keyValuePairs" :key="index" class="text-left text-ellipsis overflow-hidden">
+            <span class="text-sm font-semibold after:content-[':']">{{ key }}</span>
+            <span class="text-sm before:content-['_']">{{ value }}</span>
         </div>
     </section>
 </template>
-
-<style lang="less">
-.data-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 50%);
-}
-
-.data-key {
-    font-size: .85rem;
-    text-decoration: underline dotted var(--text-secondary);
-    &:after {
-        content: ':';
-    }
-}
-
-.data-value {
-    font-size: .85rem;
-    &::before {
-        content: ' ';
-    }
-}
-</style>

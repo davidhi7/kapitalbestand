@@ -10,12 +10,12 @@ const frequency = inject('frequency')
         <th v-if="frequency === 'monthly'">letzter Monat</th>
         <th>Kategorie</th>
         <th>Betrag</th>
-        <th>Aktionen</th>
+        <th class="msm:hidden">Aktionen</th>
     </tr>
 </template>
 
 <style scoped lang="less">
 th {
-    @apply text-center p-3 text-xl bg-header-bg dark:bg-header-bg-dark font-semibold text-main-dark;
+    @apply text-center p-2 text-xl bg-header-bg dark:bg-header-bg-dark font-semibold text-main-dark;
 }
 </style>

@@ -1,8 +1,9 @@
 <script>
 import { mapStores } from 'pinia';
+import { useTransactionsStore } from '@/stores/TransactionsStore';
 import { useCategoryShopStore } from '@/stores/CategoryShopStore';
 
-import { format_currency } from '../../common';
+import { format_currency } from '@/common';
 import GridForm from './GridForm.vue';
 
 const TANSACTION_FREQUENCY = {
@@ -89,13 +90,29 @@ export default {
             this.content.amount = sanitizedNumber;
             evt.target.value = format_currency(sanitizedNumber);
         },
+        useTemplateTransaction(transaction) {
+            if (this.fixedFrequency === "monthly") {
+                this.form.monthlyTransactionChecked = true;
+                this.form.monthFrom = transaction.monthFrom;
+                this.form.monthTo = transaction.monthTo || "";
+            }
+            else {
+                this.form.monthlyTransactionChecked = false;
+                this.form.dateInputPreference = "custom";
+                this.form.manuallyEnteredDate = transaction.date;
+            }
+            const { isExpense, amount, Category, Shop, description } = transaction.Transaction;
+            this.content.isExpense = isExpense;
+            this.content.amount = amount;
+            this.content.category = Category.name;
+            this.content.shop = Shop ? Shop.name : "";
+            this.content.description = description || "";
+            this.$refs.amountInput.value = format_currency(this.content.amount);
+        },
         async submit() {
             this.requestPending = true;
-            const httpMethod = this.baseTransaction ? "PATCH" : "POST";
-            let endpoint;
-            let notificationPayload;
+
             const payload = JSON.parse(JSON.stringify(this.content));
-            console.log(payload);
             // The following keys are supposed to be excluded if not provided by the user
             // the same applies for `monthTo`, though empty values for this key are handled later
             for (let key of ["shop", "description"]) {
@@ -104,48 +121,54 @@ export default {
                 }
             }
             if (this.computedIsMonthlyTransaction) {
+                // add monthFrom / monthTo attributes for monthly transaction
                 payload.monthFrom = this.form.monthFrom;
                 if (this.form.monthTo) {
                     payload.monthTo = this.form.monthTo;
                 }
-                endpoint = "/api/transactions/monthly";
             }
             else {
+                // add date attribute for one-off transaction
                 if (this.form.dateInputPreference === "today") {
                     payload.date = new Date().toISOString().split("T")[0];
                 }
                 else {
                     payload.date = this.form.manuallyEnteredDate;
                 }
-                endpoint = "/api/transactions/oneoff";
             }
-            if (httpMethod === "PATCH") {
-                endpoint = endpoint.concat("/", this.baseTransaction.id);
-            }
-            try {
-                const response = await fetch(endpoint, {
-                    method: httpMethod,
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(payload)
-                });
-                const body = await response.json();
-                // TODO: take body status into account
-                notificationPayload = {
-                    content: `${response.status} ${response.statusText}`,
-                    type: response.ok ? "success" : "error"
-                };
-                if (response.ok) {
-                    this.$emit("done", body.data);
+
+            const frequency = this.computedIsMonthlyTransaction ? 'monthly' : 'oneoff';
+            if (this.baseTransaction) {
+                try {
+                    await this.TransactionStore.update(frequency, this.baseTransaction.id, payload);
+                    this.$notificationBus.emit('notification', {
+                        type: 'success',
+                        content: 'Transaktion erfolgreich bearbeitet'
+                    });
+                } catch (err) {
+                    console.log(err);
+                    this.$notificationBus.emit('notification', {
+                        type: 'error',
+                        content: 'Fehler bei der Bearbeitung'
+                    });
+                }
+            } else {
+                try {
+                    await this.TransactionStore.create(frequency, payload);
+                    this.$notificationBus.emit('notification', {
+                        type: 'success',
+                        content: 'Transaktion erfolgreich erstellt'
+                    });
+                } catch (err) {
+                    console.log(err);
+                    this.$notificationBus.emit('notification', {
+                        type: 'error',
+                        content: 'Fehler bei der Bearbeitung'
+                    });
                 }
             }
-            catch (e) {
-                console.log(e);
-                notificationPayload = { type: "error", content: e };
-            }
             this.requestPending = false;
-            this.$notificationBus.emit("notification", notificationPayload);
+            this.$emit('done');
         }
     },
     computed: {
@@ -155,29 +178,13 @@ export default {
             }
             return this.fixedFrequency === TANSACTION_FREQUENCY.MonthlyTransaction;
         },
-        ...mapStores(useCategoryShopStore)
+        ...mapStores(useCategoryShopStore, useTransactionsStore)
     },
     mounted() {
         this.refreshDateTime();
         if (this.baseTransaction) {
             // Load base transaction data into this form
-            if (this.fixedFrequency === "monthly") {
-                this.form.monthlyTransactionChecked = true;
-                this.form.monthFrom = this.baseTransaction.monthFrom;
-                this.form.monthTo = this.baseTransaction.monthTo || "";
-            }
-            else {
-                this.form.monthlyTransactionChecked = false;
-                this.form.dateInputPreference = "custom";
-                this.form.manuallyEnteredDate = this.baseTransaction.date;
-            }
-            const { isExpense, amount, Category, Shop, description } = this.baseTransaction.Transaction;
-            this.content.isExpense = isExpense;
-            this.content.amount = amount;
-            this.content.category = Category.name;
-            this.content.shop = Shop ? Shop.name : "";
-            this.content.description = description || "";
-            this.$refs.amountInput.value = format_currency(this.content.amount);
+            this.useTemplateTransaction(this.baseTransaction);
         }
     },
     emits: ["done"],
@@ -186,8 +193,8 @@ export default {
 </script>
 
 <template>
-    <form @submit.prevent="submit">
-        <section class="my-4" v-if="showTypeSection">
+    <form @submit.prevent="submit" class="grid grid-cols-1 justify-start gap-8">
+        <section v-if="showTypeSection">
             <h2>Es handelt sich um einen</h2>
             <div class="mx-4">
                 <label for="transaction-type-expense">
@@ -208,7 +215,7 @@ export default {
             </div>
         </section>
 
-        <section v-if="!computedIsMonthlyTransaction" class="my-4">
+        <section v-if="!computedIsMonthlyTransaction">
             <h2>Datum</h2>
             <div class="mx-4">
                 <label for="current-date-radio">
@@ -221,13 +228,12 @@ export default {
                     <input type="radio" id="manual-date-radio" v-model="form.dateInputPreference" value="custom" />
                     am
                     <input type="date" id="manual-date-input" v-model="form.manuallyEnteredDate"
-                        :required="form.dateInputPreference === 'custom'"
-                        @click="form.dateInputPreference = 'custom'" />
+                        :required="form.dateInputPreference === 'custom'" @click="form.dateInputPreference = 'custom'" />
                 </label>
             </div>
         </section>
 
-        <section v-else class="my-4">
+        <section v-else>
             <h2>Zeitraum</h2>
             <GridForm class="mx-4">
                 <label for="transaction-first">Erster Umsatz</label>
@@ -237,7 +243,7 @@ export default {
             </GridForm>
         </section>
 
-        <section class="my-4">
+        <section>
             <h2>Transaktion</h2>
             <GridForm class="mx-4">
                 <label for="amount">Betrag</label>
@@ -263,8 +269,9 @@ export default {
             </GridForm>
         </section>
 
-        <div class="flex justify-center">
-            <button type="submit" class="btn" :disabled="requestPending">Speichern</button>
+        <div class="flex justify-center gap-2">
+            <button type="submit" class="btn btn-green" :disabled="requestPending">Speichern</button>
+            <button type="button" class="btn" @click="$emit('done')">Verwerfen</button>
         </div>
     </form>
 </template>
@@ -272,5 +279,9 @@ export default {
 <style scoped lang="less">
 h2 {
     @apply text-xl;
+}
+
+section {
+    text-align: left;
 }
 </style>

@@ -4,6 +4,7 @@ import MemoryStore from 'memorystore';
 import createError from 'http-errors';
 import argon2 from 'argon2';
 import { body } from 'express-validator';
+
 import { User } from '../controllers/db.js';
 import { asyncEndpointWrapper } from './error-handling.js';
 import ResponseBuilder from './response-builder.js';
@@ -47,7 +48,10 @@ router.use(
         name: 'sid',
         cookie: {
             maxAge: 60 * 60 * 1000,
-            secure: process.env.NODE_ENV === 'production',
+            // secure: process.env.NODE_ENV === 'production',
+            // using a reverse proxy, this is not required
+            // TODO: config option?
+            secure: false,
             httpOnly: true
         },
         store: new (MemoryStore(session))({

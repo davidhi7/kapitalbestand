@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia';
 
+import HttpError from '@/HttpError';
+
 export const useTransactionsStore = defineStore('Transaction', {
     state: () => {
         return {
@@ -22,17 +24,13 @@ export const useTransactionsStore = defineStore('Transaction', {
                 try {
                     response = await fetch(`/api/transactions/${frequency}`);
                     if (!response.ok) {
-                        // TODO fix
-                        // this.$notificationBus.emit('notification', {
-                        //     type: 'warning',
-                        //     content: `Failed to load ${frequency} transactions`
-                        // });
-                        continue;
+                        throw new HttpError(response.status);
                     }
                     const body = await response.json();
+                    // filter expenses and incomes from all responses
                     const { expenses, incomes } = body.data.reduce(
                         (res, item) => {
-                            res[item.Transaction.isExpense ? 'expenses' : 'incomes'].push(item);
+                            res[item.Transaction.isExpense ? 'expenses' : 'incomes'][item.id] = item;
                             return res;
                         },
                         { expenses: [], incomes: [] }
@@ -41,12 +39,55 @@ export const useTransactionsStore = defineStore('Transaction', {
                     this.transactions[frequency]['incomes'] = incomes;
                 } catch (error) {
                     console.error(error);
-                    // TODO fix
-                    // this.$notificationBus.emit('notification', { type: 'error', content: `error` });
+                    throw error;
                 }
             }
         },
-        async delete() {},
-        async update() {}
+        async delete(frequency, id) {
+            const endpoint = `/api/transactions/${frequency}/${id}`;
+            const response = await fetch(endpoint, {
+                method: 'DELETE'
+            });
+            if (!response.ok) {
+                throw new HttpError(response.status)
+            }
+            if (this.transactions[frequency]['expenses'][id]) {
+                delete this.transactions[frequency]['expenses'][id];
+            } else if (this.transactions[frequency]['incomes'][id]) {
+                delete this.transactions[frequency]['incomes'][id];
+            }
+        },
+        async update(frequency, id, payload) {
+            const response = await fetch(`/api/transactions/${frequency}/${id}`, {
+                method: 'PATCH',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+            if (!response.ok) {
+                throw new HttpError(response.status);
+            }
+            const body = await response.json();
+
+            const transaction_type = body.data.Transaction.isExpense === true ? 'expenses' : 'incomes';
+            this.transactions[frequency][transaction_type][body.data.id] = body.data;
+        },
+        async create(frequency, payload) {
+            const response = await fetch(`/api/transactions/${frequency}`, {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+            if (!response.ok) {
+                throw new HttpError(response.status);
+            }
+            const body = await response.json();
+
+            const transaction_type = body.data.Transaction.isExpense === true ? 'expenses' : 'incomes';
+            this.transactions[frequency][transaction_type][body.data.id] = body.data;
+        }
     }
 });

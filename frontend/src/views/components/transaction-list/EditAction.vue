@@ -21,7 +21,7 @@ export default {
         :showTypeSection="false"
         :fixedFrequency="frequency"
         :baseTransaction="transaction"
-        @done="data => $emit('done', transaction.id, true, data)"    
+        @done="data => $emit('done')"
     ></TransactionForm>
 </template>
 
