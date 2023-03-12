@@ -2,17 +2,16 @@ import { DataTypes, Model, Sequelize } from 'sequelize';
 
 class OneoffTransaction extends Model {
     declare date: Date;
+    declare Transaction: {
+        isExpense: boolean;
+        amount: number;
+        description: string;
+    };
 }
 
 export default function init(sequelize: Sequelize) {
     return OneoffTransaction.init(
         {
-            id: {
-                type: DataTypes.INTEGER,
-                allowNull: false,
-                primaryKey: true,
-                autoIncrement: true
-            },
             date: {
                 type: DataTypes.DATEONLY,
                 allowNull: false
