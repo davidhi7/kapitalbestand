@@ -21,9 +21,7 @@
         "singleQuote": true,
         "semi": true,
         "importOrder": [
-            "^@core/(.*)$",
-            "^@server/(.*)$",
-            "^@ui/(.*)$",
+            "^@(.*)$",
             "^[./]"
         ],
         "importOrderSeparation": true,
