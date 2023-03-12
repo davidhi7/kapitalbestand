@@ -2,7 +2,7 @@ import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import createError from 'http-errors';
 
-import { Category, Shop, MonthlyTransaction, User } from '../db.js';
+import { Category, Shop, MonthlyTransaction, User } from '../../database/db.js';
 import monthlyTransactionController from './monthly-transaction-controller.js';
 import { categoryShopIdResolver } from '../category-shop/AuxDataController.js';
 import config from '../../config.js';

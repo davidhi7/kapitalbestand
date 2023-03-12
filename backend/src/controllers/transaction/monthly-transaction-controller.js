@@ -1,7 +1,7 @@
 import createError from 'http-errors';
 
 import config from '../../config.js';
-import { MonthlyTransaction, Transaction } from '../db.js';
+import { MonthlyTransaction, Transaction } from '../../database/db.js';
 import AbstractTransactionController from './AbstractTransactionController.js';
 import { buildWhereConditions } from './transaction-utils.js';
 

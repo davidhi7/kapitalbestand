@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { User } from '../controllers/db.js';
+import { User } from '../db.js';
 
 describe('user model', () => {
     it('should not include the password hash on default query', async () => {

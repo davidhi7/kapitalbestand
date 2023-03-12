@@ -1,7 +1,7 @@
 import createError from 'http-errors';
 
 import config from '../../config.js';
-import { SingleTransaction as OneoffTransaction, Transaction } from '../db.js';
+import { OneoffTransaction, Transaction } from '../../database/db.js';
 import AbstractTransactionController from './AbstractTransactionController.js';
 import { buildWhereConditions } from './transaction-utils.js';
 

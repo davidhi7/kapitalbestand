@@ -8,7 +8,7 @@
                 "--require",
                 "${workspaceFolder}/backend/test/hooks.js",
                 "--colors",
-                "${workspaceFolder}/backend/src/**/*.test.js"
+                "${workspaceFolder}/backend/dist/**/*.test.js"
             ],
             "internalConsoleOptions": "openOnSessionStart",
             "name": "Backend tests",

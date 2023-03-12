@@ -1,5 +1,7 @@
-export default (sequelize) => {
-    const { Transaction, Category, Shop, SingleTransaction, MonthlyTransaction, User } = sequelize.models;
+import { Sequelize } from 'sequelize';
+
+export default function setAssociations(sequelize: Sequelize) {
+    const { Transaction, Category, Shop, OneoffTransaction, MonthlyTransaction, User } = sequelize.models;
     
     const inhibitNullKey = { foreignKey: { allowNull: false }};
     
@@ -8,10 +10,10 @@ export default (sequelize) => {
     Category.hasMany(Transaction);
     Shop.hasMany(Transaction);
 
-    SingleTransaction.belongsTo(Transaction, inhibitNullKey);
-    SingleTransaction.belongsTo(User, inhibitNullKey);
-    Transaction.hasMany(SingleTransaction);
-    User.hasMany(SingleTransaction);
+    OneoffTransaction.belongsTo(Transaction, inhibitNullKey);
+    OneoffTransaction.belongsTo(User, inhibitNullKey);
+    Transaction.hasMany(OneoffTransaction);
+    User.hasMany(OneoffTransaction);
 
     MonthlyTransaction.belongsTo(Transaction, inhibitNullKey);
     MonthlyTransaction.belongsTo(User, inhibitNullKey);
@@ -31,7 +33,7 @@ export default (sequelize) => {
             }
         ]
     });
-    SingleTransaction.addScope('defaultScope', {
+    OneoffTransaction.addScope('defaultScope', {
         include: [
             {
                 model: Transaction,

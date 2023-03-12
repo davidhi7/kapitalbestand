@@ -1,4 +1,10 @@
-export default function ResponseBuilder({ status = 'success', error, data }) {
+type ResponseOptions = {
+    status?: 'success' | 'error';
+    error?: string;
+    data?: object | Array<any> | string;
+}
+
+export default function ResponseBuilder({ status = 'success', error, data }: ResponseOptions) {
     /**
      * Create a uniform API response payload. A `status` of `success` or `error` is always required.
      * Additionally there may be an `error object` if `status` == 'error' and a `data` object.
@@ -12,7 +18,7 @@ export default function ResponseBuilder({ status = 'success', error, data }) {
             error: 'invalid response status provided'
         };
     }
-    const response = { status };
+    const response: ResponseOptions = { status };
     if (status === 'error' && error) {
         response.error = error;
     }

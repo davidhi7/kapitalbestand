@@ -1,6 +1,6 @@
 import createError from 'http-errors';
 
-import sequelize, { Category, Shop } from '../db.js';
+import sequelize, { Category, Shop } from '../../database/db.js';
 
 class AuxDataController {
     constructor(model) {
@@ -53,10 +53,10 @@ class AuxDataController {
      * Validate the given id. Return true if there is a corresponding instance that belongs to the user.
      * If `allowNull` is true and the id is null, return also true.
      * Otherwise, return false.
-     * @param {*} user 
-     * @param {*} id 
-     * @param {*} allowNull 
-     * @returns validation result 
+     * @param {*} user
+     * @param {*} id
+     * @param {*} allowNull
+     * @returns validation result
      */
     async validateId(user, id, allowNull) {
         if (id === null) {
@@ -73,7 +73,6 @@ class AuxDataController {
         });
         return instance !== null;
     }
-
 }
 
 export const categoryController = new AuxDataController(Category);

@@ -2,7 +2,7 @@ import express from 'express';
 import { expect } from 'chai';
 import request from 'supertest';
 
-import { User } from '../controllers/db.js';
+import { User } from '../database/db.js';
 import auth from './authentication.js';
 import { errorHandler } from './error-handling.js';
 

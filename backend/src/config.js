@@ -18,6 +18,7 @@ const config = {
 
         }
     },
+    db: {},
     paths: {
         static: join(projectRoot, 'static'),
         session_secret: join(projectRoot, '.session_secret')
@@ -45,12 +46,11 @@ if (process.env.NODE_ENV === 'test') {
 
 let secret = crypto.randomBytes(32).toString('hex');
 if (process.env.NODE_ENV === 'production') {
-    const session_secret_path = config.paths.session_secret;
-    if (!existsSync(session_secret_path)) {
-        writeFileSync(session_secret_path, secret);
+    if (!existsSync(config.paths.session_secret)) {
+        writeFileSync(config.paths.session_secret, secret);
     } else {
         try {
-            secret = readFileSync(session_secret_path, 'utf8');
+            secret = readFileSync(config.paths.session_secret, 'utf8');
         } catch (err) {
             console.error('Failed to read session secret file');
             console.error(err);

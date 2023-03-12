@@ -5,7 +5,7 @@ import createError from 'http-errors';
 import argon2 from 'argon2';
 import { body } from 'express-validator';
 
-import { User } from '../controllers/db.js';
+import { User } from '../database/db.js';
 import { asyncEndpointWrapper } from './error-handling.js';
 import ResponseBuilder from './response-builder.js';
 import config from '../config.js';

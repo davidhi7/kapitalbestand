@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import { Category, Shop, User } from '../db.js';
+import { Category, Shop, User } from '../../database/db.js';
 import {
     categoryController,
     shopController,

@@ -2,7 +2,7 @@ import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import createError from 'http-errors';
 
-import { Category, Shop, SingleTransaction as OneoffTransaction, User } from '../db.js';
+import { Category, Shop, OneoffTransaction, User } from '../../database/db.js';
 import oneoffTransactionController from './one-off-transaction-controller.js';
 import { categoryShopIdResolver } from '../category-shop/AuxDataController.js';
 import config from '../../config.js';
