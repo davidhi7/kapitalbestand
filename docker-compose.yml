@@ -11,7 +11,7 @@ services:
       POSTGRES_PASSWORD: password
 
   expense-tracker:
-    container_name: kapitalbetrag 
+    container_name: kapitalbestand 
     build: .
     restart: unless-stopped
     environment:
@@ -22,4 +22,3 @@ services:
       DB_HOST: postgres
     ports:
       - 8080:8080
-
