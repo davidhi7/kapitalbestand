@@ -8,7 +8,9 @@ export default class AbstractTransactionController {
 
     async delete(user, id) {
         const instance = await this.getByUserAndId(user, id);
+        const transaction = instance.Transaction;
         await instance.destroy();
+        await transaction.destroy();
     }
 
     async getByUserAndId(user, id) {

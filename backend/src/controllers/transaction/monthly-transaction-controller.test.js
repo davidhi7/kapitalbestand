@@ -2,11 +2,10 @@ import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import createError from 'http-errors';
 
-import { Category, Shop, MonthlyTransaction, User } from '../../database/db.js';
-import monthlyTransactionController from './monthly-transaction-controller.js';
-import { categoryShopIdResolver } from '../category-shop/AuxDataController.js';
 import config from '../../config.js';
-
+import { Category, MonthlyTransaction, Shop, Transaction, User } from '../../database/db.js';
+import { categoryShopIdResolver } from '../category-shop/AuxDataController.js';
+import monthlyTransactionController from './monthly-transaction-controller.js';
 
 chai.use(chaiAsPromised);
 describe('MonthlyTransactionController', function () {
@@ -22,7 +21,10 @@ describe('MonthlyTransactionController', function () {
                 category: 'test-category',
                 shop: 'test-shop'
             };
-            const instance = await monthlyTransactionController.create(user, await categoryShopIdResolver(user, transactionAttributes));
+            const instance = await monthlyTransactionController.create(
+                user,
+                await categoryShopIdResolver(user, transactionAttributes)
+            );
             const instanceTransaction = await instance.getTransaction();
             const instanceCategory = await instanceTransaction.getCategory();
             const instanceShop = await instanceTransaction.getShop();
@@ -94,12 +96,15 @@ describe('MonthlyTransactionController', function () {
     describe('#fetch', function () {
         async function nSampleTransactions(user, n) {
             for (let i = 0; i < n; i++) {
-                await monthlyTransactionController.create(user, await categoryShopIdResolver(user, {
-                    isExpense: true,
-                    category: 'test-category',
-                    amount: 1,
-                    monthFrom: '2023-01'
-                }));
+                await monthlyTransactionController.create(
+                    user,
+                    await categoryShopIdResolver(user, {
+                        isExpense: true,
+                        category: 'test-category',
+                        amount: 1,
+                        monthFrom: '2023-01'
+                    })
+                );
             }
         }
         it('should return all instances if no parameters are provided', async function () {
@@ -342,6 +347,15 @@ describe('MonthlyTransactionController', function () {
             const instance = await MonthlyTransaction.findOne({ where: { UserId: user.id } });
             await monthlyTransactionController.delete(user, instance.id);
             expect(await MonthlyTransaction.count({ where: { UserId: user.id } })).to.be.equal(countBefore - 1);
+        });
+        it('should also delete the associated base transaction', async () => {
+            const user = await User.findOne();
+            const instance = await MonthlyTransaction.findOne({ where: { UserId: user.id } });
+            const monthlyTransactionId = instance.id;
+            const transactionId = instance.Transaction.id;
+            await monthlyTransactionController.delete(user, instance.id);
+            expect(await MonthlyTransaction.findByPk(monthlyTransactionId)).to.be.null;
+            expect(await Transaction.findByPk(transactionId)).to.be.null;
         });
         it('should return an 404 http error if the primary key is invalid', async () => {
             await expect(monthlyTransactionController.delete(await User.findOne(), -1)).to.be.rejectedWith(

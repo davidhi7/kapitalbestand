@@ -2,10 +2,10 @@ import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import createError from 'http-errors';
 
-import { Category, Shop, OneoffTransaction, User } from '../../database/db.js';
-import oneoffTransactionController from './one-off-transaction-controller.js';
-import { categoryShopIdResolver } from '../category-shop/AuxDataController.js';
 import config from '../../config.js';
+import { Category, OneoffTransaction, Shop, Transaction, User } from '../../database/db.js';
+import { categoryShopIdResolver } from '../category-shop/AuxDataController.js';
+import oneoffTransactionController from './one-off-transaction-controller.js';
 
 chai.use(chaiAsPromised);
 describe('OneoffTransactionController', function () {
@@ -282,6 +282,15 @@ describe('OneoffTransactionController', function () {
             await oneoffTransactionController.delete(user, instance.id);
             expect(await OneoffTransaction.count({ where: { UserId: user.id } })).to.be.equal(countBefore - 1);
         });
+        it('should also delete the associated base transaction', async () => {
+            const user = await User.findOne();
+            const instance = await OneoffTransaction.findOne({ where: { UserId: user.id } });
+            const oneoffTransactionId = instance.id;
+            const transactionId = instance.Transaction.id;
+            await oneoffTransactionController.delete(user, instance.id);
+            expect(await OneoffTransaction.findByPk(oneoffTransactionId)).to.be.null;
+            expect(await Transaction.findByPk(transactionId)).to.be.null;
+        });
         it('should return an 404 http error if the primary key is invalid', async () => {
             await expect(oneoffTransactionController.delete(await User.findOne(), -1)).to.be.rejectedWith(
                 createError[404]
@@ -330,8 +339,9 @@ describe('OneoffTransactionController', function () {
             expect(updatedInstance.Transaction.Category.name).to.be.equal('update-test');
             expect(updatedInstance.Transaction.Shop.name).to.be.equal('update-test');
             expect(updatedInstance.updatedAt).to.be.above(instance.updatedAt);
-            // TODO this property does not exist?
-            //expect(new Date(updatedInstance.Transaction.updatedAt)).to.be.above(new Date(instance.Transaction.updatedAt));
+            expect(new Date(updatedInstance.Transaction.updatedAt)).to.be.above(
+                new Date(instance.Transaction.updatedAt)
+            );
         });
         it('should apply setting ShopId to null', async () => {
             const user = await User.findOne();
