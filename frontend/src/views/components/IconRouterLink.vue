@@ -33,7 +33,7 @@ export default {
             <span class="text-[1em] mx-0.5" v-if="label && labelLeft">
                 {{ label }}
             </span>
-            <span class="material-symbols-outlined text-[1.25em] mx-0.5" v-if="icon">
+            <span class="material-symbols-outlined text-[1.25em] mx-0.5 select-none" v-if="icon">
                 {{ icon }}
             </span>
             <span class="text-[1em] mx-0.5" v-if="label && !labelLeft">
@@ -44,7 +44,7 @@ export default {
 </template>
 
 <style scoped lang="less">
-a.router-link-exact-active > :first-child {
+a.router-link-active > :first-child {
     @apply bg-main-dark;
 }
 </style>

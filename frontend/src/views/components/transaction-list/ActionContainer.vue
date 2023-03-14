@@ -1,6 +1,4 @@
 <script setup>
-import { inject } from 'vue';
-
 import { ExpandAction, EditAction, DeleteAction } from '.';
 
 const actions = {
@@ -26,21 +24,23 @@ const props = defineProps({
         }
     },
     transaction: {
-        type: Object
+        type: Object,
+        required: true
     }
 });
+
+defineEmits(['done']);
 </script>
 
 <template>
+    <div v-if="props.action" class="mx-2 my-0 h-[1px] bg-tertiary-bg dark:bg-tertiary-bg-dark"></div>
     <Transition name="action">
-        <div v-if="props.action !== null" :class="actions[props.action].durationClass">
-            <div>
-                <div class="px-2">
-                    <div class="h-[1px] bg-tertiary-bg dark:bg-tertiary-bg-dark"></div>
-                </div>
-                <div class="p-2">
+        <div v-if="props.action" class="grid overflow-hidden" :class="actions[props.action].durationClass">
+            <div class="min-h-0 self-end">
+                <div class="m-2">
                     <KeepAlive>
-                        <component :is="actions[props.action].component" @done="$emit('done')" :transaction="props.transaction" />
+                        <component :is="actions[props.action].component" @done="$emit('done')"
+                            :transaction="props.transaction" />
                     </KeepAlive>
                 </div>
             </div>
@@ -49,34 +49,32 @@ const props = defineProps({
 </template>
 
 <style lang="less">
-.action-enter-active,
+.action-enter-active {
+    transition-timing-function: ease-out;
+    transition-property: grid-template-rows, opacity;
+}
+
 .action-leave-active {
-    transition: all ease-out;
+    transition-timing-function: ease-in;
+    transition-property: grid-template-rows, opacity;
 }
 
 .action-enter-from,
 .action-leave-to {
-    display: grid;
     grid-template-rows: 0fr;
-    overflow: hidden;
+    opacity: 0;
 
     &>* {
         visibility: hidden;
-        min-height: 0;
-        align-self: end;
     }
 }
 
 .action-enter-to,
 .action-leave-from {
-    display: grid;
     grid-template-rows: 1fr;
-    overflow: hidden;
 
     &>* {
         visibility: visible;
-        min-height: 0;
-        align-self: end;
     }
 }
 </style>

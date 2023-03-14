@@ -139,6 +139,7 @@ export default {
 
             const frequency = this.computedIsMonthlyTransaction ? 'monthly' : 'oneoff';
             if (this.baseTransaction) {
+                // TODO: only apply once for KeepAlive to work
                 try {
                     await this.TransactionStore.update(frequency, this.baseTransaction.id, payload);
                     this.$notificationBus.emit('notification', {
