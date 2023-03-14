@@ -1,5 +1,5 @@
-import express from 'express';
 import { expect } from 'chai';
+import express from 'express';
 import request from 'supertest';
 
 import { User } from '../database/db.js';
@@ -12,17 +12,25 @@ describe('authentication middlewares', () => {
     app.use('/api', auth);
     app.use(errorHandler);
 
-    async function register_test_account() {
-        const username = 'test';
+    async function register_test_account(username = 'test') {
         const password = '12345678';
 
         const res = await request(app).post('/api/auth/register').send({ username: username, password: password });
+        // Extract the session id key value pair:
+        // `set-cookie` is an array of cookies. We pick the first string assuming that there is only one cookie set.
+        // This string contains the key value pair but also additional values like http only property or cookie max age. The session id is the first component before any semicolons.
         const sessionId = res.headers['set-cookie'][0].split(';')[0];
         const sessionTimeout = res.body.data.sessionTimeout;
 
         return { username, password, sessionId, sessionTimeout };
     }
 
+    describe('general behaviour', () => {
+        it('should not return a session id if the user is not logged in to prevent session fixations', async () => {
+            const res = await request(app).post('/api/auth/whoami').send();
+            expect(res.headers['set-cookie']).to.be.undefined;
+        });
+    });
     describe('/auth/register', () => {
         it('should allow to create a new user, returning the new username and session id and set a session id cookie', async () => {
             const res = await request(app)
@@ -93,6 +101,11 @@ describe('authentication middlewares', () => {
             expect(res.headers['content-type']).to.match(/json/);
             expect(await User.count()).to.equal(1);
         });
+        it('should change the session id if an already registered user registers again, thus changing the logged-in account', async () => {
+            const { sessionId: firstSessionId } = await register_test_account('test1');
+            const { sessionId: secondSessionId } = await register_test_account('test2');
+            expect(firstSessionId).not.to.equal(secondSessionId);
+        });
     });
     describe('/auth/login', () => {
         it('should successfully login and return the username and session id on success', async () => {
@@ -142,6 +155,14 @@ describe('authentication middlewares', () => {
             expect(res.status).to.equal(400);
             expect(res.headers['content-type']).to.match(/json/);
             expect(await User.count()).to.equal(1);
+        });
+        it('should change the session id if an already registered user logs in again, thus changing the logged-in account', async () => {
+            const { username, password } = await register_test_account('test1');
+            const { sessionId: firstSessionId } = await register_test_account('test2');
+            const loginResponse = await request(app).post('/api/auth/login').send({ username, password });
+            const secondSessionId = loginResponse.headers['set-cookie'][0].split(';')[0];
+
+            expect(firstSessionId).not.to.equal(secondSessionId);
         });
     });
     describe('/auth/whoami', async () => {
