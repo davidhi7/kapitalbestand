@@ -37,6 +37,7 @@ defineEmits(['logout']);
             <IconRouterLink to="/new" icon="add" label="Neue Transaktion">
             </IconRouterLink>
             <IconRouterLink to="/list" icon="list" label="Liste"></IconRouterLink>
+            <IconRouterLink to="/analysis" icon="bar_chart" label="Analyse"></IconRouterLink>
         </section>
         <!-- Separator between main pages and logout; only on mobile -->
         <div class="mx-2 my-1 w-auto h-[1px] bg-main-dark sm:hidden" :class="{ 'hidden': !display_menu }"></div>

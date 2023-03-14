@@ -1,7 +1,7 @@
 <script setup>
 import { inject, computed, ref } from 'vue';
 
-import { format_currency as formatCurrency, format_month as formatMonth } from '@/common';
+import { format_currency as formatCurrency, format_year_month as formatMonth } from '@/common';
 import { ActionContainer } from '.';
 
 const actions = {
@@ -39,7 +39,7 @@ const frequency = inject('frequency');
             {{ props.transaction.date }}
         </td>
         <td v-if="frequency === 'monthly'">
-            {{ formatMonth(new Date(props.transaction.monthFrom)) }}
+            {{ formatMonth({date: new Date(props.transaction.monthFrom), style: 'iso' }) }}
         </td>
         <td v-if="frequency === 'monthly'">
             {{ props.transaction.monthTo ? formatMonth(new Date(props.transaction.monthTo)) : '-' }}
@@ -52,8 +52,8 @@ const frequency = inject('frequency');
         </td>
         <td class="!py-1 flex msm:col-span-full justify-center msm:justify-end">
             <!-- Disable animation on hiding to avoid unneccessary distractions -->
-            <!-- <button :class="{ 'child:rotate-180 child:transition-transform child:duration-200': expandEnabled }" class="child:transition-transform child:duration-200" @click="toggle(actions.EXPAND)"> -->
-            <button :class="{ 'child:rotate-180 child:transition-transform child:duration-200': expandEnabled }" @click="toggle(actions.EXPAND)">
+            <!--<button :class="{ 'child:rotate-180 child:transition-transform child:duration-200': expandEnabled }" @click="toggle(actions.EXPAND)">-->
+            <button :class="{ 'child:rotate-180 child:transition-transform child:duration-200': expandEnabled }" class="child:transition-transform child:duration-200" @click="toggle(actions.EXPAND)">
                 <span class="material-symbols-outlined">expand_more</span>
             </button>
             <button @click="toggle(actions.EDIT)">
