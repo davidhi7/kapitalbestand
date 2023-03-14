@@ -6,19 +6,21 @@ services:
     image: postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: Expenses
+      POSTGRES_DB: Kapitalbestand
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
+    volumes:
+      - ./volumes/postgres/:/var/lib/postgresql/data
 
   expense-tracker:
     container_name: kapitalbestand 
-    build: .
+    image: kapitalbestand
     restart: unless-stopped
     environment:
       DB_DBMS: postgres
       DB_USER: user
       DB_PASSWORD: password
-      DB_DATABASE: kapital
+      DB_DATABASE: Kapitalbestand
       DB_HOST: postgres
     ports:
       - 8080:8080
