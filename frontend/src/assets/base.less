@@ -25,16 +25,16 @@ body {
     }
 
     &:active {
-        transform: translateY(-1px);
+        transform: translateY(2px);
     }
-}
 
-.btn-red {
-    @apply !bg-red-600 !text-main-bg hover:!bg-red-500;
-}
-
-.btn-green {
-    @apply !bg-green-700 !text-main-bg hover:!bg-green-600;
+    &.btn-red {
+        @apply !bg-red-600 !text-main-bg hover:!bg-red-500;
+    }
+    
+    &.btn-green {
+        @apply !bg-green-700 !text-main-bg hover:!bg-green-600;
+    }
 }
 
 .bg-branding {
@@ -43,6 +43,12 @@ body {
 
 h1 {
     @apply text-center text-4xl font-semibold;
+}
+
+.ln {
+    &:hover :not(.material-symbols-outlined):not(.material-symbols-filled) {
+        @apply underline underline-offset-4 decoration-tertiary dark:decoration-tertiary-dark;
+    }
 }
 
 :root {
