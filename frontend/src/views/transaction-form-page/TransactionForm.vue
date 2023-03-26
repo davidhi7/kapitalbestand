@@ -1,9 +1,10 @@
 <script>
 import { mapStores } from 'pinia';
-import { useTransactionsStore } from '@/stores/TransactionsStore';
+import { useTransactionStore } from '@/stores/TransactionStore';
 import { useCategoryShopStore } from '@/stores/CategoryShopStore';
 
 import { format_currency } from '@/common';
+import MonthInput from '@/views/common/MonthInput.vue';
 import GridForm from './GridForm.vue';
 
 const TANSACTION_FREQUENCY = {
@@ -117,7 +118,7 @@ export default {
             // the same applies for `monthTo`, though empty values for this key are handled later
             for (let key of ["shop", "description"]) {
                 if (payload[key] === "") {
-                    delete payload[key];
+                    payload[key] = null;
                 }
             }
             if (this.computedIsMonthlyTransaction) {
@@ -179,7 +180,7 @@ export default {
             }
             return this.fixedFrequency === TANSACTION_FREQUENCY.MonthlyTransaction;
         },
-        ...mapStores(useCategoryShopStore, useTransactionsStore)
+        ...mapStores(useCategoryShopStore, useTransactionStore)
     },
     mounted() {
         this.refreshDateTime();
@@ -189,7 +190,7 @@ export default {
         }
     },
     emits: ["done"],
-    components: { GridForm }
+    components: { GridForm, MonthInput }
 };
 </script>
 
@@ -238,9 +239,9 @@ export default {
             <h2>Zeitraum</h2>
             <GridForm class="mx-4">
                 <label for="transaction-first">Erster Umsatz</label>
-                <input type="date" id="transaction-first" v-model="form.monthFrom" required="true" />
+                <MonthInput id="transaction-first" v-model="form.monthFrom" required="true"></MonthInput>
                 <label for="transaction-last">Letzter Umsatz</label>
-                <input type="date" id="transaction-last" v-model="form.monthTo" />
+                <MonthInput id="transaction-last" v-model="form.monthTo"></MonthInput>
             </GridForm>
         </section>
 

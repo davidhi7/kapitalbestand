@@ -1,8 +1,8 @@
 <script setup>
 import { ref } from 'vue';
 import { useAuthStateStore } from '@/stores/AuthStateStore';
-import { eventEmitter as $notificationBus } from '@/views/components/Notification.vue';
-import GridForm from '@/views/components/GridForm.vue';
+import { eventEmitter as $notificationBus } from '@/views/Notification.vue';
+import GridForm from '@/views/transaction-form-page/GridForm.vue';
 
 const AuthStateStore = useAuthStateStore();
 

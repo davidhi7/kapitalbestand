@@ -1,7 +1,7 @@
 <script setup>
 import {ref, inject} from 'vue';
 
-import { useTransactionsStore } from '@/stores/TransactionsStore';
+import { useTransactionStore } from '@/stores/TransactionStore';
 
 const props = defineProps({
     transaction: {
@@ -12,7 +12,7 @@ const props = defineProps({
 const frequency = inject('frequency');
 const emit = defineEmits(['done']);
 
-const TransactionStore = useTransactionsStore();
+const TransactionStore = useTransactionStore();
 const requestPending = ref(false);
 
 async function del() {

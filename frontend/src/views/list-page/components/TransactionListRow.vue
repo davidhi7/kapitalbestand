@@ -26,41 +26,41 @@ function toggle(action) {
         enabledAction.value = newValue;
     });
 }
-const expandEnabled = computed(() => enabledAction.value === actions.EXPAND);
-const editEnabled = computed(() => enabledAction.value === actions.EDIT);
-const deleteEnabled = computed(() => enabledAction.value === actions.DELETE);
 
 const frequency = inject('frequency');
 </script>
 
 <template>
-    <tr class="contents child:even:bg-main-bg dark:child:even:bg-main-bg-dark child:odd:bg-secondary-bg dark:child:odd:bg-secondary-bg-dark">
+    <tr
+        class="contents child:even:bg-main-bg dark:child:even:bg-main-bg-dark child:odd:bg-secondary-bg dark:child:odd:bg-secondary-bg-dark">
         <td v-if="frequency === 'oneoff'">
             {{ props.transaction.date }}
         </td>
         <td v-if="frequency === 'monthly'">
-            {{ formatMonth({date: new Date(props.transaction.monthFrom), style: 'iso' }) }}
+            {{ formatMonth({ date: new Date(props.transaction.monthFrom), style: 'iso' }) }}
         </td>
         <td v-if="frequency === 'monthly'">
-            {{ props.transaction.monthTo ? formatMonth(new Date(props.transaction.monthTo)) : '-' }}
+            {{ props.transaction.monthTo ? formatMonth({ date: new Date(props.transaction.monthTo), style: 'iso' }) : '-' }}
         </td>
         <td>
             {{ props.transaction.Transaction.Category.name }}
         </td>
-        <td>
+        <td
+            :class="{ 'dark:text-positive-dark p-0.5 rounded-md before:content-[\'+\']': !props.transaction.Transaction.isExpense }">
             {{ formatCurrency(props.transaction.Transaction.amount) }}
         </td>
         <td class="!py-1 flex msm:col-span-full justify-center msm:justify-end">
             <!-- Disable animation on hiding to avoid unneccessary distractions -->
             <!--<button :class="{ 'child:rotate-180 child:transition-transform child:duration-200': expandEnabled }" @click="toggle(actions.EXPAND)">-->
-            <button :class="{ 'child:rotate-180 child:transition-transform child:duration-200': expandEnabled }" class="child:transition-transform child:duration-200" @click="toggle(actions.EXPAND)">
+            <button :class="{ 'child:rotate-180 child:transition-transform child:duration-200': enabledAction === actions.EXPAND }"
+                class="child:transition-transform child:duration-200" @click="toggle(actions.EXPAND)">
                 <span class="material-symbols-outlined">expand_more</span>
             </button>
             <button @click="toggle(actions.EDIT)">
-                <span class="material-symbols-outlined" :class="{ 'material-symbols-filled': editEnabled }" >edit</span>
+                <span class="material-symbols-outlined" :class="{ 'material-symbols-filled': enabledAction === actions.EDIT }">edit</span>
             </button>
-            <button :class="{ active: deleteEnabled }" @click="toggle(actions.DELETE)">
-                <span class="material-symbols-outlined" :class="{ 'material-symbols-filled': deleteEnabled }" >delete</span>
+            <button @click="toggle(actions.DELETE)">
+                <span class="material-symbols-outlined" :class="{ 'material-symbols-filled': enabledAction === actions.DELETE }">delete</span>
             </button>
         </td>
         <td class="col-span-full !p-0">

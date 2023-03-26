@@ -24,7 +24,10 @@ module.exports = {
                 'secondary-bg-dark': 'hsl(0, 0%, 13%)',
                 'tertiary-bg-dark': 'hsl(0, 0%, 20%)',
                 'header-bg': 'hsl(0, 0%, 10%)',
-                'header-bg-dark': 'hsl(0, 0%, 5%)'
+                'header-bg-dark': 'hsl(0, 0%, 5%)',
+
+                'positive-dark': 'hsl(140, 50%, 40%)',
+                'positive-bg-dark': 'hsl(155, 43%, 12%)'
             },
             screens: {
                 // desktop-first alternative breakpoints: smaller than sm/md/lg/xl/2xl

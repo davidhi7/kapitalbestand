@@ -23,3 +23,4 @@
 * validation of monthly transaction monthFrom and monthTo / if monthFrom == monthTo, validation error is thrown: monthFrom is allegedly greater than monthTo
 * set reasonable datatype and validation for large 'amount' input values
 * API unit testing
+* Think about session store / session secret store

@@ -8,9 +8,9 @@ import router from '@/router';
 import { useAuthStateStore } from '@/stores/AuthStateStore';
 import { useCategoryShopStore } from '@/stores/CategoryShopStore';
 import App from '@/views/App.vue';
-import { eventEmitter } from '@/views/components/Notification.vue';
+import { eventEmitter } from '@/views/Notification.vue';
 
-import { useTransactionsStore } from './stores/TransactionsStore';
+import { useTransactionStore as useTransactionStore } from './stores/TransactionStore';
 
 const app = createApp(App);
 const pinia = createPinia();
@@ -23,13 +23,13 @@ app.use(Vue3Mq, {
 
 const AuthStateStore = useAuthStateStore();
 const CategoryShopStore = useCategoryShopStore();
-const TransactionsStore = useTransactionsStore();
+const TransactionStore = useTransactionStore();
 
 AuthStateStore.requestWhoAmI().then(() => {
     app.mount('div#app');
     if (AuthStateStore.authenticated) {
         CategoryShopStore.fetch();
-        TransactionsStore.fetch();
+        TransactionStore.fetch();
     }
 });
 

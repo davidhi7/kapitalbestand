@@ -1,9 +1,8 @@
 <script setup>
-import { ref, watch, computed, onBeforeMount } from 'vue';
-import { useRoute } from 'vue-router';
+import { computed, onBeforeMount, ref, watch } from 'vue';
+import { RouterLink, useRoute } from 'vue-router';
 import { Line } from 'vue-chartjs';
-import { RouterLink } from 'vue-router';
-import { Chart, Title, Tooltip, Legend, LineElement, CategoryScale, LinearScale, PointElement } from 'chart.js'
+import { CategoryScale, Chart, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js';
 
 import { format_year_month } from '@/common';
 import { useAnalysisResultStore } from '@/stores/AnalysisResultStore';
@@ -15,6 +14,7 @@ const AnalysisResultStore = useAnalysisResultStore();
 const data = ref({});
 
 const date = ref(null);
+
 function refreshMonth({ year, month }) {
     const currentDate = new Date();
     year ??= currentDate.getFullYear();
@@ -56,26 +56,27 @@ onBeforeMount(async () => {
                 data: summary.map(row => row.oneoff.incomes)
             }
         ]
-    }
+    };
 });
 watch(() => route.params, refreshMonth);
 </script>
 
 <template>
-    <div class="flex gap-2 justify-between">
-        <RouterLink :to="`/analysis/${monthBefore.getFullYear()}/${String(monthBefore.getMonth() + 1).padStart(2, '0')}`"
-            class="flex items-center gap-1 ln">
-            <span class="material-symbols-outlined">navigate_before</span>
+    <div class='flex gap-2 justify-between'>
+        <RouterLink
+            :to="`/analysis/${monthBefore.getFullYear()}/${String(monthBefore.getMonth() + 1).padStart(2, '0')}`"
+            class='flex items-center gap-1 ln'>
+            <span class='material-symbols-outlined'>navigate_before</span>
             <span>{{ format_year_month({ date: monthBefore, style: 'short' }) }}</span>
         </RouterLink>
 
-        <h1 class="flex-1">{{ format_year_month({ date, style: 'long' }) }}</h1>
+        <h1 class='flex-1'>{{ format_year_month({ date, style: 'long' }) }}</h1>
 
         <RouterLink :to="`/analysis/${monthAfter.getFullYear()}/${String(monthAfter.getMonth() + 1).padStart(2, '0')}`"
-            class="flex items-center gap-1 text-right ln">
-            <span class="ln">{{ format_year_month({ date: monthAfter, style: 'short' }) }}</span>
-            <span class="material-symbols-outlined">navigate_next</span>
+            class='flex items-center gap-1 text-right ln'>
+            <span class='ln'>{{ format_year_month({ date: monthAfter, style: 'short' }) }}</span>
+            <span class='material-symbols-outlined'>navigate_next</span>
         </RouterLink>
     </div>
-    <Line v-if="data.labels" :data="data" :options="{}" />
+    <Line v-if='data.labels' :data='data' :options='{}' />
 </template>

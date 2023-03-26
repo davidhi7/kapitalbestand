@@ -1,5 +1,6 @@
 <script>
-import EventEmitter from '../../EventEmitter';
+import EventEmitter from '../EventEmitter';
+
 const eventEmitter = new EventEmitter();
 export { eventEmitter };
 
@@ -33,7 +34,7 @@ export default {
             currentAnimation: null,
             concurrentAnimation: null,
             SLIDE_DURATION: 300
-        }
+        };
     },
     methods: {
         mouseEnter(evt) {
@@ -65,7 +66,7 @@ export default {
         /** Perform the first 'slide-in' animation and move the notification element into viewport */
         async slideIn() {
             // do first 'slide-in' animation to show the notification
-            this.currentAnimationStage = this.slideIn
+            this.currentAnimationStage = this.slideIn;
             this.currentAnimation = this.$refs.container.animate([
                 { transform: 'translateX(-50%) translateY(-100%)' },
                 { transform: 'translateX(-50%) translateY(0%)' }
@@ -77,7 +78,7 @@ export default {
         },
         /** Perform the 'timeout' animation: show remaining visible time */
         async timeout() {
-            this.currentAnimationStage = this.timeout
+            this.currentAnimationStage = this.timeout;
             this.currentAnimation = this.$refs.timeout.animate([
                 { width: '100%' },
                 { width: '0%' }
@@ -90,7 +91,7 @@ export default {
         },
         /** Perform the final 'slide-out' animation to hide the notification element again */
         async slideOut() {
-            this.currentAnimationStage = this.slideOut
+            this.currentAnimationStage = this.slideOut;
             this.currentAnimation = this.$refs.container.animate([
                 {
                     transform: 'translateX(-50%) translateY(0%)'
@@ -145,25 +146,25 @@ export default {
             this.show();
         });
     }
-}
+};
 </script>
 
 <template>
-    <div v-show="display" :class="['notification-container', notificationType.css]" @mouseenter="mouseEnter"
-        @mouseleave="mouseLeave" ref="container">
-        <div class="notification-main">
-            <span class="notification-content">
+    <div v-show='display' ref='container' :class="['notification-container', notificationType.css]"
+         @mouseenter='mouseEnter' @mouseleave='mouseLeave'>
+        <div class='notification-main'>
+            <span class='notification-content'>
                 {{ content }}
             </span>
-            <button class="notification-hide" @click="suppress">
-                <span class="material-symbols-outlined">close</span>
+            <button class='notification-hide' @click='suppress'>
+                <span class='material-symbols-outlined'>close</span>
             </button>
         </div>
-        <div class="notification-timeout" ref="timeout"></div>
+        <div ref='timeout' class='notification-timeout'></div>
     </div>
 </template>
 
-<style lang="less">
+<style lang='less'>
 .notification-container {
     position: fixed;
     top: 10px;
@@ -213,6 +214,7 @@ export default {
 
     .notification-hide {
         color: var(--text-secondary);
+
         &:hover {
             color: var(--text-main);
         }
@@ -229,6 +231,7 @@ export default {
 
     .notification-hide {
         color: var(--green-2);
+
         &:hover {
             color: white;
         }
@@ -245,6 +248,7 @@ export default {
 
     .notification-hide {
         color: var(--yellow-2);
+
         &:hover {
             color: white;
         }
@@ -261,6 +265,7 @@ export default {
 
     .notification-hide {
         color: var(--red-2);
+
         &:hover {
             color: white;
         }

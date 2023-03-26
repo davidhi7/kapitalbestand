@@ -26,6 +26,10 @@ export const useAuthStateStore = defineStore('AuthState', {
                 });
             }
         },
+        async logout() {
+            fetch('/api/auth/logout');
+            this.$reset();
+        },
         async refresh() {
             // TODO implement
         }
