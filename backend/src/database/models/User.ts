@@ -1,38 +1,44 @@
-import { DataTypes, Model, Sequelize } from 'sequelize';
+import { AllowNull, Column, DefaultScope, HasMany, Model, Scopes, Table, Unique } from 'sequelize-typescript';
 
-class User extends Model {
-    declare username: string;
-    declare hash: string;
-}
+import Category from './Category.js';
+import MonthlyTransaction from './MonthlyTransaction.js';
+import OneoffTransaction from './OneoffTransaction.js';
+import Shop from './Shop.js';
 
-export default function init(sequelize: Sequelize) {
-    return User.init(
-        {
-            username: {
-                type: DataTypes.STRING,
-                allowNull: false,
-                unique: true
-            },
-            hash: {
-                type: DataTypes.STRING,
-                allowNull: false
-            }
-        }, 
-        {
-            sequelize,
-            modelName: 'User',
-            defaultScope: {
-                attributes: {
-                    exclude: ['hash']
-                }
-            },
-            scopes: {
-                with_hash: {
-                    attributes: {
-                        exclude: []
-                    }
-                }   
-            }
+@DefaultScope(() => ({
+    attributes: {
+        exclude: ['hash']
+    }
+}))
+@Scopes(() => ({
+    with_hash: {
+        attributes: {
+            exclude: []
         }
-    );
+    }
+}))
+@Table
+export default class User extends Model {
+    @AllowNull(false)
+    @Unique
+    @Column
+    declare username: string;
+
+    @Unique
+    @AllowNull(false)
+    @Column
+    declare hash: string;
+
+    // associations
+    @HasMany(() => Category)
+    declare Categories: Category[];
+
+    @HasMany(() => Shop)
+    declare Shops: Shop[];
+
+    @HasMany(() => OneoffTransaction)
+    declare OneoffTransactions: OneoffTransaction[];
+
+    @HasMany(() => MonthlyTransaction)
+    declare MonthlyTransactions: MonthlyTransaction[];
 }

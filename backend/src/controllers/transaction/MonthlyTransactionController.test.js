@@ -5,7 +5,7 @@ import createError from 'http-errors';
 import config from '../../config.js';
 import { Category, MonthlyTransaction, Shop, Transaction, User } from '../../database/db.js';
 import { categoryShopIdResolver } from '../category-shop/AuxDataController.js';
-import monthlyTransactionController from './monthly-transaction-controller.js';
+import monthlyTransactionController from './MonthlyTransactionController.js';
 
 chai.use(chaiAsPromised);
 describe('MonthlyTransactionController', function () {
@@ -89,8 +89,8 @@ describe('MonthlyTransactionController', function () {
                 })
             );
             expect(instance.Transaction.id).to.exist;
-            expect(instance.Transaction.Shop.id).to.exist;
             expect(instance.Transaction.Category.id).to.exist;
+            expect(instance.Transaction.Shop.id).to.exist;
         });
     });
     describe('#fetch', function () {

@@ -1,21 +1,22 @@
-import { DataTypes, Model, Sequelize } from 'sequelize';
+import { AllowNull, BelongsTo, Column, ForeignKey, HasMany, Model, Table, Unique } from 'sequelize-typescript';
 
-class Shop extends Model {
+import Transaction from './Transaction.js';
+import User from './User.js';
+
+@Table
+export default class Shop extends Model {
+    @Unique
+    @AllowNull(false)
+    @Column
     declare name: string;
-}
 
-export default function init(sequelize: Sequelize) {
-    return Shop.init(
-        {
-            name: {
-                type: DataTypes.STRING,
-                allowNull: false,
-                unique: true
-            }
-        },
-        {
-            sequelize,
-            modelName: 'Shop'
-        }
-    );    
+    @HasMany(() => Transaction)
+    declare Transactions: Transaction[];
+
+    @BelongsTo(() => User)
+    declare User: ReturnType<() => User>;
+
+    @ForeignKey(() => User)
+    @Column
+    declare UserId: number;
 }

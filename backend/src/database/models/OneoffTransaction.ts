@@ -1,25 +1,36 @@
-import { DataTypes, Model, Sequelize } from 'sequelize';
+import { AllowNull, BelongsTo, Column, DataType, DefaultScope, ForeignKey, Model, Table } from 'sequelize-typescript';
 
-class OneoffTransaction extends Model {
-    declare date: Date;
-    declare Transaction: {
-        isExpense: boolean;
-        amount: number;
-        description: string;
-    };
-}
+import Category from './Category.js';
+import Shop from './Shop.js';
+import Transaction from './Transaction.js';
+import User from './User.js';
 
-export default function init(sequelize: Sequelize) {
-    return OneoffTransaction.init(
+@DefaultScope(() => ({
+    include: [
         {
-            date: {
-                type: DataTypes.DATEONLY,
-                allowNull: false
-            }
-        },
-        {
-            sequelize,
-            modelName: 'OneoffTransaction'
+            model: Transaction,
+            include: [Category, Shop]
         }
-    );
+    ]
+}))
+@Table
+export default class OneoffTransaction extends Model {
+    @AllowNull(false)
+    @Column(DataType.DATEONLY)
+    declare date: Date;
+
+    // associations
+    @BelongsTo(() => Transaction)
+    declare Transaction: ReturnType<() => Transaction>;
+
+    @ForeignKey(() => Transaction)
+    @Column
+    declare TransactionId: number;
+
+    @BelongsTo(() => User)
+    declare User: ReturnType<() => User>;
+
+    @ForeignKey(() => User)
+    @Column
+    declare UserId: number;
 }

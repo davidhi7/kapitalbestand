@@ -1,16 +1,26 @@
 import createError from 'http-errors';
+import { Model } from 'sequelize-typescript';
 
 import config from '../../config.js';
-import { OneoffTransaction, Transaction } from '../../database/db.js';
-import AbstractTransactionController from './AbstractTransactionController.js';
+import { OneoffTransaction, Transaction, User } from '../../database/db.js';
+import AbstractTransactionController, { TransactionPayload, TransactionQueryPayload } from './AbstractTransactionController.js';
 import { buildWhereConditions } from './transaction-utils.js';
 
-class OneoffTransactionController extends AbstractTransactionController {
+interface OneoffTransactionPayload extends TransactionPayload {
+    date: Date;
+}
+
+interface OneoffTransactionQueryPayload extends TransactionQueryPayload {
+    dateFrom?: Date;
+    dateTo?: Date;
+}
+
+class OneoffTransactionController extends AbstractTransactionController<OneoffTransaction> {
     constructor() {
         super(OneoffTransaction);
     }
 
-    async create(user, body) {
+    async create(user: User, body: OneoffTransactionPayload) {
         const { isExpense, date, amount, CategoryId, ShopId, description } = body;
         const instance = await OneoffTransaction.create(
             {
@@ -29,11 +39,10 @@ class OneoffTransactionController extends AbstractTransactionController {
                 include: [Transaction]
             }
         );
-        // create does not load corresponding category and shop names, so we will have to query the just created instance to actually load these associated instances.
         return this.getByUserAndId(user, instance.id);
     }
 
-    async fetch(user, body) {
+    async fetch(user: User, body: OneoffTransactionQueryPayload) {
         let whereConditions = {};
         let queryLimit = config.api.query.payload_limit;
         let queryOffset = 0;
@@ -58,7 +67,7 @@ class OneoffTransactionController extends AbstractTransactionController {
             whereConditions = buildWhereConditions(user);
         }
 
-        return await OneoffTransaction.findAll({
+        return OneoffTransaction.findAll({
             where: whereConditions,
             order: [
                 ['date', 'ASC'],
@@ -69,20 +78,24 @@ class OneoffTransactionController extends AbstractTransactionController {
         });
     }
 
-    async update(user, id, body) {
+    async update(user: User, id: number, body: OneoffTransactionPayload) {
         let instance = await this.getByUserAndId(user, id);
+
+        function setIfNotUndefined(key: keyof OneoffTransactionPayload, modelInstance: Model = instance) {
+            if (body[key] !== undefined) {
+                modelInstance.set(key, body[key]);
+            }
+        }
+        
         if (!instance) {
             throw createError.NotFound();
         }
         if (body != null) {
-            if (body.date !== undefined) {
-                instance.set('date', body.date);
-            }
-            for (let transactionProperty of ['amount', 'CategoryId', 'ShopId', 'description']) {
-                if (body[transactionProperty] !== undefined) {
-                    instance.Transaction.set(transactionProperty, body[transactionProperty]);
-                }
-            }
+            setIfNotUndefined('date');
+            setIfNotUndefined('amount', instance.Transaction);
+            setIfNotUndefined('CategoryId', instance.Transaction);
+            setIfNotUndefined('ShopId', instance.Transaction);
+            setIfNotUndefined('description', instance.Transaction);
             await instance.save();
             await instance.Transaction.save();
             instance = await this.getByUserAndId(user, instance.id);

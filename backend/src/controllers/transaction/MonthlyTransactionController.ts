@@ -1,17 +1,31 @@
 import createError from 'http-errors';
+import { Model } from 'sequelize';
 
 import config from '../../config.js';
-import { MonthlyTransaction, Transaction } from '../../database/db.js';
-import AbstractTransactionController from './AbstractTransactionController.js';
+import { MonthlyTransaction, Transaction, User } from '../../database/db.js';
+import AbstractTransactionController, {
+    TransactionPayload,
+    TransactionQueryPayload
+} from './AbstractTransactionController.js';
 import { buildWhereConditions } from './transaction-utils.js';
 
-class MonthlyTransactionController extends AbstractTransactionController {
+interface MonthlyTransactionPayload extends TransactionPayload {
+    monthFrom?: Date;
+    monthTo?: Date;
+}
+
+interface MonthlyTransactionQueryPayload extends TransactionQueryPayload {
+    monthFrom?: Date;
+    monthTo?: Date;
+}
+
+class MonthlyTransactionController extends AbstractTransactionController<MonthlyTransaction> {
     constructor() {
         super(MonthlyTransaction);
     }
 
-    async create(user, body) {
-        const { isExpense, monthFrom, monthTo, amount, CategoryId, ShopId, description } = body;
+    async create(user: User, body: MonthlyTransactionPayload): Promise<MonthlyTransaction> {
+        const { monthFrom, monthTo, isExpense, amount, description, CategoryId, ShopId } = body;
         const instance = await MonthlyTransaction.create(
             {
                 UserId: user.id,
@@ -32,12 +46,10 @@ class MonthlyTransactionController extends AbstractTransactionController {
                 include: [Transaction]
             }
         );
-        // create does not load corresponding category and shop names, so we will have to query the just created instance to actually load these associated instances.
-        // TODO test with new scopes
         return this.getByUserAndId(user, instance.id);
     }
 
-    async fetch(user, body) {
+    async fetch(user: User, body: MonthlyTransactionQueryPayload): Promise<MonthlyTransaction[]> {
         let whereConditions = {};
         let queryLimit = config.api.query.payload_limit;
         let queryOffset = 0;
@@ -51,18 +63,19 @@ class MonthlyTransactionController extends AbstractTransactionController {
                 isExpense: isExpense
             });
 
-            if (limit) {
+            // TODO test if set to zero
+            if (limit != null) {
                 queryLimit = Math.min(limit, config.api.query.payload_limit);
             }
 
-            if (offset) {
+            if (offset != null) {
                 queryOffset = offset;
             }
         } else {
             whereConditions = buildWhereConditions(user);
         }
 
-        return await MonthlyTransaction.findAll({
+        return MonthlyTransaction.findAll({
             where: whereConditions,
             order: [
                 ['monthFrom', 'ASC'],
@@ -74,23 +87,25 @@ class MonthlyTransactionController extends AbstractTransactionController {
         });
     }
 
-    async update(user, id, body) {
+    async update(user: User, id: number, body: MonthlyTransactionPayload): Promise<MonthlyTransaction> {
         let instance = await this.getByUserAndId(user, id);
+
+        function setIfNotUndefined(key: keyof MonthlyTransactionPayload, modelInstance: Model = instance) {
+            if (body[key] !== undefined) {
+                modelInstance.set(key, body[key]);
+            }
+        }
+
         if (!instance) {
             throw createError.NotFound();
         }
         if (body != null) {
-            for (let monthlyTransactionProperty of ['monthFrom', 'monthTo']) {
-                if (body[monthlyTransactionProperty] !== undefined) {
-                    // handle possible empty string value for monthTo with ternary operator
-                    instance.set(monthlyTransactionProperty, body[monthlyTransactionProperty] || null);
-                }
-            }
-            for (let transactionProperty of ['amount', 'CategoryId', 'ShopId', 'description']) {
-                if (body[transactionProperty] !== undefined) {
-                    instance.Transaction.set(transactionProperty, body[transactionProperty]);
-                }
-            }
+            setIfNotUndefined('monthFrom');
+            setIfNotUndefined('monthTo');
+            setIfNotUndefined('amount', instance.Transaction);
+            setIfNotUndefined('CategoryId', instance.Transaction);
+            setIfNotUndefined('ShopId', instance.Transaction);
+            setIfNotUndefined('description', instance.Transaction);
             await instance.save();
             await instance.Transaction.save();
             instance = await this.getByUserAndId(user, instance.id);

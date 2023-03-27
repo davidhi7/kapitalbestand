@@ -1,15 +1,19 @@
-import { Model, Sequelize } from 'sequelize';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
+import { Sequelize } from 'sequelize-typescript';
 
 import config from '../config.js';
-import initCategories from './models/Category.js';
-import initMonthlyTransactions from './models/MonthlyTransaction.js';
-import initOneoffTransactions from './models/OneoffTransaction.js';
-import initShops from './models/Shop.js';
-import initTransactions from './models/Transaction.js';
-import initUsers from './models/User.js';
-import setAssociations from './models/associations.js';
+import Category from './models/Category.js';
+import MonthlyTransaction from './models/MonthlyTransaction.js';
+import OneoffTransaction from './models/OneoffTransaction.js';
+import Shop from './models/Shop.js';
+import Transaction from './models/Transaction.js';
+import User from './models/User.js';
 
-const sequelize = new Sequelize(config.db);
+const sequelize = new Sequelize({
+    ...config.db,
+    models: [Category, Shop, Transaction, MonthlyTransaction, OneoffTransaction, User]
+});
 
 try {
     await sequelize.authenticate();
@@ -17,15 +21,6 @@ try {
 } catch (error) {
     console.error('Unable to connect to the database:', error);
 }
-
-const Category = initCategories(sequelize);
-const MonthlyTransaction = initMonthlyTransactions(sequelize);
-const OneoffTransaction = initOneoffTransactions(sequelize);
-const Shop = initShops(sequelize);
-const Transaction = initTransactions(sequelize);
-const User = initUsers(sequelize);
-
-setAssociations(sequelize);
 
 // TODO: replace with migrate script and test hooks
 await sequelize.sync({ force: false });

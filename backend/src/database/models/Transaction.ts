@@ -1,36 +1,45 @@
-import { DataTypes, Model, Sequelize } from 'sequelize';
+import { AllowNull, BelongsTo, Column, DataType, DefaultScope, ForeignKey, HasOne, Model, Table } from 'sequelize-typescript';
 
-class Transaction extends Model {
+import Category from './Category.js';
+import MonthlyTransaction from './MonthlyTransaction.js';
+import OneoffTransaction from './OneoffTransaction.js';
+import Shop from './Shop.js';
+
+@DefaultScope(() => ({
+    include: [Category, Shop]
+}))
+@Table
+export default class Transaction extends Model {
+    @AllowNull(false)
+    @Column
     declare isExpense: boolean;
-    declare amount: Number;
-    declare description: string;
-}
 
-export default function init(sequelize: Sequelize) {
-    return Transaction.init(
-        {
-            id: {
-                type: DataTypes.INTEGER,
-                allowNull: false,
-                primaryKey: true,
-                autoIncrement: true
-            },
-            description: {
-                type: DataTypes.TEXT,
-                allowNull: true
-            },
-            amount: {
-                type: DataTypes.BIGINT,
-                allowNull: false
-            },
-            isExpense: {
-                type: DataTypes.BOOLEAN,
-                allowNull: false
-            }
-        },
-        {
-            sequelize,
-            modelName: 'Transaction'
-        }
-    );
+    @AllowNull(false)
+    @Column
+    declare amount: number;
+
+    @AllowNull(true)
+    @Column(DataType.TEXT)
+    declare description: string;
+
+    // associations
+    @ForeignKey(() => Category)
+    @Column
+    declare CategoryId: number;
+
+    @BelongsTo(() => Category)
+    declare Category: ReturnType<() => Category>;
+
+    @ForeignKey(() => Shop)
+    @Column
+    declare ShopId: number;
+
+    @BelongsTo(() => Shop)
+    declare Shop: ReturnType<() => Shop>;
+
+    @HasOne(() => OneoffTransaction)
+    declare OneoffTransaction: OneoffTransaction;
+
+    @HasOne(() => MonthlyTransaction)
+    declare MonthlyTransaction: MonthlyTransaction;
 }

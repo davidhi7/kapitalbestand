@@ -6,8 +6,8 @@ import {
     categoryShopIdResolver,
     shopController
 } from '../../controllers/category-shop/AuxDataController.js';
-import MonthlyTransactionController from '../../controllers/transaction/monthly-transaction-controller.js';
-import OneoffTransactionController from '../../controllers/transaction/one-off-transaction-controller.js';
+import MonthlyTransactionController from '../../controllers/transaction/MonthlyTransactionController.js';
+import OneoffTransactionController from '../../controllers/transaction/OneoffTransactionController.js';
 import { asyncEndpointWrapper } from '../error-handling.js';
 import ResponseBuilder from '../response-builder.js';
 

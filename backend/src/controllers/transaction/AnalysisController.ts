@@ -1,7 +1,8 @@
 import { Op } from 'sequelize';
 import { QueryTypes } from 'sequelize';
 
-import sequelize, { MonthlyTransaction } from '../../database/db.js';
+import sequelize from '../../database/db.js';
+import MonthlyTransaction from '../../database/models/MonthlyTransaction.js';
 
 type MonthlySummary = Array<{
     oneoff: {

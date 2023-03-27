@@ -5,7 +5,7 @@ import createError from 'http-errors';
 import config from '../../config.js';
 import { Category, OneoffTransaction, Shop, Transaction, User } from '../../database/db.js';
 import { categoryShopIdResolver } from '../category-shop/AuxDataController.js';
-import oneoffTransactionController from './one-off-transaction-controller.js';
+import oneoffTransactionController from './OneoffTransactionController.js';
 
 chai.use(chaiAsPromised);
 describe('OneoffTransactionController', function () {
@@ -48,8 +48,8 @@ describe('OneoffTransactionController', function () {
                 })
             );
             expect(instance.Transaction.id).to.exist;
-            expect(instance.Transaction.Shop.id).to.exist;
             expect(instance.Transaction.Category.id).to.exist;
+            expect(instance.Transaction.Shop.id).to.exist;
         });
     });
     describe('#fetch', function () {

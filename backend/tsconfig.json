@@ -4,9 +4,12 @@
         "allowJs": true,
         "outDir": "./dist",
         "strict": true,
-        "module": "nodenext",
+        "module": "NodeNext",
         "moduleResolution": "nodenext",
-        "sourceMap": true
+        "sourceMap": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "strictPropertyInitialization": false,
     },
     "include": [
         "./src/**/*"
