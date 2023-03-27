@@ -46,7 +46,7 @@ const frequency = inject('frequency');
             {{ props.transaction.Transaction.Category.name }}
         </td>
         <td
-            :class="{ 'dark:text-positive-dark p-0.5 rounded-md before:content-[\'+\']': !props.transaction.Transaction.isExpense }">
+            data-postive-prefix="+" :class="{ 'dark:text-positive-dark before:content-[attr(data-postive-prefix)] before:relative before:left-[1px]': !props.transaction.Transaction.isExpense }">
             {{ formatCurrency(props.transaction.Transaction.amount) }}
         </td>
         <td class="!py-1 flex msm:col-span-full justify-center msm:justify-end">
