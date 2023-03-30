@@ -26,8 +26,10 @@ export default {
                 'header-bg': 'hsl(0, 0%, 10%)',
                 'header-bg-dark': 'hsl(0, 0%, 5%)',
 
+                'positive': 'hsl(130, 90%, 30%)',
                 'positive-dark': 'hsl(140, 50%, 40%)',
-                'positive-bg-dark': 'hsl(155, 43%, 12%)'
+                'negative': 'rgb(207, 34, 46)',
+                'negative-dark': 'rgb(248, 81, 73)'
             },
             screens: {
                 // desktop-first alternative breakpoints: smaller than sm/md/lg/xl/2xl

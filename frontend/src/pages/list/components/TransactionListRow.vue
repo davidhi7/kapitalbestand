@@ -1,7 +1,7 @@
 <script setup>
-import { inject, computed, ref } from 'vue';
-
 import { format_currency as formatCurrency, format_year_month as formatMonth } from '@/common';
+import { inject, ref } from 'vue';
+
 import { ActionContainer } from '.';
 
 const actions = {
@@ -46,7 +46,7 @@ const frequency = inject('frequency');
             {{ props.transaction.Transaction.Category.name }}
         </td>
         <td
-            data-postive-prefix="+" :class="{ 'dark:text-positive-dark before:content-[attr(data-postive-prefix)] before:relative before:left-[1px]': !props.transaction.Transaction.isExpense }">
+            data-postive-prefix="+" :class="{ 'text-positive dark:text-positive-dark before:content-[attr(data-postive-prefix)] before:relative before:left-[1px]': !props.transaction.Transaction.isExpense }">
             {{ formatCurrency(props.transaction.Transaction.amount) }}
         </td>
         <td class="!py-1 flex msm:col-span-full justify-center msm:justify-end">
