@@ -26,15 +26,24 @@ const routes = [
     },
     {
         path: '/analysis/',
-        component: MonthAnalysisPage
+        component: MonthAnalysisPage,
+        meta: {
+            fullWidth: true   
+        }
     },
     {
         path: '/analysis/:year',
-        component: YearAnalysisPage
+        component: YearAnalysisPage,
+        meta: {
+            fullWidth: true   
+        }
     },
     {
         path: '/analysis/:year/:month',
-        component: MonthAnalysisPage
+        component: MonthAnalysisPage,
+        meta: {
+            fullWidth: true   
+        }
     }
 ];
 

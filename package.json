@@ -9,12 +9,13 @@
     },
     "license": "MIT",
     "dependencies": {
-        "concurrently": "^7.6.0",
-        "prettier": "^2.8.4"
+        "concurrently": "^7.6.0"
     },
     "devDependencies": {
         "@trivago/prettier-plugin-sort-imports": "^4.1.1",
-        "@types/chart.js": "^2.9.37"
+        "@types/chart.js": "^2.9.37",
+        "@vue/compiler-sfc": "^3.2.47",
+        "prettier": "^2.8.7"
     },
     "prettier": {
         "printWidth": 120,

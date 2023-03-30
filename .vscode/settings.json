@@ -1,7 +1,7 @@
 {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
     "less.lint.unknownAtRules": "ignore",
-    "css.lint.unknownAtRules": "ignore",
-    "[css]": {
-        "editor.defaultFormatter": "bradlc.vscode-tailwindcss"
-    }
 }

@@ -6,6 +6,7 @@
         "allowJs": true,
         "importHelpers": true,
         "moduleResolution": "node",
+        "allowSyntheticDefaultImports": true,
         "sourceMap": true,
         "isolatedModules": true,
         "baseUrl": ".",
@@ -17,6 +18,7 @@
                 "../backend/src/types/*"
             ]
         },
+        "outDir": "dist/"
     },
     "include": [
         "src/"
