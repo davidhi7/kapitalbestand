@@ -16,7 +16,10 @@ export default class Transaction extends Model {
 
     @AllowNull(false)
     @Column
-    declare amount: number;
+    get amount(): number {
+        return Number(this.getDataValue('amount'));
+    }
+    // declare amount: number;
 
     @AllowNull(true)
     @Column(DataType.TEXT)

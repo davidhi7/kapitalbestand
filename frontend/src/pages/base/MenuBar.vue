@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useMq } from 'vue3-mq';
-import IconRouterLink from './IconRouterLink.vue';
+import IconRouterLink from './components/IconRouterLink.vue';
 
 const props = defineProps({
     username: {

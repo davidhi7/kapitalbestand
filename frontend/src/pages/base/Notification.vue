@@ -1,5 +1,5 @@
 <script>
-import EventEmitter from '../EventEmitter';
+import EventEmitter from '../../EventEmitter';
 
 const eventEmitter = new EventEmitter();
 export { eventEmitter };

@@ -13,7 +13,8 @@
         "prettier": "^2.8.4"
     },
     "devDependencies": {
-        "@trivago/prettier-plugin-sort-imports": "^4.1.1"
+        "@trivago/prettier-plugin-sort-imports": "^4.1.1",
+        "@types/chart.js": "^2.9.37"
     },
     "prettier": {
         "printWidth": 120,
@@ -27,7 +28,10 @@
         ],
         "importOrderSeparation": true,
         "importOrderSortSpecifiers": true,
-        "importOrderParserPlugins": ["typescript", "decorators-legacy"],
+        "importOrderParserPlugins": [
+            "typescript",
+            "decorators-legacy"
+        ],
         "overrides": [
             {
                 "files": "*.less",

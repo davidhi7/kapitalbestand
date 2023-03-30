@@ -7,8 +7,8 @@ import '@/assets/icons.less';
 import router from '@/router';
 import { useAuthStateStore } from '@/stores/AuthStateStore';
 import { useCategoryShopStore } from '@/stores/CategoryShopStore';
-import App from '@/views/App.vue';
-import { eventEmitter } from '@/views/Notification.vue';
+import App from '@/pages/base/App.vue';
+import { eventEmitter } from '@/pages/base/Notification.vue';
 
 import { useTransactionStore as useTransactionStore } from './stores/TransactionStore';
 

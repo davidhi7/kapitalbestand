@@ -1,12 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-import AccountPage from './views/AccountPage.vue';
-import Index from './views/Index.vue';
-import List from './views/list-page/ListPage.vue';
-import MonthAnalysisPage from './views/analysis-page/MonthAnalysisPage.vue';
-import NotificationTest from './views/NotificationTest.vue';
-import TransactionForm from './views/transaction-form-page/TransactionFormPage.vue';
-import YearAnalysisPage from './views/analysis-page/YearAnalysisPage.vue';
+import AccountPage from './pages/AccountPage.vue';
+import Index from './pages/Index.vue';
+import List from './pages/list/ListPage.vue';
+import MonthAnalysisPage from './pages/analysis/MonthAnalysisPage.vue';
+import TransactionForm from './pages/transaction-form/TransactionFormPage.vue';
+import YearAnalysisPage from './pages/analysis/YearAnalysisPage.vue';
 
 const routes = [
     {
@@ -20,10 +19,6 @@ const routes = [
     {
         path: '/list',
         component: List
-    },
-    {
-        path: '/test',
-        component: NotificationTest
     },
     {
         path: '/account',

@@ -1,0 +1,24 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "module": "ESNext",
+        "strict": true,
+        "allowJs": true,
+        "importHelpers": true,
+        "moduleResolution": "node",
+        "sourceMap": true,
+        "isolatedModules": true,
+        "baseUrl": ".",
+        "paths": {
+            "@/*": [
+                "./src/*"
+            ],
+            "@backend-types/*": [
+                "../backend/src/types/*"
+            ]
+        },
+    },
+    "include": [
+        "src/"
+    ]
+}

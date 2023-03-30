@@ -1,8 +1,8 @@
 <script setup>
 import { ref } from 'vue';
 import { useAuthStateStore } from '@/stores/AuthStateStore';
-import { eventEmitter as $notificationBus } from '@/views/Notification.vue';
-import GridForm from '@/views/transaction-form-page/GridForm.vue';
+import { eventEmitter as $notificationBus } from '@/pages/base/Notification.vue';
+import GridForm from '@/pages/transaction-form/GridForm.vue';
 
 const AuthStateStore = useAuthStateStore();
 
@@ -77,14 +77,8 @@ async function submit() {
             <input type="password" minlength="8" required v-model="password" class="!border-main" />
 
             <span v-if="isRegisterForm">Passwort bestätigen</span>
-            <input
-                v-if="isRegisterForm"
-                type="password"
-                minlength="8"
-                required
-                v-model="passwordVerification"
-                class="!border-main"
-            />
+            <input v-if="isRegisterForm" type="password" minlength="8" required v-model="passwordVerification"
+                class="!border-main" />
         </GridForm>
         <hr class="bg-branding h-1 w-full border-none" />
         <div class="flex flex-row gap-4 items-center">

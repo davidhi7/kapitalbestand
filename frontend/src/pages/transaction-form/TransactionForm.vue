@@ -4,7 +4,7 @@ import { useTransactionStore } from '@/stores/TransactionStore';
 import { useCategoryShopStore } from '@/stores/CategoryShopStore';
 
 import { format_currency } from '@/common';
-import MonthInput from '@/views/common/MonthInput.vue';
+import MonthInput from '@/pages/base/components/MonthInput.vue';
 import GridForm from './GridForm.vue';
 
 const TANSACTION_FREQUENCY = {

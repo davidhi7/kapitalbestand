@@ -1,9 +1,9 @@
 <script setup>
 import { useAuthStateStore } from '@/stores/AuthStateStore';
 
-import MenuBar from './menu-bar/MenuBar.vue';
+import MenuBar from './MenuBar.vue';
 import Notification from './Notification.vue';
-import Login from './LoginRegisterPage.vue';
+import Login from '../LoginRegisterPage.vue';
 
 const AuthStateStore = useAuthStateStore();
 </script>

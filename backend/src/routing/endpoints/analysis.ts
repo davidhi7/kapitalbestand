@@ -13,7 +13,7 @@ router.get('/year/:year', param('year').isInt().toInt(), (req: express.Request, 
             ResponseBuilder({
                 status: 'success',
                 // @ts-expect-error: `req.params.year` is already converted to a number by express-validator
-                data: await AnalysisController.getYearlyStatistics(req.params.year)
+                data: await AnalysisController.getYearlyStatistics(req.session.user, req.params.year)
             })
         );
     });

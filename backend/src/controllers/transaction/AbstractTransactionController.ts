@@ -45,7 +45,7 @@ export default class AbstractTransactionController<Type extends GenericTransacti
         await transaction.destroy();
     }
 
-    async getByUserAndId(user: User, id: Number): Promise<Type> {
+    async getByUserAndId(user: User, id: number): Promise<Type> {
         const instance = await this.model.findOne({
             where: {
                 id: id,
