@@ -72,7 +72,8 @@ class AnalysisController {
                 monthly: {
                     expenses: 0,
                     incomes: 0
-                }
+                },
+                balance: 0
             };
         }
         for (let entry of queryResults[0]) {
@@ -91,6 +92,15 @@ class AnalysisController {
                     monthData.monthly.incomes += monthlyTransaction.Transaction.amount;
                 }
             }
+        }
+
+        // finally calculate the balance
+        for (let month in monthlyValues) {
+            monthlyValues[month].balance =
+                monthlyValues[month].oneoff.incomes +
+                monthlyValues[month].monthly.incomes -
+                monthlyValues[month].oneoff.expenses -
+                monthlyValues[month].monthly.expenses;
         }
 
         return monthlyValues;
