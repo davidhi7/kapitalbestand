@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@vitejs/plugin-vue": "^4.0.0",
+    "@vueuse/core": "^9.13.0",
     "autoprefixer": "^10.4.13",
     "chart.js": "^4.2.1",
     "less": "^4.1.3",

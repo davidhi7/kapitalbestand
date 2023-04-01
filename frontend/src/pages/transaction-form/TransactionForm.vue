@@ -1,10 +1,12 @@
 <script>
 import { mapStores } from 'pinia';
-import { useTransactionStore } from '@/stores/TransactionStore';
-import { useCategoryShopStore } from '@/stores/CategoryShopStore';
 
 import { format_currency } from '@/common';
 import MonthInput from '@/pages/base/components/MonthInput.vue';
+import { useCategoryShopStore } from '@/stores/CategoryShopStore';
+import { useTransactionStore } from '@/stores/TransactionStore';
+import { useDateFormat, useNow } from '@vueuse/core';
+
 import GridForm from './GridForm.vue';
 
 const TANSACTION_FREQUENCY = {
@@ -17,21 +19,21 @@ export default {
     data() {
         return {
             transactionFormTypes: TANSACTION_FREQUENCY,
-            formattedDate: "",
+            formattedDate: useDateFormat(useNow(), 'dddd, DD.MM.YYYY'),
             requestPending: false,
             form: {
                 monthlyTransactionChecked: false,
-                dateInputPreference: "today",
-                manuallyEnteredDate: "",
-                monthFrom: "",
-                monthTo: ""
+                dateInputPreference: 'today',
+                manuallyEnteredDate: '',
+                monthFrom: '',
+                monthTo: ''
             },
             content: {
                 isExpense: true,
                 amount: 0,
-                category: "",
-                shop: "",
-                description: ""
+                category: '',
+                shop: '',
+                description: ''
             }
         };
     },
@@ -59,55 +61,38 @@ export default {
         }
     },
     methods: {
-        refreshDateTime() {
-            const currentDate = new Date();
-            this.formattedDate = currentDate.toLocaleDateString("de-DE", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric"
-            });
-            const midnight = new Date();
-            // sets to next day 0:00
-            midnight.setHours(24, 0, 0, 0);
-            const millisecondToNextDay = midnight - currentDate;
-            setTimeout(this.refreshDateTime, millisecondToNextDay);
-        },
         prepareAmountInput(evt) {
-            if (!evt.target.value)
-                return;
-            evt.target.value = evt.target.value.replace(/[\s€]+/, "");
+            if (!evt.target.value) return;
+            evt.target.value = evt.target.value.replace(/[\s€]+/, '');
         },
         finishAmountInput(evt) {
-            if (!evt.target.value)
-                return;
+            if (!evt.target.value) return;
             let input = evt.target.value;
             if (!input.match(/^[^\.,\d]*\d*\.\d+[^\.,\d]*$/)) {
                 // assume the use of a comma as decimal separator instead of a point
-                input = input.replace(".", "").replace(",", ".");
+                input = input.replace('.', '').replace(',', '.');
             }
-            const raw_input = Number(input.replace(/[^0-9.]+/, ""));
+            const raw_input = Number(input.replace(/[^0-9.]+/, ''));
             const sanitizedNumber = Math.max(1, Math.round(100 * raw_input));
             this.content.amount = sanitizedNumber;
             evt.target.value = format_currency(sanitizedNumber);
         },
         useTemplateTransaction(transaction) {
-            if (this.fixedFrequency === "monthly") {
+            if (this.fixedFrequency === 'monthly') {
                 this.form.monthlyTransactionChecked = true;
                 this.form.monthFrom = transaction.monthFrom;
-                this.form.monthTo = transaction.monthTo || "";
-            }
-            else {
+                this.form.monthTo = transaction.monthTo || '';
+            } else {
                 this.form.monthlyTransactionChecked = false;
-                this.form.dateInputPreference = "custom";
+                this.form.dateInputPreference = 'custom';
                 this.form.manuallyEnteredDate = transaction.date;
             }
             const { isExpense, amount, Category, Shop, description } = transaction.Transaction;
             this.content.isExpense = isExpense;
             this.content.amount = amount;
             this.content.category = Category.name;
-            this.content.shop = Shop ? Shop.name : "";
-            this.content.description = description || "";
+            this.content.shop = Shop ? Shop.name : '';
+            this.content.description = description || '';
             this.$refs.amountInput.value = format_currency(this.content.amount);
         },
         async submit() {
@@ -116,8 +101,8 @@ export default {
             const payload = JSON.parse(JSON.stringify(this.content));
             // The following keys are supposed to be excluded if not provided by the user
             // the same applies for `monthTo`, though empty values for this key are handled later
-            for (let key of ["shop", "description"]) {
-                if (payload[key] === "") {
+            for (let key of ['shop', 'description']) {
+                if (payload[key] === '') {
                     payload[key] = null;
                 }
             }
@@ -127,13 +112,11 @@ export default {
                 if (this.form.monthTo) {
                     payload.monthTo = this.form.monthTo;
                 }
-            }
-            else {
+            } else {
                 // add date attribute for one-off transaction
-                if (this.form.dateInputPreference === "today") {
-                    payload.date = new Date().toISOString().split("T")[0];
-                }
-                else {
+                if (this.form.dateInputPreference === 'today') {
+                    payload.date = new Date().toISOString().split('T')[0];
+                } else {
                     payload.date = this.form.manuallyEnteredDate;
                 }
             }
@@ -183,13 +166,12 @@ export default {
         ...mapStores(useCategoryShopStore, useTransactionStore)
     },
     mounted() {
-        this.refreshDateTime();
         if (this.baseTransaction) {
             // Load base transaction data into this form
             this.useTemplateTransaction(this.baseTransaction);
         }
     },
-    emits: ["done"],
+    emits: ['done'],
     components: { GridForm, MonthInput }
 };
 </script>
@@ -203,17 +185,17 @@ export default {
                     <input type="radio" id="transaction-type-expense" v-model="content.isExpense" value="true" />
                     Geldausgang
                 </label>
-                <br>
+                <br />
                 <label for="transaction-type-income">
                     <input type="radio" id="transaction-type-income" v-model="content.isExpense" value="false" />
                     Geldeingang
                 </label>
-                <br class="mb-2">
+                <br class="mb-2" />
                 <label for="transaction-repeating" v-if="fixedFrequency === transactionFormTypes.Default">
                     <input type="checkbox" id="transaction-repeating" v-model="form.monthlyTransactionChecked" />
                     Monatlicher Umsatz
                 </label>
-                <br>
+                <br />
             </div>
         </section>
 
@@ -225,12 +207,17 @@ export default {
                     Heute:
                     <time class="text-secondary dark:text-secondary-dark">{{ formattedDate }}</time>
                 </label>
-                <br>
+                <br />
                 <label for="manual-date-radio">
                     <input type="radio" id="manual-date-radio" v-model="form.dateInputPreference" value="custom" />
                     am
-                    <input type="date" id="manual-date-input" v-model="form.manuallyEnteredDate"
-                        :required="form.dateInputPreference === 'custom'" @click="form.dateInputPreference = 'custom'" />
+                    <input
+                        type="date"
+                        id="manual-date-input"
+                        v-model="form.manuallyEnteredDate"
+                        :required="form.dateInputPreference === 'custom'"
+                        @click="form.dateInputPreference = 'custom'"
+                    />
                 </label>
             </div>
         </section>
@@ -249,12 +236,24 @@ export default {
             <h2>Transaktion</h2>
             <GridForm class="mx-4">
                 <label for="amount">Betrag</label>
-                <input type="text" id="amount" placeholder="0,00 €" required @focus="prepareAmountInput"
-                    @focusout="finishAmountInput" ref="amountInput" />
+                <input
+                    type="text"
+                    id="amount"
+                    placeholder="0,00 €"
+                    required
+                    @focus="prepareAmountInput"
+                    @focusout="finishAmountInput"
+                    ref="amountInput"
+                />
 
                 <label for="category">Kategorie</label>
-                <input type="text" id="category" v-model.lazy.trim="content.category" list="category-suggestions"
-                    required />
+                <input
+                    type="text"
+                    id="category"
+                    v-model.lazy.trim="content.category"
+                    list="category-suggestions"
+                    required
+                />
 
                 <label for="shop">Ort/Geschäft</label>
                 <input type="text" id="shop" v-model.lazy.trim="content.shop" list="shop-suggestions" />
