@@ -4,8 +4,8 @@ import type { MonthlySummary } from '@backend-types/AnalysisTypes';
 
 type AnalysisReportState = {
     byYear: {
-        [year: number]: MonthlySummary
-    }
+        [year: number]: MonthlySummary;
+    };
 };
 
 export const useAnalysisResultStore = defineStore('AnalysisResult', {
@@ -17,7 +17,7 @@ export const useAnalysisResultStore = defineStore('AnalysisResult', {
     actions: {
         async getYearlyReport(year: number): Promise<MonthlySummary | null> {
             if (this.byYear[year]) {
-                return this.byYear[year]
+                return this.byYear[year];
             }
 
             const response = await fetch(`/api/analysis/year/${year}`);
@@ -30,6 +30,6 @@ export const useAnalysisResultStore = defineStore('AnalysisResult', {
                 this.byYear[year] = report;
                 return report;
             }
-        },
+        }
     }
 });

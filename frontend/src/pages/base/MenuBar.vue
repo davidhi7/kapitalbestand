@@ -46,7 +46,7 @@ defineEmits(['logout']);
             <IconRouterLink to="/" icon="home" :label="mq.current === 'xs' ? 'Start' : null"></IconRouterLink>
             <IconRouterLink to="/new" icon="add" label="Neue Transaktion"> </IconRouterLink>
             <IconRouterLink to="/list" icon="list" label="Liste"></IconRouterLink>
-            <IconRouterLink to="/analysis" icon="bar_chart" label="Analyse"></IconRouterLink>
+            <IconRouterLink to="/analysis" icon="query_stats" label="Analyse"></IconRouterLink>
         </section>
 
         <!-- Separator between main pages and logout; only on small screens -->

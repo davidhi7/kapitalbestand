@@ -2,10 +2,10 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 import AccountPage from './pages/AccountPage.vue';
 import Index from './pages/Index.vue';
-import List from './pages/list/ListPage.vue';
 import MonthAnalysisPage from './pages/analysis/MonthAnalysisPage.vue';
-import TransactionForm from './pages/transaction-form/TransactionFormPage.vue';
 import YearAnalysisPage from './pages/analysis/YearAnalysisPage.vue';
+import List from './pages/list/ListPage.vue';
+import TransactionForm from './pages/transaction-form/TransactionFormPage.vue';
 
 const routes = [
     {
@@ -28,21 +28,21 @@ const routes = [
         path: '/analysis/',
         component: MonthAnalysisPage,
         meta: {
-            fullWidth: true   
+            customWidth: '1200px'
         }
     },
     {
         path: '/analysis/:year',
         component: YearAnalysisPage,
         meta: {
-            fullWidth: true   
+            customWidth: '1200px'
         }
     },
     {
         path: '/analysis/:year/:month',
         component: MonthAnalysisPage,
         meta: {
-            fullWidth: true   
+            customWidth: '1200px'
         }
     }
 ];
