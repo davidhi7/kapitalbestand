@@ -1,5 +1,3 @@
-import { dirname, join } from 'path';
-import { fileURLToPath } from 'url';
 import { Sequelize } from 'sequelize-typescript';
 
 import config from '../config.js';

@@ -14,8 +14,10 @@
     "devDependencies": {
         "@trivago/prettier-plugin-sort-imports": "^4.1.1",
         "@types/chart.js": "^2.9.37",
+        "@types/tmp": "^0.2.3",
         "@vue/compiler-sfc": "^3.2.47",
-        "prettier": "^2.8.7"
+        "prettier": "^2.8.7",
+        "tmp": "^0.2.1"
     },
     "prettier": {
         "printWidth": 120,

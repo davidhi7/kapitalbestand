@@ -5,10 +5,8 @@
             "args": [
                 "mocha",
                 "--no-timeouts",
-                "--require",
-                "${workspaceFolder}/backend/test/hooks.js",
                 "--colors",
-                "${workspaceFolder}/backend/dist/**/*.test.js"
+                "${workspaceFolder}/backend/src/**/*.test.{js,ts}"
             ],
             "internalConsoleOptions": "openOnSessionStart",
             "name": "Backend tests",
