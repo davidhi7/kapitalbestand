@@ -4,9 +4,11 @@ services:
     image: postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: Kapitalbestand
-      POSTGRES_USER: user
+      POSTGRES_DB: kapitalbestand
+      POSTGRES_USER: kapitalist
+      # POSTGRES_USER_FILE: /run/secrets/postgres-user
       POSTGRES_PASSWORD: password
+      # POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
     volumes:
       - ./volumes/postgres/:/var/lib/postgresql/data
 
@@ -16,9 +18,11 @@ services:
     restart: unless-stopped
     environment:
       DB_DBMS: postgres
-      DB_USER: user
+      DB_DATABASE: kapitalbestand
+      DB_USER: kapitalist
+      # DB_USER_FILE: /run/secrets/postgres-user
       DB_PASSWORD: password
-      DB_DATABASE: Kapitalbestand
+      # DB_PASSWORD_FILE: /run/secrets/postgres-password
       DB_HOST: postgres
     ports:
       - 8080:8080

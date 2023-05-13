@@ -1,6 +1,7 @@
 node_modules
 npm-debug.log
 backend/src/**/*.test.js
+backend/src/**/*.test.ts
 backend/coverage
 backend/dist
 backend/docs
