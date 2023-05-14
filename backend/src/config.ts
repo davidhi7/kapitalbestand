@@ -11,7 +11,7 @@ const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 export function readFromEnv(name: string): string {
     if (process.env[name + '_FILE']) {
-        return readFileSync(process.env[name + '_FILE'] as string, 'utf8');
+        return readFileSync(process.env[name + '_FILE'] as string, 'utf8').trim();
     } else if (process.env[name]) {
         return process.env[name] as string;
     }
@@ -67,14 +67,14 @@ if (process.env.NODE_ENV !== 'test') {
     if (!process.env.DB_DBMS || !process.env.DB_DATABASE || !process.env.DB_HOST) {
         throw Error('Database configuration environmental variables are missing');
     }
-    if (!(process.env.DB_DBMS === 'postgres' || process.env.DB_DBMS ===  'sqlite')) {
-        throw Error(`\`DB_DBMS\` must be either \`postgres\` or \`sqlite\` (Provided: ${process.env.DB_DBMS})`);
+    if (!(process.env.DB_DBMS === 'postgres' || process.env.DB_DBMS === 'sqlite')) {
+        throw Error(`\`DB_DBMS\` must be \`postgres\` (provided: ${process.env.DB_DBMS})`);
     }
     const databaseUser = readFromEnv('DB_USER');
     const databasePassword = readFromEnv('DB_PASSWORD');
     // use persistent relational database for everything else with credentials stored in a .env file in the root directory
     config.db = {
-        dialect: process.env.DB_DBMS as 'postgres' | 'sqlite',
+        dialect: process.env.DB_DBMS as 'postgres',
         database: process.env.DB_DATABASE,
         username: databaseUser,
         password: databasePassword,
