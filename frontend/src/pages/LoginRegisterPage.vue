@@ -1,8 +1,9 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue';
-import { useAuthStateStore } from '@/stores/AuthStateStore';
+
 import { eventEmitter as $notificationBus } from '@/pages/base/Notification.vue';
 import GridForm from '@/pages/transaction-form/GridForm.vue';
+import { AuthResponse, useAuthStateStore } from '@/stores/AuthStateStore';
 
 const AuthStateStore = useAuthStateStore();
 
@@ -22,44 +23,21 @@ function toggleFormType() {
 }
 
 async function submit() {
-    let endpoint;
+    const register = isRegisterForm.value;
 
-    if (isRegisterForm.value) {
+    if (register) {
         if (password.value !== passwordVerification.value) {
             $notificationBus.emit('notification', { type: 'warning', content: 'Passwort falsch wiederholt!' });
             resetPasswordFields();
             return;
         }
-        endpoint = '/api/auth/register';
-    } else {
-        endpoint = '/api/auth/login';
     }
+    const status = await AuthStateStore.login(username.value, password.value, register);
+    resetPasswordFields();
 
-    const response = await fetch(endpoint, {
-        method: 'POST',
-        body: JSON.stringify({ username: username.value, password: password.value }),
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    });
-
-    if (response.status >= 400) {
-        if (isRegisterForm.value) {
-            $notificationBus.emit('notification', { type: 'error', content: 'Registrierung fehlgeschlagen' });
-        } else {
-            $notificationBus.emit('notification', { type: 'error', content: 'Anmeldung fehlgeschlagen' });
-        }
-        resetPasswordFields();
-        return;
+    if (status !== AuthResponse.Success) {
+        $notificationBus.emit("notification", { type: "error", content: `${register ? "Registrierung" : "Anmeldung"} fehlgeschlagen`});
     }
-
-    const { data } = await response.json();
-
-    AuthStateStore.$patch({
-        authenticated: true,
-        username: data.username,
-        sessionTimeout: data.sessionTimeout
-    });
 }
 </script>
 
@@ -77,8 +55,14 @@ async function submit() {
             <input type="password" minlength="8" required v-model="password" class="!border-main" />
 
             <span v-if="isRegisterForm">Passwort bestätigen</span>
-            <input v-if="isRegisterForm" type="password" minlength="8" required v-model="passwordVerification"
-                class="!border-main" />
+            <input
+                v-if="isRegisterForm"
+                type="password"
+                minlength="8"
+                required
+                v-model="passwordVerification"
+                class="!border-main"
+            />
         </GridForm>
         <hr class="bg-branding h-1 w-full border-none" />
         <div class="flex flex-row gap-4 items-center">
@@ -87,9 +71,13 @@ async function submit() {
             </button>
             <span>
                 Oder
-                <button @click="toggleFormType" type="button"
-                    class="cursor-pointer text-inherit underline decoration-1 hover:text-secondary dark:hover:text-secondary-dark">
-                    {{ isRegisterForm ? 'anmelden' : 'neu registrieren' }} </button>?
+                <button
+                    @click="toggleFormType"
+                    type="button"
+                    class="cursor-pointer text-inherit underline decoration-1 hover:text-secondary dark:hover:text-secondary-dark"
+                >
+                    {{ isRegisterForm ? 'anmelden' : 'neu registrieren' }}</button
+                >?
             </span>
         </div>
     </form>
