@@ -29,7 +29,9 @@ export const useAuthStateStore = defineStore('AuthState', {
         },
 
         async login(username: string, password: string, register?: boolean) {
-            this.logout();
+            if (this.authenticated) {
+                this.logout();
+            }
             const response = await fetch(register ? '/api/auth/register' : '/api/auth/login', {
                 method: 'POST',
                 body: JSON.stringify({ username: username, password: password }),
