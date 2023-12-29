@@ -1,6 +1,5 @@
 {
-  "name": "expense-tracker-vue",
-  "version": "0.0.0",
+  "name": "kapitalbestand-frontend",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -8,7 +7,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@types/chart.js": "^2.9.41",
+    "@types/tmp": "^0.2.6",
     "@vitejs/plugin-vue": "^4.0.0",
+    "@vue/compiler-sfc": "^3.4.0",
     "@vueuse/core": "^9.13.0",
     "autoprefixer": "^10.4.13",
     "chart.js": "^4.2.1",

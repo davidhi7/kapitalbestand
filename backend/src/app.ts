@@ -1,13 +1,14 @@
-import path from 'node:path';
-
 import express from 'express';
 import morgan from 'morgan';
+import { AddressInfo } from 'node:net';
+import path from 'node:path';
+
 import config from './config.js';
 import router from './routing/api.js';
 
 const app = express();
 app.disable('x-powered-by');
-app.use(morgan('common'));
+app.use(morgan("common"));
 
 app.use('/api', router);
 
@@ -18,7 +19,8 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 const server = app.listen(8080, () => {
-    console.log('HTTP Server listening at %s:%s', server.address().address, server.address().port);
+    const { address, port } = server.address() as AddressInfo
+    console.log('HTTP Server listening at %s:%s', address, port);
 });
 
 process.on('SIGTERM', () => {
@@ -27,4 +29,3 @@ process.on('SIGTERM', () => {
         console.debug('HTTP server closed');
     });
 });
-  
