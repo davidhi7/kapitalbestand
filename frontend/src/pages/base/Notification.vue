@@ -1,50 +1,62 @@
-<script>
-import EventEmitter from '../../EventEmitter';
+<script lang="ts">
+const SLIDE_DURATION = 300;
+const TIMEOUT_DURATION = 3000;
 
-const eventEmitter = new EventEmitter();
-export { eventEmitter };
+export enum NotificationStyle {
+    INFO = 'notification-info',
+    SUCCESS = 'notification-success',
+    WARNING = 'notification-warning',
+    ERROR = 'notification-error'
+}
 
-const NotificationTypes = {
-    info: {
-        name: 'info',
-        css: 'notification-info'
-    },
-    success: {
-        name: 'success',
-        css: 'notification-success'
-    },
-    warning: {
-        name: 'warning',
-        css: 'notification-warning'
-    },
-    error: {
-        name: 'error',
-        css: 'notification-error'
+export class NotificationEvent extends Event {
+    style: NotificationStyle;
+    content: string;
+
+    constructor(style: NotificationStyle, content: string) {
+        super('notification');
+        this.style = style;
+        this.content = content;
     }
-};
+}
+
+export const eventEmitter = new EventTarget();
+
+enum AnimationStage {
+    SLIDE_IN,
+    TIMEOUT,
+    SLIDE_OUT
+}
+
+interface State {
+    visible: boolean;
+    notificationStyle: NotificationStyle;
+    notificationContent: string;
+    currentAnimationStage: AnimationStage | null;
+    currentAnimation: any; // TODO
+    concurrentAnimation: any;
+}
 
 export default {
-    data() {
+    data(): State {
         return {
-            notificationType: NotificationTypes.info,
-            display: false,
-            content: '',
-            timeoutMilliseconds: 0,
+            visible: false,
+            notificationStyle: NotificationStyle.INFO,
+            notificationContent: '',
             currentAnimationStage: null,
             currentAnimation: null,
-            concurrentAnimation: null,
-            SLIDE_DURATION: 300
+            concurrentAnimation: null
         };
     },
     methods: {
-        mouseEnter(evt) {
+        mouseEnter(evt: MouseEvent) {
             // Pause the ongoing animation only if the current animation is timeout
-            if (this.currentAnimationStage === this.timeout) {
+            if (this.currentAnimationStage === AnimationStage.TIMEOUT) {
                 this.currentAnimation.pause();
             }
         },
-        mouseLeave(evt) {
-            if (this.currentAnimationStage === this.timeout) {
+        mouseLeave(evt: MouseEvent) {
+            if (this.currentAnimationStage === AnimationStage.TIMEOUT) {
                 this.currentAnimation.play();
             }
         },
@@ -54,62 +66,55 @@ export default {
         async show() {
             this.cancelCurrentAnimations();
             try {
-                this.$refs.timeout.style.width = '100%';
-                this.display = true;
+                this.visible = true;
                 await this.slideIn();
                 await this.timeout();
                 await this.slideOut();
+                this.visible = false;
             } catch (error) {
                 // error is thrown when Animation#finished promise is rejected. This is the expected behavior when the current notification is overwritten with a new one.
             }
         },
-        /** Perform the first 'slide-in' animation and move the notification element into viewport */
+        /**
+         * Perform the first 'slide-in' animation and move the notification element into viewport
+         */
         async slideIn() {
             // do first 'slide-in' animation to show the notification
-            this.currentAnimationStage = this.slideIn;
-            this.currentAnimation = this.$refs.container.animate([
-                { transform: 'translateX(-50%) translateY(-100%)' },
-                { transform: 'translateX(-50%) translateY(0%)' }
-            ], {
-                easing: 'ease-out',
-                duration: this.SLIDE_DURATION
-            });
+            this.currentAnimationStage = AnimationStage.SLIDE_IN;
+            (this.$refs.timeout as HTMLElement).style.width = '100%';
+            this.currentAnimation = (this.$refs.container as HTMLElement).animate(
+                [{ transform: 'translateX(-50%) translateY(-100%)' }, { transform: 'translateX(-50%) translateY(0%)' }],
+                {
+                    easing: 'ease-out',
+                    duration: SLIDE_DURATION
+                }
+            );
             await this.currentAnimation.finished;
         },
         /** Perform the 'timeout' animation: show remaining visible time */
         async timeout() {
-            this.currentAnimationStage = this.timeout;
-            this.currentAnimation = this.$refs.timeout.animate([
-                { width: '100%' },
-                { width: '0%' }
-            ], {
-                duration: this.timeoutMilliseconds
+            this.currentAnimationStage = AnimationStage.TIMEOUT;
+            this.currentAnimation = (this.$refs.timeout as HTMLElement).animate([{ width: '100%' }, { width: '0%' }], {
+                duration: TIMEOUT_DURATION
             });
             await this.currentAnimation.finished;
-            // fix the timeout bar width at 0% for slide-out animation
-            this.$refs.timeout.style.width = '0%';
+            (this.$refs.timeout as HTMLElement).style.width = '0%';
         },
-        /** Perform the final 'slide-out' animation to hide the notification element again */
+        /** Perform the final 'slide-out' animation to hide the notification element a`gain */
         async slideOut() {
-            this.currentAnimationStage = this.slideOut;
-            this.currentAnimation = this.$refs.container.animate([
+            this.currentAnimationStage = AnimationStage.SLIDE_OUT;
+            this.currentAnimation = (this.$refs.container as HTMLElement).animate(
+                [{ transform: 'translateX(-50%) translateY(0%)' }, { transform: 'translateX(-50%) translateY(-300%)' }],
                 {
-                    transform: 'translateX(-50%) translateY(0%)'
-                },
-                {
-                    transform: 'translateX(-50%) translateY(-300%)'
+                    easing: 'cubic-bezier(0.395, -0.305, 0.750, 0.750)',
+                    duration: SLIDE_DURATION
                 }
-            ], {
-                //easing: 'ease-in',
-                easing: 'cubic-bezier(0.395, -0.305, 0.750, 0.750)',
-                duration: this.SLIDE_DURATION
-            });
+            );
             await this.currentAnimation.finished;
-            this.display = false;
         },
-        async suppress(evt) {
+        async suppress(evt: MouseEvent) {
             // closing notification during slide in is a irrelevant niche case and closing during slideout serves no purpose, so let's skip in these cases
-            if (this.currentAnimationStage === this.slideIn || this.currentAnimation === this.slideOut) {
+            if (this.currentAnimationStage !== AnimationStage.TIMEOUT) {
                 return;
             }
 
@@ -119,12 +124,13 @@ export default {
 
             try {
                 await this.slideOut();
+                this.visible = false;
             } catch (error) {
                 // error is thrown when Animation#finished promise is rejected. This is the expected behavior when the current notification is overwritten with a new one.
             }
         },
         cancelCurrentAnimations() {
-            [this.currentAnimation, this.concurrentAnimation].forEach(animation => {
+            [this.currentAnimation, this.concurrentAnimation].forEach((animation) => {
                 if (animation instanceof Animation) {
                     animation.cancel();
                 }
@@ -132,16 +138,10 @@ export default {
         }
     },
     mounted() {
-        eventEmitter.on('notification', (obj) => {
-            const { content, type = 'info', timeoutMilliseconds = 3000 } = obj;
-            this.content = content;
-            this.timeoutMilliseconds = timeoutMilliseconds;
-
-            for (const key in NotificationTypes) {
-                if (NotificationTypes[key].name === type) {
-                    this.notificationType = NotificationTypes[key];
-                }
-            }
+        eventEmitter.addEventListener('notification', (event: Event) => {
+            const { content, style } = event as NotificationEvent;
+            this.notificationContent = content;
+            this.notificationStyle = style;
 
             this.show();
         });
@@ -150,21 +150,26 @@ export default {
 </script>
 
 <template>
-    <div v-show='display' ref='container' :class="['notification-container', notificationType.css]"
-         @mouseenter='mouseEnter' @mouseleave='mouseLeave'>
-        <div class='notification-main'>
-            <span class='notification-content'>
-                {{ content }}
+    <div
+        v-show="visible"
+        ref="container"
+        :class="['notification-container', notificationStyle]"
+        @mouseenter="mouseEnter"
+        @mouseleave="mouseLeave"
+    >
+        <div class="notification-main">
+            <span class="notification-content">
+                {{ notificationContent }}
             </span>
-            <button class='notification-hide' @click='suppress'>
-                <span class='material-symbols-outlined'>close</span>
+            <button class="notification-hide" @click="suppress">
+                <span class="material-symbols-outlined">close</span>
             </button>
         </div>
-        <div ref='timeout' class='notification-timeout'></div>
+        <div ref="timeout" class="notification-timeout"></div>
     </div>
 </template>
 
-<style lang='less'>
+<style lang="less">
 .notification-container {
     position: fixed;
     top: 10px;
@@ -173,12 +178,12 @@ export default {
     transform: translateX(-50%);
     border-radius: 5px;
     overflow: hidden;
-    transition: box-shadow .2s;
+    transition: box-shadow 0.2s;
     box-shadow: rgba(0, 0, 0, 0.3) 0px 15px 38px, rgba(0, 0, 0, 0.22) 0px 12px 12px;
 
     &:hover {
         box-shadow: rgba(0, 0, 0, 0.35) 0px 15px 38px, rgba(0, 0, 0, 0.26) 0px 12px 12px;
-        transition: box-shadow .2s;
+        transition: box-shadow 0.2s;
     }
 }
 

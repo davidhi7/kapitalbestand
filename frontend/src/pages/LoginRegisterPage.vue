@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-import { eventEmitter as $notificationBus } from '@/pages/base/Notification.vue';
+import { NotificationEvent, NotificationStyle, eventEmitter } from '@/pages/base/Notification.vue';
 import GridForm from '@/pages/transaction-form/GridForm.vue';
 import { AuthResponse, useAuthStateStore } from '@/stores/AuthStateStore';
 
@@ -27,7 +27,7 @@ async function submit() {
 
     if (register) {
         if (password.value !== passwordVerification.value) {
-            $notificationBus.emit('notification', { type: 'warning', content: 'Passwort falsch wiederholt!' });
+            eventEmitter.dispatchEvent(new NotificationEvent(NotificationStyle.WARNING, 'Passwort falsch wiederholt!'));
             resetPasswordFields();
             return;
         }
@@ -36,7 +36,9 @@ async function submit() {
     resetPasswordFields();
 
     if (status !== AuthResponse.Success) {
-        $notificationBus.emit("notification", { type: "error", content: `${register ? "Registrierung" : "Anmeldung"} fehlgeschlagen`});
+        eventEmitter.dispatchEvent(
+            new NotificationEvent(NotificationStyle.ERROR, `${register ? 'Registrierung' : 'Anmeldung'} fehlgeschlagen`)
+        );
     }
 }
 </script>

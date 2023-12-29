@@ -5,7 +5,6 @@ import { Vue3Mq } from 'vue3-mq';
 import '@/assets/base.less';
 import '@/assets/icons.less';
 import App from '@/pages/base/App.vue';
-import { eventEmitter } from '@/pages/base/Notification.vue';
 import router from '@/router';
 import { authEventTarget, useAuthStateStore } from '@/stores/AuthStateStore';
 import { useCategoryShopStore } from '@/stores/CategoryShopStore';
@@ -33,5 +32,3 @@ authEventTarget.addEventListener('authentication', () => {
 await AuthStateStore.requestWhoAmI().then(() => {
     app.mount('div#app');
 });
-
-app.config.globalProperties.$notificationBus = eventEmitter;

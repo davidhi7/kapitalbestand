@@ -2,6 +2,7 @@
 import { mapStores } from 'pinia';
 
 import { format_currency } from '@/common';
+import { NotificationEvent, NotificationStyle, eventEmitter } from '@/pages/base/Notification.vue';
 import MonthInput from '@/pages/base/components/MonthInput.vue';
 import { useCategoryShopStore } from '@/stores/CategoryShopStore';
 import { useTransactionStore } from '@/stores/TransactionStore';
@@ -126,30 +127,26 @@ export default {
                 // TODO: only apply once for KeepAlive to work
                 try {
                     await this.TransactionStore.update(frequency, this.baseTransaction.id, payload);
-                    this.$notificationBus.emit('notification', {
-                        type: 'success',
-                        content: 'Transaktion erfolgreich bearbeitet'
-                    });
+                    eventEmitter.dispatchEvent(
+                        new NotificationEvent(NotificationStyle.SUCCESS, 'Transaktion erfolgreich bearbeitet')
+                    );
                 } catch (err) {
                     console.log(err);
-                    this.$notificationBus.emit('notification', {
-                        type: 'error',
-                        content: 'Fehler bei der Bearbeitung'
-                    });
+                    eventEmitter.dispatchEvent(
+                        new NotificationEvent(NotificationStyle.ERROR, 'Fehler bei der Bearbeitung')
+                    );
                 }
             } else {
                 try {
                     await this.TransactionStore.create(frequency, payload);
-                    this.$notificationBus.emit('notification', {
-                        type: 'success',
-                        content: 'Transaktion erfolgreich erstellt'
-                    });
+                    eventEmitter.dispatchEvent(
+                        new NotificationEvent(NotificationStyle.SUCCESS, 'Transaktion erfolgreich erstellt')
+                    );
                 } catch (err) {
                     console.log(err);
-                    this.$notificationBus.emit('notification', {
-                        type: 'error',
-                        content: 'Fehler bei der Bearbeitung'
-                    });
+                    eventEmitter.dispatchEvent(
+                        new NotificationEvent(NotificationStyle.ERROR, 'Fehler bei der Erstellung')
+                    );
                 }
             }
             this.requestPending = false;
