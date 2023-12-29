@@ -60,8 +60,7 @@
       "*.test.ts"
     ],
     "exec": "node --loader ts-node/esm",
-    "ext": ".js,.ts",
-    "verbose": true
+    "ext": ".js,.ts"
   },
   "mocha": {
     "require": [

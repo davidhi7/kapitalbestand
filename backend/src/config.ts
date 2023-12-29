@@ -1,13 +1,10 @@
 import crypto from 'crypto';
 import * as dotenv from 'dotenv';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { ParseArgsConfig, parseArgs } from 'node:util';
 import { dirname, join } from 'path';
 import { SequelizeOptions } from 'sequelize-typescript';
 import { fileURLToPath } from 'url';
-
-dotenv.config();
-
-const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 export function readFromEnv(name: string): string {
     if (process.env[name + '_FILE']) {
@@ -18,6 +15,52 @@ export function readFromEnv(name: string): string {
     throw Error(`Environmental variables \`${name}\` and \`${name + '_FILE'}\` mising`);
 }
 
+function populateDatabaseConfig(config: ConfigType, use_memory_sqlite: boolean, enable_orm_logging: boolean) {
+    if (use_memory_sqlite || process.env.NODE_ENV === 'test') {
+        console.log('Initialize sqlite database inside memory');
+        config.db = {
+            dialect: 'sqlite',
+            storage: ':memory:',
+            logging: enable_orm_logging
+        };
+        return;
+    } else {
+        if (!process.env.DB_DBMS || !process.env.DB_DATABASE || !process.env.DB_HOST) {
+            throw Error('Database configuration environmental variables are missing');
+        }
+        if (!(process.env.DB_DBMS === 'postgres' || process.env.DB_DBMS === 'sqlite')) {
+            throw Error(`\`DB_DBMS\` must be \`postgres\` (provided: ${process.env.DB_DBMS})`);
+        }
+        config.db = {
+            dialect: process.env.DB_DBMS as 'postgres' | 'sqlite',
+            database: process.env.DB_DATABASE,
+            username: readFromEnv('DB_USER'),
+            password: readFromEnv('DB_PASSWORD'),
+            host: process.env.DB_HOST,
+            logging: enable_orm_logging
+        };
+    }
+}
+
+dotenv.config();
+
+const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
+const parseArgsOptions: ParseArgsConfig = {
+    options: {
+        'memory-sqlite': {
+            type: 'boolean',
+            default: false
+        },
+        orm_logging: {
+            type: 'boolean',
+            default: false
+        }
+    }
+};
+const CliValues = parseArgs(parseArgsOptions).values;
+const use_memory_sqlite = CliValues['memory-sqlite'] as boolean;
+const enable_orm_logging = CliValues['orm-logging'] as boolean;
+
 type ConfigType = {
     api: {
         query: {
@@ -27,7 +70,7 @@ type ConfigType = {
             secret: string;
         };
     };
-    db: {
+    db?: {
         dialect: string;
         logging: boolean;
         storage?: string;
@@ -37,8 +80,8 @@ type ConfigType = {
         host?: string;
     } & SequelizeOptions;
     paths: {
-        static: string;
-        session_secret: string;
+        static_directory: string;
+        session_secret_file: string;
     };
 };
 
@@ -51,44 +94,20 @@ const config: ConfigType = {
             secret: crypto.randomBytes(32).toString('hex')
         }
     },
-    // By default, use the in-memory sqlite option
-    db: {
-        dialect: 'sqlite',
-        storage: ':memory:',
-        logging: false
-    },
     paths: {
-        static: join(projectRoot, 'static'),
-        session_secret: join(projectRoot, '.session_secret')
+        static_directory: join(projectRoot, 'static'),
+        session_secret_file: join(projectRoot, '.session_secret')
     }
 };
 
-if (process.env.NODE_ENV !== 'test') {
-    if (!process.env.DB_DBMS || !process.env.DB_DATABASE || !process.env.DB_HOST) {
-        throw Error('Database configuration environmental variables are missing');
-    }
-    if (!(process.env.DB_DBMS === 'postgres' || process.env.DB_DBMS === 'sqlite')) {
-        throw Error(`\`DB_DBMS\` must be \`postgres\` (provided: ${process.env.DB_DBMS})`);
-    }
-    const databaseUser = readFromEnv('DB_USER');
-    const databasePassword = readFromEnv('DB_PASSWORD');
-    // use persistent relational database for everything else with credentials stored in a .env file in the root directory
-    config.db = {
-        dialect: process.env.DB_DBMS as 'postgres',
-        database: process.env.DB_DATABASE,
-        username: databaseUser,
-        password: databasePassword,
-        host: process.env.DB_HOST,
-        logging: false
-    };
-}
+populateDatabaseConfig(config, use_memory_sqlite, enable_orm_logging)
 
 if (process.env.NODE_ENV === 'production') {
-    if (!existsSync(config.paths.session_secret)) {
-        writeFileSync(config.paths.session_secret, config.api.session.secret);
+    if (!existsSync(config.paths.session_secret_file)) {
+        writeFileSync(config.paths.session_secret_file, config.api.session.secret);
     } else {
         try {
-            config.api.session.secret = readFileSync(config.paths.session_secret, 'utf8');
+            config.api.session.secret = readFileSync(config.paths.session_secret_file, 'utf8');
         } catch (err) {
             console.error('Failed to read session secret file');
             console.error(err);
