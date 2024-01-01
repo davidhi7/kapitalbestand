@@ -1,5 +1,4 @@
 import crypto from 'crypto';
-import * as dotenv from 'dotenv';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { ParseArgsConfig, parseArgs } from 'node:util';
 import { dirname, join } from 'path';
@@ -16,50 +15,52 @@ export function readFromEnv(name: string): string {
 }
 
 function populateDatabaseConfig(config: ConfigType, use_memory_sqlite: boolean, enable_orm_logging: boolean) {
-    if (use_memory_sqlite || process.env.NODE_ENV === 'test') {
-        console.log('Initialize sqlite database inside memory');
+    if (use_memory_sqlite || process.env.USE_MEMORY_SQLITE) {
+        console.log('Use sqlite database inside memory');
         config.db = {
             dialect: 'sqlite',
             storage: ':memory:',
             logging: enable_orm_logging
         };
         return;
-    } else {
-        if (!process.env.DB_DBMS || !process.env.DB_DATABASE || !process.env.DB_HOST) {
-            throw Error('Database configuration environmental variables are missing');
-        }
-        if (!(process.env.DB_DBMS === 'postgres' || process.env.DB_DBMS === 'sqlite')) {
-            throw Error(`\`DB_DBMS\` must be \`postgres\` (provided: ${process.env.DB_DBMS})`);
-        }
-        config.db = {
-            dialect: process.env.DB_DBMS as 'postgres' | 'sqlite',
-            database: process.env.DB_DATABASE,
-            username: readFromEnv('DB_USER'),
-            password: readFromEnv('DB_PASSWORD'),
-            host: process.env.DB_HOST,
-            logging: enable_orm_logging
-        };
     }
+    
+    if (!process.env.DB_DBMS || !process.env.DB_DATABASE || !process.env.DB_HOST) {
+        throw Error('Database configuration environmental variables are missing');
+    }
+    if (!(process.env.DB_DBMS === 'postgres' || process.env.DB_DBMS === 'sqlite')) {
+        throw Error(`\`DB_DBMS\` must be \`postgres\` (provided: ${process.env.DB_DBMS})`);
+    }
+    config.db = {
+        dialect: process.env.DB_DBMS as 'postgres' | 'sqlite',
+        database: process.env.DB_DATABASE,
+        username: readFromEnv('DB_USER'),
+        password: readFromEnv('DB_PASSWORD'),
+        host: process.env.DB_HOST,
+        logging: enable_orm_logging
+    };
 }
 
-dotenv.config();
-
 const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
-const parseArgsOptions: ParseArgsConfig = {
-    options: {
-        'memory-sqlite': {
-            type: 'boolean',
-            default: false
-        },
-        orm_logging: {
-            type: 'boolean',
-            default: false
+let use_memory_sqlite = false;
+let enable_orm_logging = false;
+if (process.env.NODE_ENV !== "test") {
+    const parseArgsOptions: ParseArgsConfig = {
+        options: {
+            'memory-sqlite': {
+                type: 'boolean',
+                default: false
+            },
+            orm_logging: {
+                type: 'boolean',
+                default: false
+            }
         }
-    }
-};
-const CliValues = parseArgs(parseArgsOptions).values;
-const use_memory_sqlite = CliValues['memory-sqlite'] as boolean;
-const enable_orm_logging = CliValues['orm-logging'] as boolean;
+    };
+    const CliValues = parseArgs(parseArgsOptions).values;
+    use_memory_sqlite = CliValues['memory-sqlite'] as boolean;
+    enable_orm_logging = CliValues['orm-logging'] as boolean;    
+}
 
 type ConfigType = {
     api: {

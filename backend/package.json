@@ -6,16 +6,16 @@
   "scripts": {
     "build": "tsc",
     "start": "NODE_ENV=production node dist/app.js",
-    "dev": "NODE_ENV=development nodemon src/app.js",
-    "mem-db": "NODE_ENV=test nodemon src/app.js",
-    "test": "NODE_ENV=test c8 mocha 'src/**/*.test.{js,ts}'",
-    "test-debug": "NODE_ENV=test mocha --no-timeouts 'src/**/*.test.{js,ts}'"
+    "dev": "source ./.dev.env; env; nodemon src/app.js",
+    "dev:mem-db": "USE_MEMORY_SQLITE=1 nodemon src/app.js",
+    "test": "NODE_ENV=test USE_MEMORY_SQLITE=1 c8 mocha 'src/**/*.test.{js,ts}'",
+    "test:postgres": "NODE_ENV=test source ./.test.env; c8 mocha 'src/**/*.test.{js,ts}'",
+    "test:debug": "NODE_ENV=test USE_MEMORY_SQLITE=1 mocha --no-timeouts 'src/**/*.test.{js,ts}'"
   },
   "license": "MIT",
   "dependencies": {
     "argon2": "^0.30.3",
     "connect-session-sequelize": "^7.1.5",
-    "dotenv": "^16.0.3",
     "express": "^4.18.1",
     "express-session": "^1.17.3",
     "express-validator": "^6.14.2",
