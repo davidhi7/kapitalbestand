@@ -1,19 +1,19 @@
+import argon2 from 'argon2';
 import express from 'express';
 import session from 'express-session';
-import MemoryStore from 'memorystore';
-import createError from 'http-errors';
-import argon2 from 'argon2';
 import { body } from 'express-validator';
+import createError from 'http-errors';
+import MemoryStore from 'memorystore';
 
+import config from '../config.js';
 import { User } from '../database/db.js';
 import { asyncEndpointWrapper } from './error-handling.js';
 import ResponseBuilder from './response-builder.js';
-import config from '../config.js';
 
+/**
+ * Set the request session as authenticated by setting the authentication flag to true and setting the user by accessing `res.locals.user`.
+ */
 const setAuthenticated = (req, res, next) => {
-    /**
-     * Set the request session as authenticated by setting the authentication flag to true and setting the user by accessing `res.locals.user`.
-     */
     if (!res.locals.user) {
         throw createError['500']();
     }
@@ -28,10 +28,10 @@ const setAuthenticated = (req, res, next) => {
     });
 };
 
+/**
+ * Send a response containing the session timeout, the associated username and optionally other values stored in `res.locals.data`
+ */
 const sendSessionData = (req, res) => {
-    /**
-     * Send a response containing the session timeout, the associated username and optionally other values stored in `res.locals.data`
-     */
     // session.maxAge returns the remaining time in ms
     const sessionTimeoutStamp = Date.now() + req.session.cookie.maxAge;
     const data = res.locals.data || {};
