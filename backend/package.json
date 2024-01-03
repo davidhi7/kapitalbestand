@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "start": "NODE_ENV=production node dist/app.js",
-    "dev": "source ./.dev.env; env; nodemon src/app.js",
+    "dev": "source ./.dev.env; nodemon src/app.js",
     "dev:mem-db": "USE_MEMORY_SQLITE=1 nodemon src/app.js",
     "test": "NODE_ENV=test USE_MEMORY_SQLITE=1 c8 mocha 'src/**/*.test.{js,ts}'",
     "test:postgres": "NODE_ENV=test source ./.test.env; c8 mocha 'src/**/*.test.{js,ts}'",
