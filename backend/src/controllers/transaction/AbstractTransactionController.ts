@@ -27,8 +27,8 @@ export type TransactionQueryPayload = {
     ShopId?: number,
     category?: string,
     shop?: string,
-    limit?: number,
-    offset?: number
+    limit: number,
+    offset: number
 }
 
 export default class AbstractTransactionController<Type extends GenericTransaction> {

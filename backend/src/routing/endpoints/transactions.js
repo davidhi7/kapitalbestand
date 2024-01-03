@@ -8,6 +8,7 @@ import {
 } from '../../controllers/category-shop/AuxDataController.js';
 import MonthlyTransactionController from '../../controllers/transaction/MonthlyTransactionController.js';
 import OneoffTransactionController from '../../controllers/transaction/OneoffTransactionController.js';
+import { limitValidator, offsetValidator } from '../common.js';
 import { asyncEndpointWrapper } from '../error-handling.js';
 import ResponseBuilder from '../response-builder.js';
 
@@ -68,8 +69,8 @@ router.get(
     query('amountTo').isInt().toInt().optional(),
     categoryShopIdValidatorMiddleware(true),
     query('ShopId').isInt().toInt().optional(),
-    query('limit').isInt().toInt().optional(),
-    query('offset').isInt().toInt().optional(),
+    limitValidator,
+    offsetValidator,
     async (req, res, next) =>
         asyncEndpointWrapper(req, res, next, async () => {
             const data = await OneoffTransactionController.fetch(req.session.user, req.query);
@@ -101,7 +102,7 @@ router.post(
 router.delete('/oneoff/:id', param('id').isInt({ min: 0 }).toInt(), (req, res, next) =>
     asyncEndpointWrapper(req, res, next, async () => {
         await OneoffTransactionController.delete(req.session.user, req.params.id);
-        res.status(200).json(ResponseBuilder({ status: 'success' }));
+        res.json(ResponseBuilder({ status: 'success' }));
     })
 );
 
@@ -115,7 +116,7 @@ router.patch(
     (req, res, next) =>
         asyncEndpointWrapper(req, res, next, async () => {
             const result = await OneoffTransactionController.update(req.session.user, req.params.id, req.body);
-            res.status(201).json(ResponseBuilder({ status: 'success', data: result }));
+            res.json(ResponseBuilder({ status: 'success', data: result }));
         })
 );
 
@@ -139,8 +140,8 @@ router.get(
     query('amountTo').isInt().toInt().optional(),
     categoryShopIdValidatorMiddleware(true),
     query('ShopId').isInt().toInt().optional(),
-    query('limit').isInt().toInt().optional(),
-    query('offset').isInt().toInt().optional(),
+    limitValidator,
+    offsetValidator,
     (req, res, next) =>
         asyncEndpointWrapper(req, res, next, async () => {
             const data = await MonthlyTransactionController.fetch(req.session.user, req.query);
@@ -177,7 +178,7 @@ router.post(
 router.delete('/monthly/:id', param('id').isInt({ min: 0 }).toInt(), (req, res, next) =>
     asyncEndpointWrapper(req, res, next, async () => {
         await MonthlyTransactionController.delete(req.session.user, req.params.id);
-        res.status(204).json(ResponseBuilder({ status: 'success' }));
+        res.json(ResponseBuilder({ status: 'success' }));
     })
 );
 
@@ -197,7 +198,7 @@ router.patch(
     (req, res, next) =>
         asyncEndpointWrapper(req, res, next, async () => {
             const result = await MonthlyTransactionController.update(req.session.user, req.params.id, req.body);
-            res.status(201).json(ResponseBuilder({ status: 'success', data: result }));
+            res.json(ResponseBuilder({ status: 'success', data: result }));
         })
 );
 

@@ -1,7 +1,6 @@
 import createError from 'http-errors';
 import { Model } from 'sequelize';
 
-import config from '../../config.js';
 import { MonthlyTransaction, Transaction, User } from '../../database/db.js';
 import AbstractTransactionController, {
     TransactionPayload,
@@ -51,10 +50,9 @@ class MonthlyTransactionController extends AbstractTransactionController<Monthly
 
     async fetch(user: User, body: MonthlyTransactionQueryPayload): Promise<MonthlyTransaction[]> {
         let whereConditions = {};
-        let queryLimit = config.api.query.payload_limit;
-        let queryOffset = 0;
+        const { limit, offset } = body;
         if (body) {
-            const { isExpense, monthFrom, monthTo, amountFrom, amountTo, CategoryId, ShopId, limit, offset } = body;
+            const { isExpense, monthFrom, monthTo, amountFrom, amountTo, CategoryId, ShopId } = body;
             whereConditions = buildWhereConditions(user, {
                 monthLimit: [monthFrom, monthTo],
                 amountLimit: [amountFrom, amountTo],
@@ -62,15 +60,6 @@ class MonthlyTransactionController extends AbstractTransactionController<Monthly
                 ShopId: ShopId,
                 isExpense: isExpense
             });
-
-            // TODO test if set to zero
-            if (limit != null) {
-                queryLimit = Math.min(limit, config.api.query.payload_limit);
-            }
-
-            if (offset != null) {
-                queryOffset = offset;
-            }
         } else {
             whereConditions = buildWhereConditions(user);
         }
@@ -82,8 +71,8 @@ class MonthlyTransactionController extends AbstractTransactionController<Monthly
                 ['monthTo', 'ASC NULLS LAST'],
                 ['id', 'ASC']
             ],
-            limit: queryLimit,
-            offset: queryOffset
+            limit: limit,
+            offset: offset
         });
     }
 

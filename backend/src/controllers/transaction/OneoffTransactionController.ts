@@ -1,7 +1,6 @@
 import createError from 'http-errors';
 import { Model } from 'sequelize-typescript';
 
-import config from '../../config.js';
 import { OneoffTransaction, Transaction, User } from '../../database/db.js';
 import AbstractTransactionController, { TransactionPayload, TransactionQueryPayload } from './AbstractTransactionController.js';
 import { buildWhereConditions } from './transaction-utils.js';
@@ -44,10 +43,9 @@ class OneoffTransactionController extends AbstractTransactionController<OneoffTr
 
     async fetch(user: User, body: OneoffTransactionQueryPayload) {
         let whereConditions = {};
-        let queryLimit = config.api.query.payload_limit;
-        let queryOffset = 0;
+        const { limit, offset } = body;
         if (body) {
-            const { isExpense, dateFrom, dateTo, amountFrom, amountTo, CategoryId, ShopId, limit, offset } = body;
+            const { isExpense, dateFrom, dateTo, amountFrom, amountTo, CategoryId, ShopId } = body;
             whereConditions = buildWhereConditions(user, {
                 dateLimit: [dateFrom, dateTo],
                 amountLimit: [amountFrom, amountTo],
@@ -56,13 +54,6 @@ class OneoffTransactionController extends AbstractTransactionController<OneoffTr
                 isExpense: isExpense
             });
 
-            if (limit) {
-                queryLimit = Math.min(limit, config.api.query.payload_limit);
-            }
-
-            if (offset) {
-                queryOffset = offset;
-            }
         } else {
             whereConditions = buildWhereConditions(user);
         }
@@ -73,8 +64,8 @@ class OneoffTransactionController extends AbstractTransactionController<OneoffTr
                 ['date', 'ASC'],
                 ['id', 'ASC']
             ],
-            limit: queryLimit,
-            offset: queryOffset
+            limit: limit,
+            offset: offset
         });
     }
 

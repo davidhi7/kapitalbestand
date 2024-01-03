@@ -240,12 +240,12 @@ describe('MonthlyTransactionController', function () {
             });
         });
         it('should apply limit attribute correctly', async function () {
-            const query = await monthlyTransactionController.fetch(await User.findOne(), { limit: 3 });
+            const query = await monthlyTransactionController.fetch(await User.findOne(), { limit: 3, offset: 0 });
             expect(query).to.have.lengthOf(3);
         });
         it('should apply offset attribute correctly', async function () {
             // skip first 3 rows, return the remaining two
-            const query = await monthlyTransactionController.fetch(await User.findOne(), { offset: 3 });
+            const query = await monthlyTransactionController.fetch(await User.findOne(), { limit: 10, offset: 3 });
             expect(query).to.have.lengthOf(2);
         });
         it('should order the transactions by monthFrom ASC, then by monthTo ASC with nulls last and finally by the auto incremented id', async function () {
