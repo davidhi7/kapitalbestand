@@ -59,7 +59,7 @@
       "*.test.js",
       "*.test.ts"
     ],
-    "exec": "node --loader ts-node/esm",
+    "exec": "node --loader ts-node/esm --enable-source-maps",
     "ext": ".js,.ts"
   },
   "mocha": {
@@ -69,7 +69,8 @@
     ],
     "node-option": [
       "experimental-specifier-resolution=node",
-      "loader=ts-node/esm"
+      "loader=ts-node/esm",
+      "enable-source-maps=true"
     ]
   }
 }
