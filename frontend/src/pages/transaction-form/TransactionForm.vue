@@ -3,6 +3,7 @@ import { mapStores } from 'pinia';
 
 import { format_currency } from '@/common';
 import { NotificationEvent, NotificationStyle, eventEmitter } from '@/pages/base/Notification.vue';
+import AutoComplete from '@/pages/base/components/AutoComplete.vue';
 import MonthInput from '@/pages/base/components/MonthInput.vue';
 import { useCategoryShopStore } from '@/stores/CategoryShopStore';
 import { useTransactionStore } from '@/stores/TransactionStore';
@@ -169,7 +170,7 @@ export default {
         }
     },
     emits: ['done'],
-    components: { GridForm, MonthInput }
+    components: { GridForm, MonthInput, AutoComplete }
 };
 </script>
 
@@ -234,26 +235,28 @@ export default {
             <GridForm class="mx-4">
                 <label for="amount">Betrag</label>
                 <input
-                    type="text"
-                    id="amount"
-                    placeholder="0,00 €"
-                    required
-                    @focus="prepareAmountInput"
-                    @focusout="finishAmountInput"
-                    ref="amountInput"
+                type="text"
+                id="amount"
+                placeholder="0,00 €"
+                required
+                @focus="prepareAmountInput"
+                @focusout="finishAmountInput"
+                ref="amountInput"
                 />
-
+                
                 <label for="category">Kategorie</label>
-                <input
+                <AutoComplete :suggestions="CategoryShopStore.categoryNames" v-model.lazy.trim="content.category"></AutoComplete>
+                <!-- <input
                     type="text"
                     id="category"
                     v-model.lazy.trim="content.category"
                     list="category-suggestions"
                     required
-                />
+                /> -->
 
                 <label for="shop">Ort/Geschäft</label>
-                <input type="text" id="shop" v-model.lazy.trim="content.shop" list="shop-suggestions" />
+                <AutoComplete :suggestions="CategoryShopStore.shopNames" v-model.lazy.trim="content.shop"></AutoComplete>
+                <!-- <input type="text" id="shop" v-model.lazy.trim="content.shop" list="shop-suggestions" /> -->
 
                 <label for="description">Beschreibung</label>
                 <input type="text" id="description" v-model.lazy.trim="content.description" />
