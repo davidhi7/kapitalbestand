@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 body {
-    @apply bg-main-bg text-main dark:bg-main-bg-dark dark:text-main-dark;
+    @apply bg-main-bg text-main;
     font-family: BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans',
         'Droid Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
 }
@@ -23,14 +23,7 @@ input[type='password'] {
         px-4
         font-semibold
         text-main
-        transition-colors
-        dark:bg-secondary-bg-dark
-        dark:text-main-dark;
-
-    &:hover,
-    &:active {
-        @apply bg-tertiary-bg transition-colors dark:bg-tertiary-bg-dark;
-    }
+        transition-colors;
 
     &:active {
         transform: translateY(2px);
@@ -46,7 +39,7 @@ input[type='password'] {
 }
 
 .bg-branding {
-    @apply bg-gradient-to-r from-branding-0 to-branding-1 dark:from-branding-0-dark dark:to-branding-1-dark;
+    @apply bg-gradient-to-r from-gradient-0 to-gradient-1;
 }
 
 h1 {
@@ -55,38 +48,69 @@ h1 {
 
 .ln {
     &:hover :not(.material-symbols-outlined):not(.material-symbols-filled) {
-        @apply underline underline-offset-4 decoration-tertiary dark:decoration-tertiary-dark;
+        @apply underline underline-offset-4 decoration-tertiary;
     }
 }
 
 :root {
-    --green-1: #2c8730;
-    --green-2: #b5d5b7;
+    --main: #444;
+    --secondary: #666;
+    --tertiary: #888;
 
-    --red-1: #c42b2b;
-    --red-2: #e0a2a2;
+    --main-bg: hsl(0, 0%, 100%);
+    --secondary-bg: hsl(0, 0%, 95%);
+    --tertiary-bg: hsl(0, 0%, 90%);
 
-    --yellow-1: #d9ad00;
-    --yellow-2: #e8da8e;
+    --input-bg: hsl(0, 0%, 85%);
+    --header-bg: hsl(0, 0%, 10%);
 
-    --text-main: #444;
-    --text-secondary: #888;
-    --text-tertiary: #666;
+    --positive: hsl(130, 90%, 30%);
+    --negative: rgb(207, 34, 46);
 
-    --palette-1: #984447;
-    --palette-2: #add9f4;
-    --palette-3: #476c9b;
-    --palette-4: hsl(188, 36%, 40%);
-    --palette-4-medium: hsl(188, 36%, 48%);
-    --palette-4-light: hsl(188, 36%, 55%);
+    --gradient-0: #155799;
+    --gradient-1: #159957;
 
-    --background-main: white;
-    --background-2: hsl(0, 0%, 93%);
-    --background-3: hsl(0, 0%, 85%);
-    --background-4: hsl(0, 0%, 75%);
-
-    --gradient-colors-main: #0f2027, #203a43, #2c5364;
-
-    accent-color: var(--palette-3);
     box-sizing: border-box;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --main: #DDD;
+        --secondary: #CCC;
+        --tertiary: #AAA;
+        
+        --main-bg: hsl(0, 0%, 10%);
+        --secondary-bg: hsl(0, 0%, 13%);
+        --tertiary-bg: hsl(0, 0%, 20%);
+        
+        --input-bg: hsl(0, 0%, 25%);
+        --header-bg: hsl(0, 0%, 5%);
+
+        --positive: hsl(140, 50%, 40%);
+        --negative: rgb(248, 81, 73);
+
+        --gradient-0: #1F7FDF;
+        --gradient-1: #1FDF7F;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --main: #DDD;
+        --secondary: #CCC;
+        --tertiary: #AAA;
+        
+        --main-bg: hsl(0, 0%, 10%);
+        --secondary-bg: hsl(0, 0%, 13%);
+        --tertiary-bg: hsl(0, 0%, 20%);
+        
+        --input-bg: hsl(0, 0%, 25%);
+        --header-bg: hsl(0, 0%, 5%);
+
+        --positive: hsl(140, 50%, 40%);
+        --negative: rgb(248, 81, 73);
+
+        --gradient-0: #1F7FDF;
+        --gradient-1: #1FDF7F;
+    }
 }
