@@ -22,7 +22,7 @@ export default {
 </script>
 
 <template>
-    <component :is="to ? 'router-link' : 'button'" :to="to" class="flex flex-row sm:flex-col cursor-pointer hover:bg-tertiary-bg">
+    <component :is="to ? 'router-link' : 'button'" :to="to" class="flex flex-row sm:flex-col cursor-pointer hover:bg-header-bg-hover">
         <!--
             Indicator visible if the current url matches the link; Located on wide screens on the top, on mobile devices on the left
             If the router 'link' is only a button, don't show this
@@ -45,6 +45,6 @@ export default {
 
 <style scoped>
 a.router-link-active > :first-child {
-    @apply bg-main;
+    @apply bg-main-dark;
 }
 </style>

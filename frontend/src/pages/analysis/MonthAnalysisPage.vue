@@ -72,7 +72,7 @@ const currentMonthSelected = computed(() => {
                 </RouterLink>
                 <div
                     v-if="!currentMonthSelected"
-                    class="mx-2 my-auto h-6 w-[1px] bg-main opacity-50"
+                    class="mx-2 my-auto h-6 w-px bg-main opacity-50"
                 ></div>
                 <RouterLink
                     :to="`/analysis/${monthAfter.year}/${String(monthAfter.month + 1).padStart(2, '0')}`"

@@ -16,6 +16,6 @@ const frequency = inject('frequency')
 
 <style scoped>
 th {
-    @apply text-center p-2 text-xl bg-header-bg font-semibold text-main;
+    @apply text-center p-2 text-xl text-main-dark bg-header-bg font-semibold;
 }
 </style>

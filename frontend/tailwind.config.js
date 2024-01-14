@@ -11,12 +11,14 @@ export default {
                 main: 'var(--main)',
                 secondary: 'var(--secondary)',
                 tertiary: 'var(--tertiary)',
+                'main-dark': 'var(--main-dark)',
                 
                 'main-bg': 'var(--main-bg)',
                 'secondary-bg': 'var(--secondary-bg)',
                 'tertiary-bg': 'var(--tertiary-bg)',
                 'input-bg': 'var(--input-bg)',
                 'header-bg': 'var(--header-bg)',
+                'header-bg-hover': 'var(--header-bg-hover)',
 
                 'positive': 'var(--positive)',
                 'negative': 'var(--negative)'
