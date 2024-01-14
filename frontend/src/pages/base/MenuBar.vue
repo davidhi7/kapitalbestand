@@ -24,7 +24,7 @@ defineEmits(['logout']);
 
 <template>
     <nav
-        class="fixed top-0 w-full flex msm:flex-col justify-between bg-header-bg dark:bg-header-bg-dark text-main-dark text-xl z-10"
+        class="fixed top-0 w-full flex msm:flex-col justify-between bg-header-bg text-main-dark text-xl z-10"
         :class="{ 'msm:pb-1': display_menu }"
     >
         <!-- Button to toggle the menu, only visible on small screen devices -->

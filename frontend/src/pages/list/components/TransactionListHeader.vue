@@ -16,6 +16,6 @@ const frequency = inject('frequency')
 
 <style scoped lang="less">
 th {
-    @apply text-center p-2 text-xl bg-header-bg dark:bg-header-bg-dark font-semibold text-main-dark;
+    @apply text-center p-2 text-xl bg-header-bg font-semibold text-main;
 }
 </style>

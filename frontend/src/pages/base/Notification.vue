@@ -171,6 +171,17 @@ export default {
 
 <style lang="less">
 .notification-container {
+    --green-1: #2c8730;
+    --green-2: #b5d5b7;
+
+    --red-1: #c42b2b;
+    --red-2: #e0a2a2;
+
+    --yellow-1: #d9ad00;
+    --yellow-2: #e8da8e;
+
+    --default-text: white;
+
     position: fixed;
     top: 10px;
     max-width: 650px;
@@ -210,25 +221,25 @@ export default {
 }
 
 .notification-info {
-    background-color: var(--background-main);
-    color: var(--text-main);
+    background-color: var(--secondary-bg);
+    color: var(--main);
 
     .notification-timeout {
-        background-color: var(--text-secondary);
+        background-color: var(--tertiary);
     }
 
     .notification-hide {
-        color: var(--text-secondary);
+        color: var(--tertiary);
 
         &:hover {
-            color: var(--text-main);
+            color: var(--main);
         }
     }
 }
 
 .notification-success {
     background-color: var(--green-1);
-    color: white;
+    color: var(var(--default-text));
 
     .notification-timeout {
         background-color: var(--green-2);
@@ -238,14 +249,14 @@ export default {
         color: var(--green-2);
 
         &:hover {
-            color: white;
+            color: var(--default-text);
         }
     }
 }
 
 .notification-warning {
     background-color: var(--yellow-1);
-    color: white;
+    color: var(--default-text);
 
     .notification-timeout {
         background-color: var(--yellow-2);
@@ -255,14 +266,14 @@ export default {
         color: var(--yellow-2);
 
         &:hover {
-            color: white;
+            color: var(--default-text);
         }
     }
 }
 
 .notification-error {
     background-color: var(--red-1);
-    color: white;
+    color: var(--default-text);
 
     .notification-timeout {
         background-color: var(--red-2);
@@ -272,7 +283,7 @@ export default {
         color: var(--red-2);
 
         &:hover {
-            color: white;
+            color: var(--default-text);
         }
     }
 }

@@ -76,7 +76,7 @@ async function submit() {
                 <button
                     @click="toggleFormType"
                     type="button"
-                    class="cursor-pointer text-inherit underline decoration-1 hover:text-secondary dark:hover:text-secondary-dark"
+                    class="cursor-pointer text-inherit underline decoration-1 hover:text-secondary"
                 >
                     {{ isRegisterForm ? 'anmelden' : 'neu registrieren' }}</button
                 >?

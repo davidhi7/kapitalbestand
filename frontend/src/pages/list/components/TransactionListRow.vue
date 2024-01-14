@@ -32,7 +32,7 @@ const frequency = inject('frequency');
 
 <template>
     <tr
-        class="contents child:even:bg-main-bg dark:child:even:bg-main-bg-dark child:odd:bg-secondary-bg dark:child:odd:bg-secondary-bg-dark">
+        class="contents child:even:bg-main-bg child:odd:bg-secondary-bg">
         <td v-if="frequency === 'oneoff'">
             {{ props.transaction.date }}
         </td>
@@ -46,7 +46,7 @@ const frequency = inject('frequency');
             {{ props.transaction.Transaction.Category.name }}
         </td>
         <td
-            data-postive-prefix="+" :class="{ 'text-positive dark:text-positive-dark before:content-[attr(data-postive-prefix)] before:relative before:left-[1px]': !props.transaction.Transaction.isExpense }">
+            data-postive-prefix="+" :class="{ 'text-positive before:content-[attr(data-postive-prefix)] before:relative before:left-[1px]': !props.transaction.Transaction.isExpense }">
             {{ formatCurrency(props.transaction.Transaction.amount) }}
         </td>
         <td class="!py-1 flex msm:col-span-full justify-center msm:justify-end">
@@ -79,7 +79,7 @@ td>button {
     @apply aspect-square grid content-center;
 
     &:hover {
-        @apply bg-tertiary-bg dark:bg-tertiary-bg-dark;
+        @apply bg-tertiary-bg;
     }
 
     &>span {

@@ -4,32 +4,22 @@ export default {
     theme: {
         extend: {
             colors: {
-                branding: {
-                    0: '#155799',
-                    1: '#159957',
-                    '0-dark': '#1F7FDF',
-                    '1-dark': '#1FDF7F'
+                gradient: {
+                    0: 'var(--gradient-0)',
+                    1: 'var(--gradient-1)'
                 },
-                main: '#444',
-                secondary: '#666',
-                tertiary: '#888',
-                'main-dark': '#DDD',
-                'secondary-dark': '#CCC',
-                'tertiary-dark': '#AAA',
+                main: 'var(--main)',
+                secondary: 'var(--secondary)',
+                tertiary: 'var(--tertiary)',
                 
-                'main-bg': 'hsl(0, 0%, 100%)',
-                'secondary-bg': 'hsl(0, 0%, 95%)',
-                'tertiary-bg': 'hsl(0, 0%, 90%)',
-                'main-bg-dark': 'hsl(0, 0%, 10%)',
-                'secondary-bg-dark': 'hsl(0, 0%, 13%)',
-                'tertiary-bg-dark': 'hsl(0, 0%, 20%)',
-                'header-bg': 'hsl(0, 0%, 10%)',
-                'header-bg-dark': 'hsl(0, 0%, 5%)',
+                'main-bg': 'var(--main-bg)',
+                'secondary-bg': 'var(--secondary-bg)',
+                'tertiary-bg': 'var(--tertiary-bg)',
+                'input-bg': 'var(--input-bg)',
+                'header-bg': 'var(--header-bg)',
 
-                'positive': 'hsl(130, 90%, 30%)',
-                'positive-dark': 'hsl(140, 50%, 40%)',
-                'negative': 'rgb(207, 34, 46)',
-                'negative-dark': 'rgb(248, 81, 73)'
+                'positive': 'var(--positive)',
+                'negative': 'var(--negative)'
             },
             screens: {
                 // desktop-first alternative breakpoints: smaller than sm/md/lg/xl/2xl
