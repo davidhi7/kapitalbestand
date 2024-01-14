@@ -203,7 +203,7 @@ export default {
                 <label for="current-date-radio">
                     <input type="radio" id="current-date-radio" v-model="form.dateInputPreference" value="today" />
                     Heute:
-                    <time class="text-secondary dark:text-secondary-dark">{{ formattedDate }}</time>
+                    <time class="text-secondary">{{ formattedDate }}</time>
                 </label>
                 <br />
                 <label for="manual-date-radio">
@@ -235,38 +235,29 @@ export default {
             <GridForm class="mx-4">
                 <label for="amount">Betrag</label>
                 <input
-                type="text"
-                id="amount"
-                placeholder="0,00 €"
-                required
-                @focus="prepareAmountInput"
-                @focusout="finishAmountInput"
-                ref="amountInput"
-                />
-                
-                <label for="category">Kategorie</label>
-                <AutoComplete :suggestions="CategoryShopStore.categoryNames" v-model.lazy.trim="content.category"></AutoComplete>
-                <!-- <input
                     type="text"
-                    id="category"
-                    v-model.lazy.trim="content.category"
-                    list="category-suggestions"
+                    placeholder="0,00 €"
                     required
-                /> -->
+                    @focus="prepareAmountInput"
+                    @focusout="finishAmountInput"
+                    ref="amountInput"
+                />
+
+                <label for="category">Kategorie</label>
+                <AutoComplete
+                    :suggestions="CategoryShopStore.categoryNames"
+                    v-model.lazy.trim="content.category"
+                    :required="true"
+                ></AutoComplete>
 
                 <label for="shop">Ort/Geschäft</label>
-                <AutoComplete :suggestions="CategoryShopStore.shopNames" v-model.lazy.trim="content.shop"></AutoComplete>
-                <!-- <input type="text" id="shop" v-model.lazy.trim="content.shop" list="shop-suggestions" /> -->
+                <AutoComplete
+                    :suggestions="CategoryShopStore.shopNames"
+                    v-model.lazy.trim="content.shop"
+                ></AutoComplete>
 
                 <label for="description">Beschreibung</label>
-                <input type="text" id="description" v-model.lazy.trim="content.description" />
-
-                <datalist id="shop-suggestions">
-                    <option v-for="name in CategoryShopStore.shopNames" :value="name"></option>
-                </datalist>
-                <datalist id="category-suggestions">
-                    <option v-for="name in CategoryShopStore.categoryNames" :value="name"></option>
-                </datalist>
+                <input v-model.lazy.trim="content.description" />
             </GridForm>
         </section>
 
