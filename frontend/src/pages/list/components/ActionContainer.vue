@@ -33,7 +33,7 @@ defineEmits(['done']);
 </script>
 
 <template>
-    <div v-if="props.action" class="mx-2 my-0 h-[1px] bg-tertiary-bg"></div>
+    <div v-if="props.action" class="mx-2 my-0 h-px bg-tertiary-bg"></div>
     <Transition name="action">
         <div v-if="props.action" class="grid overflow-hidden" :class="actions[props.action].durationClass">
             <div class="min-h-0 self-end">

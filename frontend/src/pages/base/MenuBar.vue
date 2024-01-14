@@ -50,7 +50,7 @@ defineEmits(['logout']);
         </section>
 
         <!-- Separator between main pages and logout; only on small screens -->
-        <div class="m-1 w-auto h-[1px] bg-main-dark sm:hidden" :class="{ hidden: !display_menu }"></div>
+        <div class="m-1 w-auto h-px bg-main-dark sm:hidden" :class="{ hidden: !display_menu }"></div>
 
         <!-- Account settings & logout -->
         <section class="flex msm:justify-between" :class="{ 'msm:hidden': !display_menu }">
