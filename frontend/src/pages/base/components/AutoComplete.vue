@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { defineModel, withDefaults } from 'vue';
+import { computed, defineModel, withDefaults } from 'vue';
 
-const model = defineModel();
+import AutCompleteEntry from './AutoCompleteEntry.vue';
+
+const model = defineModel<string>();
 const props = withDefaults(
     defineProps<{
         suggestions: string[];
-        type?: 'date' | 'month' | 'password' | 'text';
+        type?: 'date' | 'month' | 'text';
         placeholder?: string;
         required?: boolean;
     }>(),
@@ -16,18 +18,38 @@ const props = withDefaults(
         required: false
     }
 );
+
+const computedSuggestions = computed<string[]>(() => {
+    // TODO more sophisticated algorithm to search + highlight search matches
+    return props.suggestions.filter((value) => value.includes(model.value!));
+});
+
+function pick(suggestion: string) {
+    model.value = suggestion;
+    (document.activeElement! as HTMLElement).blur();
+}
 </script>
 
 <template>
     <!-- TODO outlines -->
     <div class="group relative focus-within:bg-input-bg rounded-t-lg">
-        <input class="outline-none group-focus-within:shadow-none" :type="$props.type" :placeholder="props.placeholder" :required="props.required" v-model="model" />
+        <input
+            class="outline-none group-focus-within:bg-input-bg group-focus-within:shadow-none focus:bg-tertiary-bg"
+            :type="$props.type"
+            :placeholder="props.placeholder"
+            :required="props.required"
+            v-model="model"
+        />
         <div
-            class="absolute rounded-b-lg w-full z-10 hidden group-focus-within:flex flex-col flex-grow items-start group-focus-within:bg-input-bg"
+            class="absolute rounded-b-lg w-full z-10 hidden group-focus-within:flex flex-col items-stretch group-focus-within:bg-input-bg overflow-hidden shadow-md"
         >
-            <button class="px-2 m-1" v-for="suggestion in [1, 2, 3, 4, 5]" @click.prevent="model = suggestion">
-                {{ suggestion }}
-            </button>
+            <!-- TODO make use of slots -->
+            <slot></slot>
+            <AutCompleteEntry v-for="suggestion of computedSuggestions">
+                <button @click.prevent="pick(suggestion)">
+                    {{ suggestion }}
+                </button>
+            </AutCompleteEntry>
         </div>
     </div>
 </template>

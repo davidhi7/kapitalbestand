@@ -10,6 +10,7 @@ import { useTransactionStore } from '@/stores/TransactionStore';
 import { useDateFormat, useNow } from '@vueuse/core';
 
 import GridForm from './GridForm.vue';
+import AutoCompleteEntry from '../base/components/AutoCompleteEntry.vue';
 
 const TANSACTION_FREQUENCY = {
     Default: 'default',
@@ -170,7 +171,7 @@ export default {
         }
     },
     emits: ['done'],
-    components: { GridForm, MonthInput, AutoComplete }
+    components: { GridForm, MonthInput, AutoComplete, AutoCompleteEntry }
 };
 </script>
 
