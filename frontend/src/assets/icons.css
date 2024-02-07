@@ -18,11 +18,11 @@
 }
 
 .material-symbols-outlined {
-    .material-symbols;
-    font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 200, 'opsz' 20;
+    @apply material-symbols;
+    font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 200, 'opsz' 20 !important;
 }
 
 .material-symbols-filled {
-    .material-symbols;
+    @apply material-symbols;
     font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 200, 'opsz' 20 !important;
 }

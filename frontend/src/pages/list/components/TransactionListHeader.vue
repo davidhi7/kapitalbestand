@@ -14,7 +14,7 @@ const frequency = inject('frequency')
     </tr>
 </template>
 
-<style scoped lang="less">
+<style scoped>
 th {
     @apply text-center p-2 text-xl bg-header-bg font-semibold text-main;
 }

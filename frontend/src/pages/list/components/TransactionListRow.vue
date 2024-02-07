@@ -69,7 +69,7 @@ const frequency = inject('frequency');
     </tr>
 </template>
 
-<style lang="less" scoped>
+<style scoped>
 td {
     @apply p-2 text-ellipsis overflow-hidden whitespace-nowrap text-center;
 }

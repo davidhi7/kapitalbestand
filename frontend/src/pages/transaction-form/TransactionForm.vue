@@ -274,7 +274,7 @@ export default {
     </form>
 </template>
 
-<style scoped lang="less">
+<style scoped>
 h2 {
     @apply text-xl;
 }

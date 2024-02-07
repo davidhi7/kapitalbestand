@@ -169,7 +169,7 @@ export default {
     </div>
 </template>
 
-<style lang="less">
+<style>
 .notification-container {
     --green-1: #2c8730;
     --green-2: #b5d5b7;

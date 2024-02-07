@@ -2,8 +2,8 @@ import { createPinia } from 'pinia';
 import { createApp } from 'vue';
 import { Vue3Mq } from 'vue3-mq';
 
-import '@/assets/base.less';
-import '@/assets/icons.less';
+import '@/assets/base.css';
+import '@/assets/icons.css';
 import App from '@/pages/base/App.vue';
 import router from '@/router';
 import { authEventTarget, useAuthStateStore } from '@/stores/AuthStateStore';

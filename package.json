@@ -30,14 +30,6 @@
         "importOrderParserPlugins": [
             "typescript",
             "decorators-legacy"
-        ],
-        "overrides": [
-            {
-                "files": "*.less",
-                "options": {
-                    "parser": "postcss"
-                }
-            }
         ]
     }
 }

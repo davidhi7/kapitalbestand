@@ -43,7 +43,7 @@ export default {
     </component>
 </template>
 
-<style scoped lang="less">
+<style scoped>
 a.router-link-active > :first-child {
     @apply bg-main;
 }

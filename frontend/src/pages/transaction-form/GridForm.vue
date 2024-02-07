@@ -4,7 +4,7 @@
     </div>
 </template>
 
-<style scoped lang="less">
+<style scoped>
 div {
     @apply grid gap-x-2 gap-y-1 items-center;
     grid-template-columns: max-content max-content;
@@ -16,7 +16,7 @@ div {
     :nth-child(odd) {
         text-align: right;
         &::after {
-            // tailwind equivalent is `[&>*:nth-child(odd)]:after:content-[':']`, wtf?
+            /* tailwind equivalent is `[&>*:nth-child(odd)]:after:content-[':']`, wtf? */
             content: ':';
         }
     }

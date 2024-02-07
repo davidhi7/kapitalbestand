@@ -48,7 +48,7 @@ defineEmits(['done']);
     </Transition>
 </template>
 
-<style lang="less">
+<style>
 .action-enter-active {
     transition-timing-function: ease-out;
     transition-property: grid-template-rows, opacity;
