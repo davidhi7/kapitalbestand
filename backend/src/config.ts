@@ -11,7 +11,7 @@ export function readFromEnv(name: string): string {
     } else if (process.env[name]) {
         return process.env[name] as string;
     }
-    throw Error(`Environmental variables \`${name}\` and \`${name + '_FILE'}\` mising`);
+    throw Error(`Environmental variables \`${name}\` and \`${name + '_FILE'}\` missing`);
 }
 
 function populateDatabaseConfig(config: ConfigType, use_memory_sqlite: boolean, enable_orm_logging: boolean) {
