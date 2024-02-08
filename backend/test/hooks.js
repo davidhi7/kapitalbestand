@@ -13,6 +13,7 @@ const monthlySample = sampleData.monthlyTransactions;
 
 export const mochaHooks = {
     async beforeEach() {
+        await sequelize.truncate({ restartIdentity: true, cascade: true });
         const defaultUser = await User.create({
             username: 'testuser',
             hash: 'pw_hash'
@@ -26,7 +27,6 @@ export const mochaHooks = {
         }
     },
     async afterEach() {
-        sequelize.truncate({ restartIdentity: true });
         sinon.restore();
     }
 };
