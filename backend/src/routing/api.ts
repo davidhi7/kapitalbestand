@@ -3,8 +3,8 @@ import express from 'express';
 import authentication from './authentication.js';
 import analysis from './endpoints/analysis.js';
 import { categoryRouter, shopRouter } from './endpoints/categories-shops.js';
-import transactions from './endpoints/transactions.js';
 import { errorHandler } from './error-handling.js';
+import transactions from "./endpoints/transactions.js"
 
 const router = express.Router();
 router.use(express.json());

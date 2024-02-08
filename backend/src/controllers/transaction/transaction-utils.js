@@ -87,10 +87,10 @@ export const buildWhereConditions = (user, attributes = {}) => {
 
     // handle categoryId, shopId and isExpense
     if (CategoryId !== undefined) {
-        whereConditions['$Transaction.categoryId$'] = CategoryId;
+        whereConditions['$Transaction.CategoryId$'] = CategoryId;
     }
     if (ShopId !== undefined) {
-        whereConditions['$Transaction.shopId$'] = ShopId;
+        whereConditions['$Transaction.ShopId$'] = ShopId;
     }
     if (isExpense !== undefined) {
         whereConditions['$Transaction.isExpense$'] = isExpense;

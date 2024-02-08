@@ -2,14 +2,14 @@ import createError from 'http-errors';
 import { Model } from 'sequelize-typescript';
 
 import { OneoffTransaction, Transaction, User } from '../../database/db.js';
-import AbstractTransactionController, { TransactionPayload, TransactionQueryPayload } from './AbstractTransactionController.js';
+import AbstractTransactionController, { TransactionCreateParameters, TransactionQueryParameters } from './AbstractTransactionController.js';
 import { buildWhereConditions } from './transaction-utils.js';
 
-interface OneoffTransactionPayload extends TransactionPayload {
+export interface OneoffTransactionCreateParameters extends TransactionCreateParameters {
     date: Date;
 }
 
-interface OneoffTransactionQueryPayload extends TransactionQueryPayload {
+export interface OneoffTransactionQueryParameters extends TransactionQueryParameters {
     dateFrom?: Date;
     dateTo?: Date;
 }
@@ -19,7 +19,7 @@ class OneoffTransactionController extends AbstractTransactionController<OneoffTr
         super(OneoffTransaction);
     }
 
-    async create(user: User, body: OneoffTransactionPayload) {
+    async create(user: User, body: OneoffTransactionCreateParameters) {
         const { isExpense, date, amount, CategoryId, ShopId, description } = body;
         const instance = await OneoffTransaction.create(
             {
@@ -41,23 +41,17 @@ class OneoffTransactionController extends AbstractTransactionController<OneoffTr
         return this.getByUserAndId(user, instance.id);
     }
 
-    async fetch(user: User, body: OneoffTransactionQueryPayload) {
+    async fetch(user: User, limit: number, offset: number, body: OneoffTransactionQueryParameters) {
         let whereConditions = {};
-        const { limit, offset } = body;
-        if (body) {
-            const { isExpense, dateFrom, dateTo, amountFrom, amountTo, CategoryId, ShopId } = body;
-            whereConditions = buildWhereConditions(user, {
-                dateLimit: [dateFrom, dateTo],
-                amountLimit: [amountFrom, amountTo],
-                CategoryId: CategoryId,
-                ShopId: ShopId,
-                isExpense: isExpense
-            });
-
-        } else {
-            whereConditions = buildWhereConditions(user);
-        }
-
+        const { isExpense, dateFrom, dateTo, amountFrom, amountTo, CategoryId, ShopId } = body;
+        whereConditions = buildWhereConditions(user, {
+            dateLimit: [dateFrom, dateTo],
+            amountLimit: [amountFrom, amountTo],
+            CategoryId: CategoryId,
+            ShopId: ShopId,
+            isExpense: isExpense
+        });
+        
         return OneoffTransaction.findAll({
             where: whereConditions,
             order: [
@@ -69,10 +63,10 @@ class OneoffTransactionController extends AbstractTransactionController<OneoffTr
         });
     }
 
-    async update(user: User, id: number, body: OneoffTransactionPayload) {
+    async update(user: User, id: number, body: OneoffTransactionCreateParameters) {
         let instance = await this.getByUserAndId(user, id);
 
-        function setIfNotUndefined(key: keyof OneoffTransactionPayload, modelInstance: Model = instance) {
+        function setIfNotUndefined(key: keyof OneoffTransactionCreateParameters, modelInstance: Model = instance) {
             if (body[key] !== undefined) {
                 modelInstance.set(key, body[key]);
             }

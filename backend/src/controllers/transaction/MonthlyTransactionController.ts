@@ -3,17 +3,17 @@ import { Model } from 'sequelize';
 
 import { MonthlyTransaction, Transaction, User } from '../../database/db.js';
 import AbstractTransactionController, {
-    TransactionPayload,
-    TransactionQueryPayload
+    TransactionCreateParameters,
+    TransactionQueryParameters
 } from './AbstractTransactionController.js';
 import { buildWhereConditions } from './transaction-utils.js';
 
-interface MonthlyTransactionPayload extends TransactionPayload {
-    monthFrom?: Date;
+export interface MonthlyTransactionCreateParameters extends TransactionCreateParameters {
+    monthFrom : Date;
     monthTo?: Date;
 }
 
-interface MonthlyTransactionQueryPayload extends TransactionQueryPayload {
+export interface MonthlyTransactionQueryParameters extends TransactionQueryParameters {
     monthFrom?: Date;
     monthTo?: Date;
 }
@@ -23,7 +23,7 @@ class MonthlyTransactionController extends AbstractTransactionController<Monthly
         super(MonthlyTransaction);
     }
 
-    async create(user: User, body: MonthlyTransactionPayload): Promise<MonthlyTransaction> {
+    async create(user: User, body: MonthlyTransactionCreateParameters): Promise<MonthlyTransaction> {
         const { monthFrom, monthTo, isExpense, amount, description, CategoryId, ShopId } = body;
         const instance = await MonthlyTransaction.create(
             {
@@ -48,21 +48,16 @@ class MonthlyTransactionController extends AbstractTransactionController<Monthly
         return this.getByUserAndId(user, instance.id);
     }
 
-    async fetch(user: User, body: MonthlyTransactionQueryPayload): Promise<MonthlyTransaction[]> {
+    async fetch(user: User, limit: number, offset: number, body: MonthlyTransactionQueryParameters): Promise<MonthlyTransaction[]> {
         let whereConditions = {};
-        const { limit, offset } = body;
-        if (body) {
-            const { isExpense, monthFrom, monthTo, amountFrom, amountTo, CategoryId, ShopId } = body;
-            whereConditions = buildWhereConditions(user, {
-                monthLimit: [monthFrom, monthTo],
-                amountLimit: [amountFrom, amountTo],
-                CategoryId: CategoryId,
-                ShopId: ShopId,
-                isExpense: isExpense
-            });
-        } else {
-            whereConditions = buildWhereConditions(user);
-        }
+        const { isExpense, monthFrom, monthTo, amountFrom, amountTo, CategoryId, ShopId } = body;
+        whereConditions = buildWhereConditions(user, {
+            monthLimit: [monthFrom, monthTo],
+            amountLimit: [amountFrom, amountTo],
+            CategoryId: CategoryId,
+            ShopId: ShopId,
+            isExpense: isExpense
+        });
 
         return MonthlyTransaction.findAll({
             where: whereConditions,
@@ -76,10 +71,10 @@ class MonthlyTransactionController extends AbstractTransactionController<Monthly
         });
     }
 
-    async update(user: User, id: number, body: MonthlyTransactionPayload): Promise<MonthlyTransaction> {
+    async update(user: User, id: number, body: MonthlyTransactionCreateParameters): Promise<MonthlyTransaction> {
         let instance = await this.getByUserAndId(user, id);
 
-        function setIfNotUndefined(key: keyof MonthlyTransactionPayload, modelInstance: Model = instance) {
+        function setIfNotUndefined(key: keyof MonthlyTransactionCreateParameters, modelInstance: Model = instance) {
             if (body[key] !== undefined) {
                 modelInstance.set(key, body[key]);
             }

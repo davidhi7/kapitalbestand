@@ -8,25 +8,21 @@ interface GenericTransaction extends Model {
     Transaction: Transaction;
 }
 
-export type TransactionPayload = {
+export type TransactionCreateParameters = {
     isExpense?: boolean,
     amount?: number,
     description?: string,
     CategoryId?: number,
     ShopId?: number,
-    category?: string,
-    shop?: string
 }
 
-export type TransactionQueryPayload = {
+export type TransactionQueryParameters = {
     isExpense?: boolean,
     amountFrom?: number,
     amountTo?: number,
     description?: string,
     CategoryId?: number,
     ShopId?: number,
-    category?: string,
-    shop?: string,
     limit: number,
     offset: number
 }

@@ -37,7 +37,7 @@
     "@types/http-errors": "^2.0.1",
     "@types/mocha": "^10.0.1",
     "@types/morgan": "^1.9.9",
-    "@types/node": "^18.15.10",
+    "@types/node": "^18.19.6",
     "@types/sequelize": "^4.28.14",
     "@types/sinon": "^10.0.14",
     "@types/tmp": "^0.2.6",
@@ -65,7 +65,7 @@
   "mocha": {
     "require": [
       "ts-node/register",
-      "test/hooks.js"
+      "test/hooks.ts"
     ],
     "node-option": [
       "experimental-specifier-resolution=node",
