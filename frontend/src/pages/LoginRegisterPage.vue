@@ -52,10 +52,10 @@ async function submit() {
         <hr class="bg-branding h-1 w-full border-none" />
         <GridForm>
             <span>Benutzername</span>
-            <TextInput type="text" required v-model.lazy="username" />
+            <TextInput type="text" required :show-required-indicator="false" v-model.lazy="username" />
 
             <span>Passwort</span>
-            <TextInput type="password" minlength="8" required v-model.lazy="password" />
+            <TextInput type="password" minlength="8" required :show-required-indicator="false" v-model.lazy="password" />
 
             <span v-if="isRegisterForm">Passwort bestätigen</span>
             <TextInput
@@ -63,6 +63,7 @@ async function submit() {
                 type="password"
                 minlength="8"
                 required
+                :show-required-indicator="false"
                 v-model.lazy="passwordVerification"
             />
         </GridForm>

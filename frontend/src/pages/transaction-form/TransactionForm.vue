@@ -211,8 +211,8 @@ export default {
                 <label for="manual-date-radio">
                     <input type="radio" id="manual-date-radio" v-model="form.dateInputPreference" value="custom" />
                     am
-                    <input
-                        class="input"
+                    <TextInput
+                        class="inline-block ml-1"
                         type="date"
                         id="manual-date-input"
                         v-model="form.manuallyEnteredDate"
