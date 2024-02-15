@@ -1,5 +1,4 @@
 <script setup>
-import { ref } from 'vue';
 defineProps(['modelValue', 'id', 'required']);
 const emit = defineEmits(['update:modelValue']);
 

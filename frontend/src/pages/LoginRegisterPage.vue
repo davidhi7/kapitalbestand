@@ -4,6 +4,7 @@ import { ref } from 'vue';
 import { NotificationEvent, NotificationStyle, eventEmitter } from '@/pages/base/Notification.vue';
 import GridForm from '@/pages/transaction-form/GridForm.vue';
 import { AuthResponse, useAuthStateStore } from '@/stores/AuthStateStore';
+import TextInput from './base/components/TextInput.vue';
 
 const AuthStateStore = useAuthStateStore();
 
@@ -51,18 +52,18 @@ async function submit() {
         <hr class="bg-branding h-1 w-full border-none" />
         <GridForm>
             <span>Benutzername</span>
-            <input type="text" required v-model="username" />
+            <TextInput type="text" required v-model.lazy="username" />
 
             <span>Passwort</span>
-            <input type="password" minlength="8" required v-model="password" />
+            <TextInput type="password" minlength="8" required v-model.lazy="password" />
 
             <span v-if="isRegisterForm">Passwort bestätigen</span>
-            <input
+            <TextInput
                 v-if="isRegisterForm"
                 type="password"
                 minlength="8"
                 required
-                v-model="passwordVerification"
+                v-model.lazy="passwordVerification"
             />
         </GridForm>
         <hr class="bg-branding h-1 w-full border-none" />

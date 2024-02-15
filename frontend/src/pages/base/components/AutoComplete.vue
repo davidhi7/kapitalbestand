@@ -1,12 +1,13 @@
-<script setup lang="ts">
-import { computed, defineModel, withDefaults } from 'vue';
+<script setup lang="ts" generic="T extends {id: any, name: string}">
+import { computed, defineModel, ref, watch, withDefaults } from 'vue';
 
-import AutCompleteEntry from './AutoCompleteEntry.vue';
+import AutoCompleteEntry from './AutoCompleteEntry.vue';
+import TextInput from './TextInput.vue';
 
-const model = defineModel<string>();
+const model = defineModel<T>();
 const props = withDefaults(
     defineProps<{
-        suggestions: string[];
+        suggestions: T[];
         type?: 'date' | 'month' | 'text';
         placeholder?: string;
         required?: boolean;
@@ -19,37 +20,77 @@ const props = withDefaults(
     }
 );
 
-const computedSuggestions = computed<string[]>(() => {
-    // TODO more sophisticated algorithm to search + highlight search matches
-    return props.suggestions.filter((value) => value.includes(model.value!));
+const emit = defineEmits<{
+    (e: 'requestCreate', name: string): void;
+}>();
+
+let textInput = ref('');
+watch(model, (newValue: T) => {
+    textInput.value = newValue.name;
 });
 
-function pick(suggestion: string) {
+const computedSuggestions = computed<T[]>(() => {
+    return props.suggestions.filter((suggestion) => suggestion.name.includes(textInput.value));
+});
+const exactSuggestionExists = computed<boolean>(() => {
+    return computedSuggestions.value.filter((suggestion) => suggestion.name === textInput.value).length > 0;
+});
+
+function pick(suggestion: T) {
     model.value = suggestion;
     (document.activeElement! as HTMLElement).blur();
+}
+
+const root = ref<HTMLElement>();
+const focused = ref(false);
+
+function focusIn(evt: FocusEvent) {
+    focused.value = true;
+}
+
+function focusOut(evt: FocusEvent) {
+    if (root.value?.contains(evt.relatedTarget as Node)) {
+        return;
+    }
+    focused.value = false;
+    
+    if (!model.value) {
+        textInput.value = "";
+    } else {
+        textInput.value = model.value.name;
+    }
 }
 </script>
 
 <template>
-    <!-- TODO outlines -->
-    <div class="group relative focus-within:bg-input-bg rounded-t-lg">
-        <input
-            class="outline-none group-focus-within:bg-input-bg group-focus-within:shadow-none focus:bg-tertiary-bg"
+    <!-- TODO improve outlines visuals -->
+    <!-- TODO option to reset -->
+    <!-- Container for input field and suggestion buttons -->
+    <div
+        class="group relative focus-within:bg-input-bg rounded-t-lg"
+        :class="{ 'rounded-b-lg': !textInput && computedSuggestions.length == 0 }"
+        @focusin="focusIn($event)"
+        @focusout="focusOut($event)"
+        ref="root"
+    >
+        <!-- class="... group-focus-within:w-full" forces full width but breaks layout for required elements -->
+        <TextInput
+            class="group-focus-within:bg-input-bg group-focus-within:shadow-none"
             :type="$props.type"
             :placeholder="props.placeholder"
             :required="props.required"
-            v-model="model"
+            :show-required-indicator="!focused"
+            v-model="textInput"
         />
         <div
-            class="absolute rounded-b-lg w-full z-10 hidden group-focus-within:flex flex-col items-stretch group-focus-within:bg-input-bg overflow-hidden shadow-md"
+            class="absolute rounded-b-lg w-full z-10 hidden group-focus-within:block group-focus-within:bg-input-bg overflow-hidden shadow-md"
         >
-            <!-- TODO make use of slots -->
-            <slot></slot>
-            <AutCompleteEntry v-for="suggestion of computedSuggestions">
-                <button @click.prevent="pick(suggestion)">
-                    {{ suggestion }}
-                </button>
-            </AutCompleteEntry>
+            <AutoCompleteEntry v-if="textInput && !exactSuggestionExists" @click.prevent="emit('requestCreate', textInput)">
+                Erzeuge <b>{{ textInput }}</b>
+            </AutoCompleteEntry>
+            <AutoCompleteEntry v-for="suggestion of computedSuggestions" @click.prevent="pick(suggestion)">
+                {{ suggestion.name }}
+            </AutoCompleteEntry>
         </div>
     </div>
 </template>

@@ -8,14 +8,6 @@ body {
         'Droid Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
 }
 
-input,
-input[type='text'],
-input[type='date'],
-input[type='month'],
-input[type='password'] {
-    @apply py-1 px-2 m-1 bg-transparent hover:bg-input-bg border-input-bg border-[1px] rounded-lg shadow-sm hover:shadow-md;
-}
-
 .btn {
     @apply rounded-sm
         bg-secondary-bg

@@ -11,6 +11,7 @@ import { useDateFormat, useNow } from '@vueuse/core';
 
 import GridForm from './GridForm.vue';
 import AutoCompleteEntry from '../base/components/AutoCompleteEntry.vue';
+import TextInput from '../base/components/TextInput.vue';
 
 const TANSACTION_FREQUENCY = {
     Default: 'default',
@@ -34,8 +35,8 @@ export default {
             content: {
                 isExpense: true,
                 amount: 0,
-                category: '',
-                shop: '',
+                category: null,
+                shop: null,
                 description: ''
             }
         };
@@ -171,7 +172,7 @@ export default {
         }
     },
     emits: ['done'],
-    components: { GridForm, MonthInput, AutoComplete, AutoCompleteEntry }
+    components: { GridForm, MonthInput, AutoComplete, AutoCompleteEntry, TextInput }
 };
 </script>
 
@@ -211,6 +212,7 @@ export default {
                     <input type="radio" id="manual-date-radio" v-model="form.dateInputPreference" value="custom" />
                     am
                     <input
+                        class="input"
                         type="date"
                         id="manual-date-input"
                         v-model="form.manuallyEnteredDate"
@@ -225,9 +227,9 @@ export default {
             <h2>Zeitraum</h2>
             <GridForm class="mx-4">
                 <label for="transaction-first">Erster Umsatz</label>
-                <MonthInput id="transaction-first" v-model="form.monthFrom" required="true"></MonthInput>
+                <MonthInput class="input" id="transaction-first" v-model="form.monthFrom" required="true"></MonthInput>
                 <label for="transaction-last">Letzter Umsatz</label>
-                <MonthInput id="transaction-last" v-model="form.monthTo"></MonthInput>
+                <MonthInput class="input" id="transaction-last" v-model="form.monthTo"></MonthInput>
             </GridForm>
         </section>
 
@@ -235,7 +237,7 @@ export default {
             <h2>Transaktion</h2>
             <GridForm class="mx-4">
                 <label for="amount">Betrag</label>
-                <input
+                <TextInput
                     type="text"
                     placeholder="0,00 €"
                     required
@@ -246,19 +248,21 @@ export default {
 
                 <label for="category">Kategorie</label>
                 <AutoComplete
-                    :suggestions="CategoryShopStore.categoryNames"
+                    :suggestions="CategoryShopStore.categories"
                     v-model.lazy.trim="content.category"
                     :required="true"
-                ></AutoComplete>
+                    @request-create="(name) => CategoryShopStore.create('Category', name).then(instance => content.category = instance)"
+                />
 
                 <label for="shop">Ort/Geschäft</label>
                 <AutoComplete
-                    :suggestions="CategoryShopStore.shopNames"
+                    :suggestions="CategoryShopStore.shops"
                     v-model.lazy.trim="content.shop"
-                ></AutoComplete>
+                    @request-create="(name) => CategoryShopStore.create('Shop', name).then(instance => content.shop = instance)"
+                />
 
                 <label for="description">Beschreibung</label>
-                <input v-model.lazy.trim="content.description" />
+                <TextInput type="text" v-model.lazy.trim="content.description" />
             </GridForm>
         </section>
 
