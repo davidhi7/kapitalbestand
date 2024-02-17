@@ -227,9 +227,9 @@ export default {
             <h2>Zeitraum</h2>
             <GridForm class="mx-4">
                 <label for="transaction-first">Erster Umsatz</label>
-                <MonthInput class="input" id="transaction-first" v-model="form.monthFrom" required="true"></MonthInput>
+                <MonthInput id="transaction-first" v-model="form.monthFrom" required="true"></MonthInput>
                 <label for="transaction-last">Letzter Umsatz</label>
-                <MonthInput class="input" id="transaction-last" v-model="form.monthTo"></MonthInput>
+                <MonthInput id="transaction-last" v-model="form.monthTo"></MonthInput>
             </GridForm>
         </section>
 
@@ -249,15 +249,15 @@ export default {
                 <label for="category">Kategorie</label>
                 <AutoComplete
                     :suggestions="CategoryShopStore.categories"
-                    v-model.lazy.trim="content.category"
                     :required="true"
+                    v-model.lazy="content.category"
                     @request-create="(name) => CategoryShopStore.create('Category', name).then(instance => content.category = instance)"
                 />
 
                 <label for="shop">Ort/Geschäft</label>
                 <AutoComplete
                     :suggestions="CategoryShopStore.shops"
-                    v-model.lazy.trim="content.shop"
+                    v-model.lazy="content.shop"
                     @request-create="(name) => CategoryShopStore.create('Shop', name).then(instance => content.shop = instance)"
                 />
 

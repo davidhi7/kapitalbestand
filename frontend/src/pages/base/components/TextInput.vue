@@ -7,10 +7,9 @@ const model = defineModel<string>();
 </script>
 
 <template>
-    <!-- TODO consistent outlines -->
     <div
-        class="py-1 px-2 bg-transparent hover:bg-input-bg border-input-bg border-[1px] rounded-lg shadow-sm hover:shadow-md"
-        :class="[props.required && showRequiredIndicator ? 'required-indicator' : '', props.class]"
+        class="required-indicator py-1 px-2 bg-transparent hover:bg-input-bg border-input-bg border-[1px] rounded-lg shadow-sm hover:shadow-md"
+        :class="[props.required && showRequiredIndicator ? 'after:!text-tertiary' : '', props.class]"
     >
         <input v-bind="$attrs" v-model="model" :required="props.required" class="bg-inherit outline-none" />
     </div>
@@ -18,14 +17,14 @@ const model = defineModel<string>();
 
 <style scoped>
 .required-indicator::after {
-    content: '*';
     position: relative;
     top: 2px;
-    left: 3px;
-    @apply text-tertiary;
+    left: 4px;
+    content: '*';
+    color: transparent;
 }
 
 div:has(:focus-visible) {
-    @apply outline-double outline-4;
+    @apply outline-default;
 }
 </style>

@@ -8,6 +8,13 @@ body {
         'Droid Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
 }
 
+
+@layer components {
+    .outline-default {
+        @apply outline-double outline-4;
+    }
+}
+
 .btn {
     @apply rounded-sm
         bg-secondary-bg

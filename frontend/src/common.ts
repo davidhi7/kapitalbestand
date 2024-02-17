@@ -31,3 +31,10 @@ export function format_year_month(attributes: { date: Date; style: 'long' | 'sho
         throw Error('Invalid value for attribute `style`: ' + String(attributes.style));
     }
 }
+
+/**
+ * Remove diacritics, e.g. turn 'Döner' into 'Doner'
+ */
+export function normalizeStrings(input: string) {
+    return input.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
