@@ -1,5 +1,4 @@
 <script setup lang="ts" generic="T extends {id: any, name: string}">
-// TODO focus stuff when using clear button
 import { computed, defineModel, ref, watch, withDefaults } from 'vue';
 
 import { normalizeStrings } from '@/common';
@@ -112,8 +111,6 @@ function clear() {
 </script>
 
 <template>
-    <!-- TODO improve outlines visuals -->
-    <!-- TODO option to reset -->
     <!-- Container for input field and suggestion buttons -->
     <div
         class="group relative focus-within:bg-input-bg rounded-t-lg"
