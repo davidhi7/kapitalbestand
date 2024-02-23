@@ -8,18 +8,18 @@ const model = defineModel<string>();
 
 <template>
     <div
-        class="required-indicator py-1 px-2 bg-transparent hover:bg-input-bg border-input-bg border-[1px] rounded-lg shadow-sm hover:shadow-md"
+        class="relative required-indicator bg-transparent hover:bg-input-bg border-input-bg border-[1px] rounded-lg shadow-sm hover:shadow-md"
         :class="[props.required && showRequiredIndicator ? 'after:!text-tertiary' : '', props.class]"
     >
-        <input v-bind="$attrs" v-model="model" :required="props.required" class="bg-inherit outline-none" />
+        <input v-bind="$attrs" v-model="model" :required="props.required" class="bg-inherit outline-none py-1 px-2 rounded-lg" />
     </div>
 </template>
 
 <style scoped>
 .required-indicator::after {
-    position: relative;
-    top: 2px;
-    left: 4px;
+    position: absolute;
+    top: 6px;
+    right: 4px;
     content: '*';
     color: transparent;
 }

@@ -119,40 +119,42 @@ function clear() {
         @focusout="focusOut($event)"
         ref="root"
     >
-        <div class="flex">
-            <TextInput
-                class="group-focus-within:bg-input-bg group-focus-within:shadow-none has-[:focus-visible]:relative has-[:focus-visible]:z-20"
-                :type="$props.type"
-                :placeholder="props.placeholder"
-                :required="props.required"
-                :show-required-indicator="!focused"
-                v-model="textInput"
-            />
-            <button
-                v-if="focused && textInput"
-                class="absolute -right-10 top-1/2 -translate-y-1/2 my-auto material-symbols-outlined text-2xl p-1 rounded-md focus-visible:outline-default"
-                @click.prevent="clear"
-            >
-                backspace
-            </button>
-        </div>
+        <TextInput
+            class="group-focus-within:bg-input-bg group-focus-within:shadow-none has-[:focus-visible]:relative has-[:focus-visible]:z-20"
+            :type="$props.type"
+            :placeholder="props.placeholder"
+            :required="props.required"
+            :show-required-indicator="!focused"
+            v-model="textInput"
+        />
+        <button
+            v-show="focused && textInput"
+            class="absolute -right-10 top-1/2 -translate-y-1/2 my-auto material-symbols-outlined text-2xl p-1 rounded-md text-tertiary hover:text-main focus-visible:outline-default"
+            @click.prevent="clear"
+        >
+            backspace
+        </button>
         <div
             class="absolute rounded-b-lg w-full z-10 hidden group-focus-within:block group-focus-within:bg-input-bg shadow-md"
         >
             <AutoCompleteEntry
-                v-if="textInput && exactMatch == null"
+                v-show="textInput && exactMatch == null"
                 @click.prevent="emit('requestCreate', textInput.trim())"
             >
                 Erstelle <b>{{ textInput }}</b>
             </AutoCompleteEntry>
             <AutoCompleteEntry
-                class="whitespace-"
                 v-for="suggestion of computedSuggestions"
+                :key="suggestion.suggestion.id"
                 @click.prevent="pick(suggestion.suggestion)"
             >
-                <span>{{ suggestion.suggestion.name.substring(0, suggestion.matchFromIndex) }}</span>
+                <span v-show="suggestion.matchFromIndex > 0">{{
+                    suggestion.suggestion.name.substring(0, suggestion.matchFromIndex)
+                }}</span>
                 <b>{{ suggestion.suggestion.name.substring(suggestion.matchFromIndex, suggestion.matchToIndex) }}</b>
-                <span>{{ suggestion.suggestion.name.substring(suggestion.matchToIndex) }}</span>
+                <span v-show="suggestion.matchToIndex < suggestion.suggestion.name.length">{{
+                    suggestion.suggestion.name.substring(suggestion.matchToIndex)
+                }}</span>
             </AutoCompleteEntry>
         </div>
     </div>
