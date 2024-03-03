@@ -9,11 +9,11 @@ interface GenericTransaction extends Model {
 }
 
 export type TransactionCreateParameters = {
-    isExpense?: boolean,
-    amount?: number,
-    description?: string,
-    CategoryId?: number,
+    isExpense: boolean,
+    amount: number,
+    CategoryId: number,
     ShopId?: number,
+    description?: string,
 }
 
 export type TransactionQueryParameters = {
