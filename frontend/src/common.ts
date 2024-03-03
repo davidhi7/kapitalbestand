@@ -38,3 +38,10 @@ export function format_year_month(attributes: { date: Date; style: 'long' | 'sho
 export function normalizeStrings(input: string) {
     return input.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
+
+/**
+ * Format date as `YYYY-MM` string
+ */
+export function dateToYearMonth(date: Date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+}

@@ -24,8 +24,8 @@ provide('frequency', props.frequency);
 <template>
     <table class="grid w-full shadow-xl dark:shadow-2xl"
         :class="{ 'grid-cols-3 sm:grid-cols-4': frequency === 'oneoff', 'grid-cols-4 sm:grid-cols-5': frequency === 'monthly' }">
-        <TransactionListHeader></TransactionListHeader>
-        <TransactionListRow v-if="transactions && transactions.length > 0" v-for="(t, key) of transactions" :v-key="key"
+        <TransactionListHeader />
+        <TransactionListRow v-if="transactions && transactions.length > 0" v-for="t in transactions" :key="t.id"
             :transaction="t"></TransactionListRow>
         <td v-else class="col-span-full justify-self-center p-2">
             Keine Einträge

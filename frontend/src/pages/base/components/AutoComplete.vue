@@ -12,7 +12,7 @@ interface MatchedSuggestion {
     matchToIndex: number;
 }
 
-const model = defineModel<T | undefined>();
+const model = defineModel<T>();
 const props = withDefaults(
     defineProps<{
         suggestions: T[];
@@ -33,13 +33,17 @@ const emit = defineEmits<{
 }>();
 
 let textInput = ref('');
-watch(model, (newValue: T | undefined) => {
-    if (newValue == undefined) {
-        textInput.value = '';
-        return;
-    }
-    textInput.value = newValue.name;
-});
+watch(
+    model,
+    (newValue: T | undefined) => {
+        if (newValue == undefined) {
+            textInput.value = '';
+            return;
+        }
+        textInput.value = newValue.name;
+    },
+    { immediate: true }
+);
 
 const computedSuggestions = computed<MatchedSuggestion[]>(() => {
     const matchedSuggestions: MatchedSuggestion[] = [];
@@ -86,19 +90,25 @@ function focusIn() {
     focused.value = true;
 }
 
-function focusOut(evt: FocusEvent) {
-    if (root.value!.contains(evt.relatedTarget as Node)) {
+function focusOut(evt: FocusEvent | null) {
+    if (evt && root.value!.contains(evt.relatedTarget as Node)) {
         return;
     }
     focused.value = false;
 
     if (!model.value) {
+        // If no instance is currently selected, select the instance that
+        // completely matches the input, otherwise just reset
         if (exactMatch.value) {
             pick(exactMatch.value.suggestion);
         } else {
             textInput.value = '';
         }
+    } else if (textInput.value === '') {
+        // If an instance is selected but the input field is empty, deselect the instance
+        clear();
     } else {
+        // In all other cases, just set the input value back to the selected model's name
         textInput.value = model.value.name;
     }
 }
@@ -107,6 +117,13 @@ function clear() {
     model.value = undefined;
     textInput.value = '';
     root.value!.querySelector('input')!.focus();
+}
+
+function handleKeyboardInput(evt: KeyboardEvent) {
+    if (evt.code === 'Escape') {
+        focusOut(null);
+        (document.activeElement! as HTMLElement).blur();
+    }
 }
 </script>
 
@@ -117,6 +134,7 @@ function clear() {
         :class="{ 'rounded-b-lg': !textInput && computedSuggestions.length == 0 }"
         @focusin="focusIn()"
         @focusout="focusOut($event)"
+        @keyup="handleKeyboardInput($event)"
         ref="root"
     >
         <TextInput

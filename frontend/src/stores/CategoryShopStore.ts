@@ -8,6 +8,7 @@ interface State {
     shops: Shop[];
 }
 
+type ConditionalReturnType<T> = T extends 'Category' ? Category : Shop
 export const useCategoryShopStore = defineStore('CategoryShop', {
     state: (): State => {
         return {
@@ -24,7 +25,7 @@ export const useCategoryShopStore = defineStore('CategoryShop', {
             this.categories = categories.data;
             this.shops = shops.data;
         },
-        async create(type: "Category" | "Shop", name: string) {
+        async create(type: "Category" | "Shop", name: string): Promise<ConditionalReturnType<typeof type>> {
             let targetArray, endpoint;
             if (type === "Category") {
                 targetArray = this.categories;

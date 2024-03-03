@@ -18,9 +18,7 @@ export default {
 
 <template>
     <TransactionForm
-        :showTypeSection="false"
-        :fixedFrequency="frequency"
-        :baseTransaction="transaction"
+        :transaction="transaction"
         @done="data => $emit('done')"
     ></TransactionForm>
 </template>

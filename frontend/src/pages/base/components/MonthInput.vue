@@ -1,27 +1,46 @@
-<script setup>
-defineProps(['modelValue', 'id', 'required']);
-const emit = defineEmits(['update:modelValue']);
+<script setup lang="ts">
+import TextInput from './TextInput.vue';
 
-// Firefox does not support input[type='month'] tags on desktop and falls back to a simple text input.
-// Detect Firefox desktop clients with the useragent and fall back to date inputs for these clients.
-const useragent = navigator.userAgent;
-let browserSupport = true;
-if (useragent.includes('Firefox')) {
-    if (!(useragent.includes('Mobile') || useragent.includes('Tablet'))) {
-        browserSupport = false;
-    }
+export interface MonthType {
+    year: number;
+    month: number;
 }
 
-function sanitizeDateInput(evt) {
-    const [year, month] = evt.target.value.split('-');
-    const value = `${year}-${month}`;
-    emit('update:modelValue', value);
-    evt.target.value = `${value}-01`;
+defineOptions({
+    inheritAttrs: false
+});
+
+const model = defineModel<MonthType>();
+
+// Firefox desktop does not support input[type='month'] tags on desktop and falls back to a simple text input.
+const testElement = document.createElement('input');
+testElement.setAttribute('type', 'month');
+const browserSupport = testElement.type === 'month';
+
+function handleInput(evt: InputEvent) {
+    const value = (evt.target! as HTMLInputElement).value;
+    if (!value) {
+        model.value = undefined;
+        return;
+    }
+    const [year, month] = value.split('-');
+    model.value = { year: Number(year), month: Number(month) };
 }
 </script>
 
 <template>
-    <input v-if="browserSupport" type="month" :id="id" :value="modelValue"
-        @input="$emit('update:modelValue', $event.target.value)" :required="!!required">
-    <input v-else type="date" :id="id" :value="`${modelValue}-01`" @input="sanitizeDateInput" :required="!!required">
+    <TextInput
+        v-if="browserSupport"
+        type="month"
+        :value="model ? `${model.year}-${model.month.toString().padStart(2, '0')}` : ''"
+        @input="handleInput"
+        v-bind="$attrs"
+    />
+    <TextInput
+        v-if="!browserSupport"
+        :value="model ? `${model.year}-${model.month.toString().padStart(2, '0')}-01` : ''"
+        type="date"
+        @input="handleInput"
+        v-bind="$attrs"
+    />
 </template>
