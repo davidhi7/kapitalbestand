@@ -239,7 +239,7 @@ export default {
 
 .notification-success {
     background-color: var(--green-1);
-    color: var(var(--default-text));
+    color: var(--default-text);
 
     .notification-timeout {
         background-color: var(--green-2);

@@ -4,6 +4,7 @@ import { ref } from 'vue';
 import { NotificationEvent, NotificationStyle, eventEmitter } from '@/pages/base/Notification.vue';
 import GridForm from '@/pages/transaction-form/GridForm.vue';
 import { AuthResponse, useAuthStateStore } from '@/stores/AuthStateStore';
+
 import TextInput from './base/components/TextInput.vue';
 
 const AuthStateStore = useAuthStateStore();
@@ -46,16 +47,22 @@ async function submit() {
 
 <template>
     <form @submit.prevent="submit" class="flex flex-col items-center gap-4">
-        <h1 class="bg-branding w-full bg-clip-text text-7xl font-bold leading-tight text-transparent text-center">
+        <h1 class="bg-gradient w-full bg-clip-text text-7xl font-bold leading-tight text-transparent text-center">
             Kapital&shy;bestand
         </h1>
-        <hr class="bg-branding h-1 w-full border-none" />
+        <hr class="bg-gradient h-1 w-full border-none" />
         <GridForm>
             <span>Benutzername</span>
             <TextInput type="text" required :show-required-indicator="false" v-model.lazy="username" />
 
             <span>Passwort</span>
-            <TextInput type="password" minlength="8" required :show-required-indicator="false" v-model.lazy="password" />
+            <TextInput
+                type="password"
+                minlength="8"
+                required
+                :show-required-indicator="false"
+                v-model.lazy="password"
+            />
 
             <span v-if="isRegisterForm">Passwort bestätigen</span>
             <TextInput
@@ -67,7 +74,7 @@ async function submit() {
                 v-model.lazy="passwordVerification"
             />
         </GridForm>
-        <hr class="bg-branding h-1 w-full border-none" />
+        <hr class="bg-gradient h-1 w-full border-none" />
         <div class="flex flex-row gap-4 items-center">
             <button class="btn" type="submit" :name="isRegisterForm ? 'register' : 'login'">
                 {{ isRegisterForm ? 'Registrieren' : 'Anmelden' }}
@@ -77,7 +84,7 @@ async function submit() {
                 <button
                     @click="toggleFormType"
                     type="button"
-                    class="cursor-pointer text-inherit underline decoration-1 hover:text-secondary"
+                    class="cursor-pointer text-inherit underline decoration-1 hover:text-tertiary transition-colors"
                 >
                     {{ isRegisterForm ? 'anmelden' : 'neu registrieren' }}</button
                 >?

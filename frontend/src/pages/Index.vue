@@ -20,6 +20,6 @@ else if (currentHour >= 11 && currentMinute >= 30) {
 <template>
     <div class="flex flex-column justify-center">
         <span class="mt-8 text-5xl font-light text-center">{{ greeting }}, <span
-                class="bg-branding bg-clip-text text-transparent font-medium">{{ AuthStateStore.username }}</span>.</span>
+                class="bg-gradient bg-clip-text text-transparent font-medium">{{ AuthStateStore.username }}</span>.</span>
     </div>
 </template>

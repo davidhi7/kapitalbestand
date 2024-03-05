@@ -17,6 +17,7 @@ import GridForm from './GridForm.vue';
 
 const props = defineProps<{
     transaction?: OneoffTransaction | MonthlyTransaction;
+    showCancelButton?: boolean
 }>();
 
 const emit = defineEmits<{
@@ -331,7 +332,7 @@ function submit() {
                 <LoadingSpinner v-show="submitLocks.size > 0" />
                 <span v-show="submitLocks.size === 0">Speichern</span>
             </button>
-            <button type="button" class="btn" @click="emit('done')">Verwerfen</button>
+            <button v-if="showCancelButton" type="button" class="btn" @click="emit('done')">Verwerfen</button>
         </div>
     </form>
 </template>
@@ -343,5 +344,9 @@ h2 {
 
 section {
     text-align: left;
+}
+
+label > :is(input[type='checkbox'], input[type='radio']) {
+    margin-right: 8px;
 }
 </style>

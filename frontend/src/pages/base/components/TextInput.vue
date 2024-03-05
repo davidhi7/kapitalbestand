@@ -36,8 +36,4 @@ if (props.value) {
     content: '*';
     color: transparent;
 }
-
-div:has(:focus-visible) {
-    @apply outline-default;
-}
 </style>

@@ -7,11 +7,3 @@
         </button>
     </div>
 </template>
-
-<style scoped>
-button:focus-visible {
-    position: relative;
-    z-index: 20;
-    @apply rounded-md outline-default;
-}
-</style>

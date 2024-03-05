@@ -8,16 +8,24 @@ body {
         'Droid Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
 }
 
-
 @layer components {
     .outline-default {
-        @apply outline-double outline-4;
+        @apply outline-double outline-4 outline-main;
+    }
+
+    :focus-visible:is(button, a, input) {
+        @apply outline-default;
+    }
+
+    :focus-visible:is(input[type='checkbox'], input[type='radio']) {
+        @apply outline-offset-2;
     }
 }
 
 .btn {
-    @apply rounded-sm
+    @apply rounded-md
         bg-secondary-bg
+        hover:bg-tertiary-bg
         py-2
         px-4
         font-semibold
@@ -26,18 +34,19 @@ body {
 
     &:active {
         transform: translateY(2px);
+        @apply transition-transform;
     }
 
     &.btn-red {
-        @apply !bg-red-600 !text-main-bg hover:!bg-red-500;
+        @apply bg-red-600 text-white hover:bg-red-500;
     }
-    
+
     &.btn-green {
-        @apply !bg-green-700 !text-main-bg hover:!bg-green-600;
+        @apply bg-green-700 text-white hover:bg-green-600;
     }
 }
 
-.bg-branding {
+.bg-gradient {
     @apply bg-gradient-to-r from-gradient-0 to-gradient-1;
 }
 
@@ -45,24 +54,18 @@ h1 {
     @apply text-center text-4xl font-semibold;
 }
 
-.ln {
-    &:hover :not(.material-symbols-outlined):not(.material-symbols-filled) {
-        @apply underline underline-offset-4 decoration-tertiary;
-    }
-}
-
 :root {
     --main: #444;
     --secondary: #666;
     --tertiary: #888;
 
-    --main-dark: #DDD; 
+    --main-dark: #ddd;
 
     --main-bg: hsl(0, 0%, 100%);
     --secondary-bg: hsl(0, 0%, 95%);
     --tertiary-bg: hsl(0, 0%, 90%);
 
-    --input-bg: hsl(0, 0%, 85%);
+    --input-bg: hsl(0, 0%, 93%);
     --header-bg: hsl(0, 0%, 10%);
     --header-bg-hover: hsl(0, 0%, 18%);
 
@@ -73,18 +76,19 @@ h1 {
     --gradient-1: #159957;
 
     box-sizing: border-box;
+    color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --main: #DDD;
-        --secondary: #CCC;
-        --tertiary: #AAA;
-        
+        --main: #ddd;
+        --secondary: #ccc;
+        --tertiary: #aaa;
+
         --main-bg: hsl(0, 0%, 10%);
         --secondary-bg: hsl(0, 0%, 13%);
         --tertiary-bg: hsl(0, 0%, 20%);
-        
+
         --input-bg: hsl(0, 0%, 25%);
         --header-bg: hsl(0, 0%, 5%);
         --header-bg-hover: hsl(0, 0%, 13%);
@@ -92,7 +96,9 @@ h1 {
         --positive: hsl(140, 50%, 40%);
         --negative: rgb(248, 81, 73);
 
-        --gradient-0: #1F7FDF;
-        --gradient-1: #1FDF7F;
+        --gradient-0: #1f7fdf;
+        --gradient-1: #1fdf7f;
+
+        color-scheme: dark;
     }
 }

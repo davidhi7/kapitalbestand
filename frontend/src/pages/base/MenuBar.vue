@@ -72,3 +72,9 @@ defineEmits(['logout']);
         </section>
     </nav>
 </template>
+
+<style scoped>
+nav * {
+    @apply outline-main -outline-offset-4;
+}
+</style>
