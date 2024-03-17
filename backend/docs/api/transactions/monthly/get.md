@@ -28,63 +28,65 @@ Fetched transactions are ordered by the `monthFrom` and `monthTo` value.
 **Code**: `200 OK`
 
 **Content**:
+
 ```json
 {
-	"status": "success",
-	"data": [
-		{
-			"id": 1,
-			"monthFrom": "2022-01-01",
-			"monthTo": "2023-12-01",
-			"createdAt": "2022-12-06T16:56:30.790Z",
-			"updatedAt": "2022-12-06T16:56:30.790Z",
-			"TransactionId": 1,
-			"Transaction": {
-				"id": 1,
-				"description": "this is a sample monthly transaction",
-				"amount": 2000,
-				"isExpense": true,
-				"CategoryId": 1,
-				"ShopId": 1,
-				"Category": {
-					"id": 1,
-					"name": "sample category"
-				},
-				"Shop": {
-					"id": 1,
-					"name": "sample shop"
-				}
-			}
-		},
-		{
-			"id": 2,
-			"monthFrom": "2022-06-01",
-			"monthTo": "2024-10-01",
-			"createdAt": "2022-12-06T16:57:04.794Z",
-			"updatedAt": "2022-12-06T16:57:04.794Z",
-			"TransactionId": 2,
-			"Transaction": {
-				"id": 2,
-				"description": "this is another monthly transaction",
-				"amount": 50000,
-				"isExpense": false,
-				"CategoryId": 1,
-				"ShopId": 1,
-				"Category": {
-					"id": 1,
-					"name": "sample category"
-				},
-				"Shop": {
-					"id": 1,
-					"name": "sample shop"
-				}
-			}
-		}
-	]
+    "status": "success",
+    "data": [
+        {
+            "id": 1,
+            "monthFrom": "2022-01-01",
+            "monthTo": "2023-12-01",
+            "createdAt": "2022-12-06T16:56:30.790Z",
+            "updatedAt": "2022-12-06T16:56:30.790Z",
+            "TransactionId": 1,
+            "Transaction": {
+                "id": 1,
+                "description": "this is a sample monthly transaction",
+                "amount": 2000,
+                "isExpense": true,
+                "CategoryId": 1,
+                "ShopId": 1,
+                "Category": {
+                    "id": 1,
+                    "name": "sample category"
+                },
+                "Shop": {
+                    "id": 1,
+                    "name": "sample shop"
+                }
+            }
+        },
+        {
+            "id": 2,
+            "monthFrom": "2022-06-01",
+            "monthTo": "2024-10-01",
+            "createdAt": "2022-12-06T16:57:04.794Z",
+            "updatedAt": "2022-12-06T16:57:04.794Z",
+            "TransactionId": 2,
+            "Transaction": {
+                "id": 2,
+                "description": "this is another monthly transaction",
+                "amount": 50000,
+                "isExpense": false,
+                "CategoryId": 1,
+                "ShopId": 1,
+                "Category": {
+                    "id": 1,
+                    "name": "sample category"
+                },
+                "Shop": {
+                    "id": 1,
+                    "name": "sample shop"
+                }
+            }
+        }
+    ]
 }
 ```
 
 ## Error responses
+
 ### `400 Bad Request`
 
 **Condition**
@@ -92,32 +94,33 @@ Bad request with parameters that failed validation. The response contains a list
 
 The following parameters resulted in the provided response:
 
-| Parameter    | Value               |
-| ------------ | ------------------- |
-| `monthFrom`  | `july of last year` |
-| `CategoryId` | `id is five`        |
+| Parameter    | Value           |
+| ------------ | --------------- |
+| `monthFrom`  | `invalid month` |
+| `CategoryId` | `invalid Id`    |
 
 **Content**:
+
 ```json
 {
-	"status": "error",
-	"error": "Bad request on API endpoint GET /api/transactions/monthly",
-	"data": {
-		"errors": [
-			{
-				"value": "july of last year",
-				"msg": "Invalid value",
-				"param": "monthFrom",
-				"location": "query"
-			},
-			{
-				"value": "id is five",
-				"msg": "Invalid value",
-				"param": "CategoryId",
-				"location": "query"
-			}
-		]
-	}
+    "status": "error",
+    "error": "Bad request on API endpoint GET /api/transactions/monthly",
+    "data": {
+        "errors": [
+            {
+                "value": "invalid month",
+                "msg": "Invalid value",
+                "param": "monthFrom",
+                "location": "query"
+            },
+            {
+                "value": "invalid Id",
+                "msg": "Invalid value",
+                "param": "CategoryId",
+                "location": "query"
+            }
+        ]
+    }
 }
 ```
 
@@ -127,9 +130,10 @@ The following parameters resulted in the provided response:
 The client is not authenticated.
 
 **Content**:
+
 ```json
 {
-	"status": "error",
-	"error": "Unauthorized"
+    "status": "error",
+    "error": "Unauthorized"
 }
 ```

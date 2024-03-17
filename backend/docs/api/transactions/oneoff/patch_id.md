@@ -16,15 +16,12 @@ Update the one-off transaction with the provided id.
 
 **Attributes**:
 
-| Attribute     | Format             | Required | Description                                                                  |
-| ------------- | ------------------ | :------: | ---------------------------------------------------------------------------- |
-| `date`        | `YYYY-MM-DD`       |          | Date on which the transaction occurred.                                      |
-| `amount`      | `int` (cent value) |          | Amount of money of the transaction in cents.                                 |
-| `category`    | `string`           |          | Name of the category                                                         |
-| `CategoryId`  | `int`              |          | ID of the category. If `category` is provided, `CategoryId` will be ignored. |
-| `shop`        | `string`           |          | Name of the shop.                                                            |
-| `ShopId`      | `int`              |          | ID of the shop. If `shop` is provided, `ShopId` will be ignored.             |
-| `description` | `string`           |          | Description of the transaction. Optional.                                    |
+| Attribute    | Format             | Required | Description                                  |
+| ------------ | ------------------ | :------: | -------------------------------------------- |
+| `date`       | `YYYY-MM-DD`       |          | Date on which the transaction occurred.      |
+| `amount`     | `int` (cent value) |          | Amount of money of the transaction in cents. |
+| `CategoryId` | `int`              |          | Id of the category.                          |
+| `ShopId`     | `int`              |          | Id of the shop.                              |
 
 Note that the `isExpense` attribute cannot be modified.
 
@@ -33,36 +30,38 @@ Note that the `isExpense` attribute cannot be modified.
 **Code**: `201 Created`
 
 **Content**:
+
 ```json
 {
-  "status": "success",
-  "data": {
-    "id": 1,
-    "date": "2022-12-01",
-    "createdAt": "2022-12-06T16:49:00.938Z",
-    "updatedAt": "2022-12-06T16:50:00.000Z",
-    "TransactionId": 1,
-    "Transaction": {
-      "id": 1,
-      "description": "this is a sample one-off income transaction",
-      "amount": 100,
-      "isExpense": false,
-      "CategoryId": 1,
-      "ShopId": 1,
-      "Category": {
+    "status": "success",
+    "data": {
         "id": 1,
-        "name": "sample category"
-      },
-      "Shop": {
-        "id": 1,
-        "name": "sample transaction"
-      }
+        "date": "2022-12-01",
+        "createdAt": "2022-12-06T16:49:00.938Z",
+        "updatedAt": "2022-12-06T16:50:00.000Z",
+        "TransactionId": 1,
+        "Transaction": {
+            "id": 1,
+            "description": "this is a sample one-off income transaction",
+            "amount": 100,
+            "isExpense": false,
+            "CategoryId": 1,
+            "ShopId": 1,
+            "Category": {
+                "id": 1,
+                "name": "sample category"
+            },
+            "Shop": {
+                "id": 1,
+                "name": "sample transaction"
+            }
+        }
     }
-  }
 }
 ```
 
 ## Error responses
+
 ### `400 Bad Request`
 
 **Condition**
@@ -74,10 +73,11 @@ Bad request with parameters that failed validation. The response contains a list
 A transaction with the corresponding id does not exist or the client is not authorised to delete this transaction.
 
 **Content**:
+
 ```json
 {
-	"status": "error",
-	"error": "Not Found"
+    "status": "error",
+    "error": "Not Found"
 }
 ```
 
@@ -87,9 +87,10 @@ A transaction with the corresponding id does not exist or the client is not auth
 The client is not authenticated.
 
 **Content**:
+
 ```json
 {
-	"status": "error",
-	"error": "Unauthorized"
+    "status": "error",
+    "error": "Unauthorized"
 }
 ```
