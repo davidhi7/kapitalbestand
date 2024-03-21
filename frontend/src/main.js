@@ -29,6 +29,6 @@ authEventTarget.addEventListener('authentication', () => {
     TransactionStore.fetch();
 });
 
-await AuthStateStore.requestWhoAmI().then(() => {
+AuthStateStore.requestWhoAmI().then(() => {
     app.mount('div#app');
 });
