@@ -313,7 +313,7 @@ function submit() {
 
                 <label for="shop">Ort/Geschäft</label>
                 <AutoComplete
-                    :suggestions="(CategoryShopStore.shops as Required<Category>[])"
+                    :suggestions="(CategoryShopStore.shops as Required<Shop>[])"
                     v-model="transactionProperties.Shop"
                     @request-create="(name) => createCategoryShop('Shop', name)"
                 />
@@ -331,7 +331,7 @@ function submit() {
             >
                 <LoadingSpinner v-show="submitLocks.size > 0" />
                 <span v-show="submitLocks.size === 0">Speichern</span>
-            </button>
+            </butto
             <button v-if="showCancelButton" type="button" class="btn" @click="emit('done')">Verwerfen</button>
         </div>
     </form>
