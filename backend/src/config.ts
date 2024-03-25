@@ -19,6 +19,10 @@ export function readFromEnv(name: string, allowSecretFile: boolean = false): str
     throw Error(errorString);
 }
 
+function generateSessionSecret(): string {
+    return crypto.randomBytes(32).toString('hex');
+}
+
 function populateDatabaseConfig(enable_orm_logging: boolean): SequelizeOptions {
     if (!process.env.DB_DBMS || !process.env.DB_DATABASE || !process.env.DB_HOST) {
         throw Error('Database configuration environmental variables are missing');
@@ -57,7 +61,7 @@ const config = {
             payload_limit: 10000
         },
         session: {
-            secret: crypto.randomBytes(32).toString('hex')
+            secret: generateSessionSecret()
         }
     },
     db: populateDatabaseConfig(enable_orm_logging),
@@ -67,7 +71,7 @@ const config = {
 };
 
 if (process.env.NODE_ENV === 'production') {
-    const session_secret_file = join(projectRoot, '.session_secret')
+    const session_secret_file = join(projectRoot, '.session_secret');
     if (!existsSync(session_secret_file)) {
         writeFileSync(session_secret_file, config.api.session.secret);
     } else {
@@ -76,6 +80,8 @@ if (process.env.NODE_ENV === 'production') {
         } catch (err) {
             console.error('Failed to read session secret file');
             console.error(err);
+            // Assign a new session secret just in case
+            config.api.session.secret = generateSessionSecret();
         }
     }
 }
