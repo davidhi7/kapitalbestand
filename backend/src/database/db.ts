@@ -8,20 +8,25 @@ import Shop from './models/Shop.js';
 import Transaction from './models/Transaction.js';
 import User from './models/User.js';
 
-const sequelize = new Sequelize({
-    ...config.db,
-    models: [Category, Shop, Transaction, MonthlyTransaction, OneoffTransaction, User]
-});
+let sequelize;
 
-try {
-    await sequelize.authenticate();
-    console.log('Database connection has been established successfully.');
-} catch (error) {
-    console.error('Unable to connect to the database:', error);
+export async function connectToDatabase() {
+    sequelize = new Sequelize({
+        ...config.db,
+        models: [Category, Shop, Transaction, MonthlyTransaction, OneoffTransaction, User]
+    });
+
+    try {
+        await sequelize.authenticate();
+        console.log('Database connection has been established successfully.');
+    } catch (error) {
+        console.error('Unable to connect to the database');
+        console.error(error);
+        throw error;
+    }
+
+    await sequelize.sync({ force: false });
 }
-
-// TODO: replace with migrate script and test hooks
-await sequelize.sync({ force: false });
 
 export default sequelize;
 export { User, Category, Shop, Transaction, OneoffTransaction, MonthlyTransaction };

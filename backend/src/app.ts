@@ -1,10 +1,13 @@
 import express from 'express';
 import morgan from 'morgan';
-import { AddressInfo } from 'node:net';
+import type { AddressInfo } from 'node:net';
 import path from 'node:path';
 
 import config from './config.js';
+import { connectToDatabase } from './database/db.js';
 import router from './routing/api.js';
+
+connectToDatabase();
 
 const app = express();
 app.disable('x-powered-by');
