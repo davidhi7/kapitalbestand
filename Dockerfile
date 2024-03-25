@@ -1,4 +1,4 @@
-FROM node:19 as builder
+FROM node:21 as builder
 WORKDIR /build
 COPY backend/ ./backend
 COPY frontend/ ./frontend
@@ -11,7 +11,7 @@ RUN npm ci
 RUN npm run build
 
 
-FROM node:19
+FROM node:21
 # with this env, no dev packages are being installed
 ENV NODE_ENV=production
 WORKDIR /usr/src/app
