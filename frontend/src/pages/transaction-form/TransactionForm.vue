@@ -331,7 +331,7 @@ function submit() {
             >
                 <LoadingSpinner v-show="submitLocks.size > 0" />
                 <span v-show="submitLocks.size === 0">Speichern</span>
-            </butto
+            </button>
             <button v-if="showCancelButton" type="button" class="btn" @click="emit('done')">Verwerfen</button>
         </div>
     </form>
