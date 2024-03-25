@@ -8,7 +8,7 @@ import Shop from './models/Shop.js';
 import Transaction from './models/Transaction.js';
 import User from './models/User.js';
 
-let sequelize;
+let sequelize: Sequelize | undefined = undefined;
 
 export async function connectToDatabase() {
     sequelize = new Sequelize({
@@ -26,6 +26,7 @@ export async function connectToDatabase() {
     }
 
     await sequelize.sync({ force: false });
+    return sequelize;
 }
 
 export default sequelize;

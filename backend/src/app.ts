@@ -7,7 +7,7 @@ import config from './config.js';
 import { connectToDatabase } from './database/db.js';
 import router from './routing/api.js';
 
-connectToDatabase();
+await connectToDatabase();
 
 const app = express();
 app.disable('x-powered-by');

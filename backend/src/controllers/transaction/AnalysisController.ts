@@ -23,7 +23,7 @@ class AnalysisController {
             >,
             Promise<MonthlyTransaction[]>
         ] = [
-            sequelize.query(
+            sequelize!.query(
                 `
             SELECT
                 EXTRACT(YEAR FROM "OneoffTransactions"."date") as year,
