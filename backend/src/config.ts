@@ -5,88 +5,53 @@ import { dirname, join } from 'path';
 import { SequelizeOptions } from 'sequelize-typescript';
 import { fileURLToPath } from 'url';
 
-export function readFromEnv(name: string): string {
-    if (process.env[name + '_FILE']) {
+export function readFromEnv(name: string, allowSecretFile: boolean = false): string {
+    if (allowSecretFile && process.env[name + '_FILE']) {
         return readFileSync(process.env[name + '_FILE'] as string, 'utf8').trim();
     } else if (process.env[name]) {
         return process.env[name] as string;
     }
-    throw Error(`Environmental variables \`${name}\` and \`${name + '_FILE'}\` missing`);
+
+    let errorString = `Environmental variable \`${name}\` missing`;
+    if (allowSecretFile) {
+        errorString = `Environmental variables \`${name}\` and \`${name + '_FILE'}\` missing`;
+    }
+    throw Error(errorString);
 }
 
-function populateDatabaseConfig(config: ConfigType, use_memory_sqlite: boolean, enable_orm_logging: boolean) {
-    if (use_memory_sqlite || process.env.USE_MEMORY_SQLITE) {
-        console.log('Use sqlite database inside memory');
-        config.db = {
-            dialect: 'sqlite',
-            storage: ':memory:',
-            logging: enable_orm_logging
-        };
-        return;
-    }
-    
+function populateDatabaseConfig(enable_orm_logging: boolean): SequelizeOptions {
     if (!process.env.DB_DBMS || !process.env.DB_DATABASE || !process.env.DB_HOST) {
         throw Error('Database configuration environmental variables are missing');
     }
-    if (!(process.env.DB_DBMS === 'postgres' || process.env.DB_DBMS === 'sqlite')) {
+    if (!(process.env.DB_DBMS === 'postgres')) {
         throw Error(`\`DB_DBMS\` must be \`postgres\` (provided: ${process.env.DB_DBMS})`);
     }
-    config.db = {
-        dialect: process.env.DB_DBMS as 'postgres' | 'sqlite',
-        database: process.env.DB_DATABASE,
-        username: readFromEnv('DB_USER'),
-        password: readFromEnv('DB_PASSWORD'),
-        host: process.env.DB_HOST,
+    return {
+        dialect: readFromEnv('DB_DBMS') as 'postgres',
+        database: readFromEnv('DB_DATABASE'),
+        username: readFromEnv('DB_USER', true),
+        password: readFromEnv('DB_PASSWORD', true),
+        host: readFromEnv('DB_HOST'),
         logging: enable_orm_logging
     };
 }
 
-const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
-let use_memory_sqlite = false;
 let enable_orm_logging = false;
-if (process.env.NODE_ENV !== "test") {
+if (process.env.NODE_ENV !== 'test') {
     const parseArgsOptions: ParseArgsConfig = {
         options: {
-            'memory-sqlite': {
-                type: 'boolean',
-                default: false
-            },
-            orm_logging: {
+            'orm-logging': {
                 type: 'boolean',
                 default: false
             }
         }
     };
-    const CliValues = parseArgs(parseArgsOptions).values;
-    use_memory_sqlite = CliValues['memory-sqlite'] as boolean;
-    enable_orm_logging = CliValues['orm-logging'] as boolean;    
+    const cliValues = parseArgs(parseArgsOptions).values;
+    enable_orm_logging = cliValues['orm-logging'] as boolean;
 }
 
-type ConfigType = {
-    api: {
-        query: {
-            payload_limit: number;
-        };
-        session: {
-            secret: string;
-        };
-    };
-    db?: {
-        dialect: string;
-        logging: boolean;
-        storage?: string;
-        database?: string;
-        username?: string;
-        password?: string;
-        host?: string;
-    } & SequelizeOptions;
-    paths: {
-        static_directory: string;
-        session_secret_file: string;
-    };
-};
-
-const config: ConfigType = {
+const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
+const config = {
     api: {
         query: {
             payload_limit: 10000
@@ -95,20 +60,19 @@ const config: ConfigType = {
             secret: crypto.randomBytes(32).toString('hex')
         }
     },
+    db: populateDatabaseConfig(enable_orm_logging),
     paths: {
-        static_directory: join(projectRoot, 'static'),
-        session_secret_file: join(projectRoot, '.session_secret')
+        static_directory: join(projectRoot, 'static')
     }
 };
 
-populateDatabaseConfig(config, use_memory_sqlite, enable_orm_logging)
-
 if (process.env.NODE_ENV === 'production') {
-    if (!existsSync(config.paths.session_secret_file)) {
-        writeFileSync(config.paths.session_secret_file, config.api.session.secret);
+    const session_secret_file = join(projectRoot, '.session_secret')
+    if (!existsSync(session_secret_file)) {
+        writeFileSync(session_secret_file, config.api.session.secret);
     } else {
         try {
-            config.api.session.secret = readFileSync(config.paths.session_secret_file, 'utf8');
+            config.api.session.secret = readFileSync(session_secret_file, 'utf8');
         } catch (err) {
             console.error('Failed to read session secret file');
             console.error(err);
