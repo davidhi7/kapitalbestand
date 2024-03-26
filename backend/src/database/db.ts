@@ -11,6 +11,10 @@ import User from './models/User.js';
 let sequelize: Sequelize | undefined = undefined;
 
 export async function connectToDatabase() {
+    if (sequelize != undefined) {
+        console.log('Database connection was already established');
+        return sequelize;
+    }
     sequelize = new Sequelize({
         ...config.db,
         models: [Category, Shop, Transaction, MonthlyTransaction, OneoffTransaction, User]
@@ -25,9 +29,9 @@ export async function connectToDatabase() {
         throw error;
     }
 
-    await sequelize.sync({ force: false });
     return sequelize;
 }
 
 export default sequelize;
-export { User, Category, Shop, Transaction, OneoffTransaction, MonthlyTransaction };
+export { Category, MonthlyTransaction, OneoffTransaction, Shop, Transaction, User };
+

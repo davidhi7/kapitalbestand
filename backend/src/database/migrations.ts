@@ -1,45 +1,42 @@
-import { DataTypes } from 'sequelize';
-import { Umzug } from 'umzug';
+import * as path from 'path';
+import * as fs from 'fs';
+import { SequelizeStorage, Umzug } from 'umzug';
+import { fileURLToPath } from 'url';
 
-import sequelize from './db.js';
+import { connectToDatabase } from './db.js';
+
+const sequelize = await connectToDatabase();
 
 const umzug = new Umzug({
-    migrations: [
-        {
-            name: '00-initial',
-            async up({ context }) {},
-            async down({ context }) {}
-        },
-        {
-            name: '01-mandatory_UserIds',
-            async up({ context }) {
-                for (let tableName of ['Categories', 'Shops', 'OneoffTransactions', 'MonthlyTransactions']) {
-                    await context.addConstraint(tableName, {
-                        fields: ['UserId'],
-                        type: 'unique',
-                        name: `${tableName}_UserId_key`
-                    });
-                }
-                await context.addConstraint('Transactions', {
-                    fields: ['CategoryId'],
-                    type: 'unique',
-                    name: 'Transactions_CategoryId_key'
-                });
-                await context.addConstraint('Transactions', {
-                    fields: ['ShopId'],
-                    type: 'unique',
-                    name: 'Transactions_ShopId_key'
-                });
-            },
-            async down({ context }) {
-                for (let tableName of ['Categories', 'Shops', 'OneoffTransactions', 'MonthlyTransactions']) {
-                    await context.removeConstraint(tableName, `${tableName}_UserId_key`);
-                }
-                await context.removeConstraint('Transactions', 'Transactions_CategoryId_key');
-                await context.removeConstraint('Transactions', 'Transactions_ShopId_key');
-            }
+    migrations: {
+        glob: path.join(path.dirname(fileURLToPath(import.meta.url)), 'migrations', '*.{js,ts,up.sql}'),
+        resolve: (params) => {
+            const { context, name, path } = params
+            if (!path?.endsWith('.sql')) {
+                const return_value = Umzug.defaultResolver(params)
+                return_value.name = return_value.name.replace(/(\.ts|\.js)$/, '');
+				return return_value;
+			}
+			return {
+				name: name.replace('.up.sql', ''),
+				up: async () => {
+					const sql = fs.readFileSync(path).toString()
+					return context.sequelize.query(sql)
+				},
+				down: async () => {
+					// Get the corresponding `.down.sql` file to undo this migration
+					const sql = fs
+						.readFileSync(path.replace('.up.sql', '.down.sql'))
+						.toString()
+					return context.sequelize.query(sql)
+				},
+			}
+
         }
-    ],
-    context: sequelize.getQueryInterface(),
+    },
+    context: sequelize!.getQueryInterface(),
+    storage: new SequelizeStorage({ sequelize }),
     logger: console
 });
+
+export default umzug;
