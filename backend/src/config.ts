@@ -4,6 +4,7 @@ import { ParseArgsConfig, parseArgs } from 'node:util';
 import { dirname, join } from 'path';
 import { SequelizeOptions } from 'sequelize-typescript';
 import { fileURLToPath } from 'url';
+import { parseCli } from './cli.js';
 
 export function readFromEnv(name: string, allowSecretFile: boolean = false): string {
     if (allowSecretFile && process.env[name + '_FILE']) {
@@ -41,17 +42,11 @@ function populateDatabaseConfig(enable_orm_logging: boolean): SequelizeOptions {
 }
 
 let enable_orm_logging = false;
+let apply_migrations = false;
 if (process.env.NODE_ENV !== 'test') {
-    const parseArgsOptions: ParseArgsConfig = {
-        options: {
-            'orm-logging': {
-                type: 'boolean',
-                default: false
-            }
-        }
-    };
-    const cliValues = parseArgs(parseArgsOptions).values;
+    const cliValues = parseCli();
     enable_orm_logging = cliValues['orm-logging'] as boolean;
+    apply_migrations = cliValues['migrate'] as boolean;
 }
 
 const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -65,6 +60,9 @@ const config = {
         }
     },
     db: populateDatabaseConfig(enable_orm_logging),
+    migrations: {
+        apply: apply_migrations
+    },
     paths: {
         static_directory: join(projectRoot, 'static')
     }

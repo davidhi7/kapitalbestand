@@ -5,9 +5,15 @@ import path from 'node:path';
 
 import config from './config.js';
 import { connectToDatabase } from './database/db.js';
+import { prepareMigrations } from './database/migrations.js';
 import router from './routing/api.js';
 
-await connectToDatabase();
+const sequelize = await connectToDatabase();
+
+if (config.migrations.apply) {
+    const umzug = prepareMigrations(sequelize);
+    await umzug.up();
+}
 
 const app = express();
 app.disable('x-powered-by');
