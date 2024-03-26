@@ -28,7 +28,6 @@ export default class MonthlyTransaction extends Model {
     @Column
     declare UserId: number;
     
-    // associations
     @BelongsTo(() => Transaction)
     declare Transaction: ReturnType<() => Transaction>;
 

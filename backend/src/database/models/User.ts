@@ -24,12 +24,10 @@ export default class User extends Model {
     @Column
     declare username: string;
 
-    @Unique
     @AllowNull(false)
     @Column
     declare hash: string;
 
-    // associations
     @HasMany(() => Category)
     declare Categories: Category[];
 

@@ -24,7 +24,6 @@ export default class Transaction extends Model {
     @Column(DataType.TEXT)
     declare description: string;
 
-    // associations
     @ForeignKey(() => Category)
     @AllowNull(false)
     @Column
