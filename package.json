@@ -16,9 +16,11 @@
         "@vue/compiler-sfc": "^3.4.21",
         "eslint": "^8.57.0",
         "eslint-plugin-mocha": "^10.4.1",
+        "eslint-plugin-vue": "^9.24.0",
         "prettier": "^3.2.5",
         "prettier-plugin-tailwindcss": "^0.5.13",
-        "typescript-eslint": "^7.4.0"
+        "typescript-eslint": "^7.4.0",
+        "vue-eslint-parser": "^9.4.2"
     },
     "prettier": {
         "printWidth": 100,
