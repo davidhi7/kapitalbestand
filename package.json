@@ -39,6 +39,7 @@
         "importOrderParserPlugins": [
             "typescript",
             "decorators-legacy"
-        ]
+        ],
+        "tailwindConfig": "./frontend/tailwind.config.js"
     }
 }
