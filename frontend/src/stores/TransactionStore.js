@@ -87,7 +87,8 @@ export const useTransactionStore = defineStore('Transaction', {
             }
             const body = await response.json();
 
-            const transaction_type = body.data.Transaction.isExpense === true ? 'expenses' : 'incomes';
+            const transaction_type =
+                body.data.Transaction.isExpense === true ? 'expenses' : 'incomes';
             this.transactions[frequency][transaction_type][body.data.id] = body.data;
         },
         async fetch() {
@@ -102,7 +103,8 @@ export const useTransactionStore = defineStore('Transaction', {
                     // filter expenses and incomes from all responses
                     const { expenses, incomes } = body.data.reduce(
                         (res, item) => {
-                            res[item.Transaction.isExpense ? 'expenses' : 'incomes'][item.id] = item;
+                            res[item.Transaction.isExpense ? 'expenses' : 'incomes'][item.id] =
+                                item;
                             return res;
                         },
                         { expenses: [], incomes: [] }
@@ -128,7 +130,8 @@ export const useTransactionStore = defineStore('Transaction', {
             }
             const body = await response.json();
 
-            const transaction_type = body.data.Transaction.isExpense === true ? 'expenses' : 'incomes';
+            const transaction_type =
+                body.data.Transaction.isExpense === true ? 'expenses' : 'incomes';
             this.transactions[frequency][transaction_type][body.data.id] = body.data;
         },
         async delete(frequency, id) {
@@ -148,12 +151,20 @@ export const useTransactionStore = defineStore('Transaction', {
         getOrdered() {
             return {
                 oneoff: {
-                    expenses: Object.values(this.transactions.oneoff.expenses).sort(orderOnoffTransactions),
-                    incomes: Object.values(this.transactions.oneoff.incomes).sort(orderOnoffTransactions)
+                    expenses: Object.values(this.transactions.oneoff.expenses).sort(
+                        orderOnoffTransactions
+                    ),
+                    incomes: Object.values(this.transactions.oneoff.incomes).sort(
+                        orderOnoffTransactions
+                    )
                 },
                 monthly: {
-                    expenses: Object.values(this.transactions.monthly.expenses).sort(orderMonthlyTransactions),
-                    incomes: Object.values(this.transactions.monthly.incomes).sort(orderMonthlyTransactions)
+                    expenses: Object.values(this.transactions.monthly.expenses).sort(
+                        orderMonthlyTransactions
+                    ),
+                    incomes: Object.values(this.transactions.monthly.incomes).sort(
+                        orderMonthlyTransactions
+                    )
                 }
             };
         }

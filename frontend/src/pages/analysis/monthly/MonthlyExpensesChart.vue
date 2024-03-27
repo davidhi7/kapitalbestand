@@ -29,13 +29,17 @@ const chartData = computed(() => {
     const datasets: ChartData<'line'>['datasets'] = [
         {
             label: 'Ausgaben',
-            data: props.report.map((row: MonthlySummary[0]) => row.oneoff.expenses + row.monthly.expenses),
+            data: props.report.map(
+                (row: MonthlySummary[0]) => row.oneoff.expenses + row.monthly.expenses
+            ),
             borderColor: colors.red[600],
             backgroundColor: colors.red[600]
         },
         {
             label: 'Einkommen',
-            data: props.report.map((row: MonthlySummary[0]) => row.oneoff.incomes + row.monthly.incomes),
+            data: props.report.map(
+                (row: MonthlySummary[0]) => row.oneoff.incomes + row.monthly.incomes
+            ),
             borderColor: colors.green[700],
             backgroundColor: colors.green[700]
         },

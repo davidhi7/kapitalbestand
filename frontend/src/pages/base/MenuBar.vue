@@ -24,13 +24,13 @@ defineEmits(['logout']);
 
 <template>
     <nav
-        class="fixed top-0 w-full flex msm:flex-col justify-between bg-header-bg text-main-dark text-xl z-10"
+        class="fixed top-0 z-10 flex w-full justify-between bg-header-bg text-xl text-main-dark msm:flex-col"
         :class="{ 'msm:pb-1': display_menu }"
     >
         <!-- Button to toggle the menu, only visible on small screen devices -->
-        <section class="sm:hidden self-end">
+        <section class="self-end sm:hidden">
             <IconRouterLink
-                class="text-2xl relative -left-0.5"
+                class="relative -left-0.5 text-2xl"
                 :icon="display_menu ? 'close' : 'menu'"
                 @click="display_menu = !display_menu"
             >
@@ -43,14 +43,21 @@ defineEmits(['logout']);
             :class="{ 'msm:hidden': !display_menu }"
             @click="display_menu = false"
         >
-            <IconRouterLink to="/" icon="home" :label="mq.current === 'xs' ? 'Start' : null"></IconRouterLink>
+            <IconRouterLink
+                to="/"
+                icon="home"
+                :label="mq.current === 'xs' ? 'Start' : null"
+            ></IconRouterLink>
             <IconRouterLink to="/new" icon="add" label="Neue Transaktion"> </IconRouterLink>
             <IconRouterLink to="/list" icon="list" label="Liste"></IconRouterLink>
             <IconRouterLink to="/analysis" icon="query_stats" label="Analyse"></IconRouterLink>
         </section>
 
         <!-- Separator between main pages and logout; only on small screens -->
-        <div class="m-1 w-auto h-px bg-main-dark sm:hidden" :class="{ hidden: !display_menu }"></div>
+        <div
+            class="m-1 h-px w-auto bg-main-dark sm:hidden"
+            :class="{ hidden: !display_menu }"
+        ></div>
 
         <!-- Account settings & logout -->
         <section class="flex msm:justify-between" :class="{ 'msm:hidden': !display_menu }">
@@ -75,6 +82,6 @@ defineEmits(['logout']);
 
 <style scoped>
 nav * {
-    @apply outline-main -outline-offset-4;
+    @apply -outline-offset-4 outline-main;
 }
 </style>

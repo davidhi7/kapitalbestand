@@ -2,7 +2,7 @@ type ResponseOptions = {
     status?: 'success' | 'error';
     error?: string;
     data?: object | Array<any> | string;
-}
+};
 
 export default function ResponseBuilder({ status = 'success', error, data }: ResponseOptions) {
     /**

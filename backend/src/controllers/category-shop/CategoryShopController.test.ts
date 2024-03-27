@@ -8,12 +8,18 @@ describe('CategoryShopController', function () {
         it('should return the category', async () => {
             const user = await User.findOne();
             const expectedInstance = await Category.findOne();
-            const instance = await CategoryShopController.getById(Category, user!, expectedInstance!.id);
+            const instance = await CategoryShopController.getById(
+                Category,
+                user!,
+                expectedInstance!.id
+            );
             expect(instance).to.be.deep.equal(expectedInstance);
         });
         it('should raise throw `Not Found` if no category belongs to the id', async () => {
             const user = await User.findOne();
-            expect(CategoryShopController.getById(Category, user!, -1)).to.be.rejectedWith(/Not Found/);
+            expect(CategoryShopController.getById(Category, user!, -1)).to.be.rejectedWith(
+                /Not Found/
+            );
         });
         it('should throw `Forbidden` if the if a different user owns the category', async () => {
             const newUser = await User.create({
@@ -21,7 +27,9 @@ describe('CategoryShopController', function () {
                 hash: 'securehash'
             });
             const instance = await Category.findOne();
-            expect(CategoryShopController.getById(Category, newUser!, instance!.id)).to.be.rejectedWith(/Forbidden/);
+            expect(
+                CategoryShopController.getById(Category, newUser!, instance!.id)
+            ).to.be.rejectedWith(/Forbidden/);
         });
     });
     describe('#createInstance', function () {
@@ -33,7 +41,9 @@ describe('CategoryShopController', function () {
         it('should throw `Bad Request` if a duplicate category would be created', async () => {
             const user = await User.findOne();
             await CategoryShopController.create(Category, user!, 'test-category');
-            expect(CategoryShopController.create(Category, user!, 'test-category')).to.be.rejectedWith(/Bad Request/);
+            expect(
+                CategoryShopController.create(Category, user!, 'test-category')
+            ).to.be.rejectedWith(/Bad Request/);
         });
     });
     describe('#deleteInstance', function () {
@@ -45,7 +55,9 @@ describe('CategoryShopController', function () {
         });
         it('should throw `Not Found` if the instance does not exist', async () => {
             const user = await User.findOne();
-            expect(CategoryShopController.delete(Category, user!, -1)).to.be.rejectedWith(/Not Found/);
+            expect(CategoryShopController.delete(Category, user!, -1)).to.be.rejectedWith(
+                /Not Found/
+            );
         });
         it('should throw `Forbidden` if the instance belongs to another user', async () => {
             const user = await User.create({
@@ -53,7 +65,9 @@ describe('CategoryShopController', function () {
                 hash: 'securehash'
             });
             const instance = await Category.findOne();
-            expect(CategoryShopController.delete(Category, user!, instance!.id)).to.be.rejectedWith(/Forbidden/);
+            expect(CategoryShopController.delete(Category, user!, instance!.id)).to.be.rejectedWith(
+                /Forbidden/
+            );
         });
     });
     describe('#update', function () {
@@ -72,11 +86,15 @@ describe('CategoryShopController', function () {
             expect(updatedInstance.name).to.be.equal('testcategory-update');
             expect(updatedInstance.id).to.be.equal(instance.id);
             expect(updatedInstance.createdAt.getTime()).to.be.equal(instance.createdAt.getTime());
-            expect(updatedInstance.updatedAt.getTime()).not.to.be.equal(instance.updatedAt.getTime());
+            expect(updatedInstance.updatedAt.getTime()).not.to.be.equal(
+                instance.updatedAt.getTime()
+            );
         });
         it('should throw `Not Found` if the instance does not exist', async () => {
             const user = await User.findOne();
-            expect(CategoryShopController.update(Category, user!, -1, 'updatedname')).to.be.rejectedWith(/Not Found/);
+            expect(
+                CategoryShopController.update(Category, user!, -1, 'updatedname')
+            ).to.be.rejectedWith(/Not Found/);
         });
         it('should throw `Forbidden` if the instance belongs to another user', async () => {
             const user = await User.create({
@@ -84,16 +102,18 @@ describe('CategoryShopController', function () {
                 hash: 'securehash'
             });
             const instance = await Category.findOne();
-            expect(CategoryShopController.update(Category, user!, instance!.id, 'updatedname')).to.be.rejectedWith(
-                /Forbidden/
-            );
+            expect(
+                CategoryShopController.update(Category, user!, instance!.id, 'updatedname')
+            ).to.be.rejectedWith(/Forbidden/);
         });
     });
     describe('#fetch', function () {
         it('should return all categorites', async () => {
             const user = await User.findOne();
             const instances = await CategoryShopController.fetch(Category, user!, 100, 0);
-            expect(instances).to.be.deep.equal(await Category.findAll({ where: { UserId: user!.id } }));
+            expect(instances).to.be.deep.equal(
+                await Category.findAll({ where: { UserId: user!.id } })
+            );
         });
         it('should only return instances belonging to the user', async () => {
             const newUser = await User.create({
@@ -128,13 +148,21 @@ describe('CategoryShopController', function () {
                 UserId: user!.id,
                 name: 'testcategory'
             });
-            const query = await CategoryShopController.fetch(Category, user!, 100, 0, 'testcategory');
+            const query = await CategoryShopController.fetch(
+                Category,
+                user!,
+                100,
+                0,
+                'testcategory'
+            );
             expect(query).to.be.length(1);
             expect(query[0].id).to.be.deep.equal(instance.id);
         });
         it('should return an empty array if the `name` query does not match a category', async () => {
             const user = await User.findOne();
-            expect(await CategoryShopController.fetch(Category, user!, 100, 0, 'testcategory')).to.be.length(0);
+            expect(
+                await CategoryShopController.fetch(Category, user!, 100, 0, 'testcategory')
+            ).to.be.length(0);
         });
     });
 });

@@ -83,7 +83,10 @@ export default {
             this.currentAnimationStage = AnimationStage.SLIDE_IN;
             (this.$refs.timeout as HTMLElement).style.width = '100%';
             this.currentAnimation = (this.$refs.container as HTMLElement).animate(
-                [{ transform: 'translateX(-50%) translateY(-100%)' }, { transform: 'translateX(-50%) translateY(0%)' }],
+                [
+                    { transform: 'translateX(-50%) translateY(-100%)' },
+                    { transform: 'translateX(-50%) translateY(0%)' }
+                ],
                 {
                     easing: 'ease-out',
                     duration: SLIDE_DURATION
@@ -94,9 +97,12 @@ export default {
         /** Perform the 'timeout' animation: show remaining visible time */
         async timeout() {
             this.currentAnimationStage = AnimationStage.TIMEOUT;
-            this.currentAnimation = (this.$refs.timeout as HTMLElement).animate([{ width: '100%' }, { width: '0%' }], {
-                duration: TIMEOUT_DURATION
-            });
+            this.currentAnimation = (this.$refs.timeout as HTMLElement).animate(
+                [{ width: '100%' }, { width: '0%' }],
+                {
+                    duration: TIMEOUT_DURATION
+                }
+            );
             await this.currentAnimation.finished;
             (this.$refs.timeout as HTMLElement).style.width = '0%';
         },
@@ -104,7 +110,10 @@ export default {
         async slideOut() {
             this.currentAnimationStage = AnimationStage.SLIDE_OUT;
             this.currentAnimation = (this.$refs.container as HTMLElement).animate(
-                [{ transform: 'translateX(-50%) translateY(0%)' }, { transform: 'translateX(-50%) translateY(-300%)' }],
+                [
+                    { transform: 'translateX(-50%) translateY(0%)' },
+                    { transform: 'translateX(-50%) translateY(-300%)' }
+                ],
                 {
                     easing: 'cubic-bezier(0.395, -0.305, 0.750, 0.750)',
                     duration: SLIDE_DURATION
@@ -190,10 +199,14 @@ export default {
     border-radius: 5px;
     overflow: hidden;
     transition: box-shadow 0.2s;
-    box-shadow: rgba(0, 0, 0, 0.3) 0px 15px 38px, rgba(0, 0, 0, 0.22) 0px 12px 12px;
+    box-shadow:
+        rgba(0, 0, 0, 0.3) 0px 15px 38px,
+        rgba(0, 0, 0, 0.22) 0px 12px 12px;
 
     &:hover {
-        box-shadow: rgba(0, 0, 0, 0.35) 0px 15px 38px, rgba(0, 0, 0, 0.26) 0px 12px 12px;
+        box-shadow:
+            rgba(0, 0, 0, 0.35) 0px 15px 38px,
+            rgba(0, 0, 0, 0.26) 0px 12px 12px;
         transition: box-shadow 0.2s;
     }
 }

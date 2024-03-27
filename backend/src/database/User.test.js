@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+
 import { User } from './db.js';
 
 describe('user model', () => {

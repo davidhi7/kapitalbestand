@@ -1,4 +1,14 @@
-import { AllowNull, BelongsTo, Column, DataType, DefaultScope, ForeignKey, HasOne, Model, Table } from 'sequelize-typescript';
+import {
+    AllowNull,
+    BelongsTo,
+    Column,
+    DataType,
+    DefaultScope,
+    ForeignKey,
+    HasOne,
+    Model,
+    Table
+} from 'sequelize-typescript';
 
 import Category from './Category.js';
 import MonthlyTransaction from './MonthlyTransaction.js';

@@ -4,7 +4,11 @@ import { Category, Shop, User } from '../../database/db.js';
 
 export type CategoryOrShop = typeof Category | typeof Shop;
 
-async function getByUserAndId(model: CategoryOrShop, user: User, id: number): Promise<Category | Shop> {
+async function getByUserAndId(
+    model: CategoryOrShop,
+    user: User,
+    id: number
+): Promise<Category | Shop> {
     const instance = await model.findByPk(id);
     if (!instance) {
         throw createHttpError.NotFound();
@@ -15,7 +19,11 @@ async function getByUserAndId(model: CategoryOrShop, user: User, id: number): Pr
     return instance;
 }
 
-async function createInstance(model: CategoryOrShop, user: User, name: string): Promise<Category | Shop> {
+async function createInstance(
+    model: CategoryOrShop,
+    user: User,
+    name: string
+): Promise<Category | Shop> {
     try {
         return await model.create({
             name,
@@ -31,7 +39,12 @@ async function deleteInstance(model: CategoryOrShop, user: User, id: number): Pr
     await instance.destroy();
 }
 
-async function update(model: CategoryOrShop, user: User, id: number, name: string): Promise<Category | Shop> {
+async function update(
+    model: CategoryOrShop,
+    user: User,
+    id: number,
+    name: string
+): Promise<Category | Shop> {
     const instance = await getByUserAndId(model, user, id);
     instance.name = name;
     await instance.save();

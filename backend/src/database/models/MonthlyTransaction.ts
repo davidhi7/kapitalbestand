@@ -1,4 +1,13 @@
-import { AllowNull, BelongsTo, Column, DataType, DefaultScope, ForeignKey, Model, Table } from 'sequelize-typescript';
+import {
+    AllowNull,
+    BelongsTo,
+    Column,
+    DataType,
+    DefaultScope,
+    ForeignKey,
+    Model,
+    Table
+} from 'sequelize-typescript';
 
 import Category from './Category.js';
 import Shop from './Shop.js';
@@ -22,12 +31,12 @@ export default class MonthlyTransaction extends Model {
     @AllowNull(true)
     @Column(DataType.DATEONLY)
     declare monthTo: Date;
-    
+
     @ForeignKey(() => User)
     @AllowNull(false)
     @Column
     declare UserId: number;
-    
+
     @BelongsTo(() => Transaction)
     declare Transaction: ReturnType<() => Transaction>;
 
@@ -37,5 +46,4 @@ export default class MonthlyTransaction extends Model {
 
     @BelongsTo(() => User)
     declare User: ReturnType<() => User>;
-
 }

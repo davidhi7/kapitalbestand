@@ -9,23 +9,23 @@ interface GenericTransaction extends Model {
 }
 
 export type TransactionCreateParameters = {
-    isExpense: boolean,
-    amount: number,
-    CategoryId: number,
-    ShopId?: number,
-    description?: string,
-}
+    isExpense: boolean;
+    amount: number;
+    CategoryId: number;
+    ShopId?: number;
+    description?: string;
+};
 
 export type TransactionQueryParameters = {
-    isExpense?: boolean,
-    amountFrom?: number,
-    amountTo?: number,
-    description?: string,
-    CategoryId?: number,
-    ShopId?: number,
-    limit: number,
-    offset: number
-}
+    isExpense?: boolean;
+    amountFrom?: number;
+    amountTo?: number;
+    description?: string;
+    CategoryId?: number;
+    ShopId?: number;
+    limit: number;
+    offset: number;
+};
 
 export default class AbstractTransactionController<Type extends GenericTransaction> {
     model: ModelStatic<any>;

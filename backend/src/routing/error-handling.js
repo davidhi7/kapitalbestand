@@ -6,7 +6,11 @@ import ResponseBuilder from './response-builder.js';
 export const asyncEndpointWrapper = async (req, res, next, handler) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return next(createError(400, `Bad request on endpoint ${req.method} ${req.baseUrl}${req.path}`, {cause: errors}));
+        return next(
+            createError(400, `Bad request on endpoint ${req.method} ${req.baseUrl}${req.path}`, {
+                cause: errors
+            })
+        );
     }
     try {
         await handler(req, res, next);
@@ -14,18 +18,16 @@ export const asyncEndpointWrapper = async (req, res, next, handler) => {
         if (createError.isHttpError(err)) {
             return next(err);
         }
-        return next(createError(500, 'Internal server error', {cause: err}));
+        return next(createError(500, 'Internal server error', { cause: err }));
     }
-}
+};
 
 export const errorHandler = (error, req, res, next) => {
     try {
         if (createError.isHttpError(error)) {
             if (!error.expose) {
                 console.error(error);
-                res.status(error.statusCode).json(
-                    ResponseBuilder({ status: 'error' })
-                );
+                res.status(error.statusCode).json(ResponseBuilder({ status: 'error' }));
             } else {
                 res.status(error.statusCode).json(
                     ResponseBuilder({

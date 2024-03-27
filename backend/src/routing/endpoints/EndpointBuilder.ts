@@ -11,13 +11,21 @@ import ResponseBuilder from '../response-builder.js';
 type ValidatorArray = Array<ValidationChain>;
 
 type CreateHandler<CreateParameters> = (user: User, body: CreateParameters) => Promise<Model>;
-type FetchHandler<FetchParameters> = (user: User, limit: number, offset: number, query: FetchParameters) => Promise<Model[]>;
-type UpdateHandler<CreateParameters> = (user: User, id: number, body: CreateParameters) => Promise<Model>;
+type FetchHandler<FetchParameters> = (
+    user: User,
+    limit: number,
+    offset: number,
+    query: FetchParameters
+) => Promise<Model[]>;
+type UpdateHandler<CreateParameters> = (
+    user: User,
+    id: number,
+    body: CreateParameters
+) => Promise<Model>;
 type DeleteHandler = (user: User, id: number) => Promise<void>;
 type GetByIdHandler = (user: User, id: number) => Promise<Model>;
 
 const idValidator = param('id').isInt({ min: 0 }).toInt();
-
 
 export class EndpointBuilder<CreateParameters, FetchParameters> {
     router: express.Router;
@@ -64,7 +72,13 @@ export class EndpointBuilder<CreateParameters, FetchParameters> {
     patch(validators: ValidatorArray, handler: UpdateHandler<CreateParameters>) {
         this.router.patch('/:id', ...validators, idValidator, (req, res, next) => {
             asyncEndpointWrapper(req, res, next, async () => {
-                res.json(await handler((req as AuthenticatedRequest).session.user, req.params!.id, req.body));
+                res.json(
+                    await handler(
+                        (req as AuthenticatedRequest).session.user,
+                        req.params!.id,
+                        req.body
+                    )
+                );
             });
         });
 

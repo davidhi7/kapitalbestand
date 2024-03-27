@@ -5,7 +5,7 @@ export default {
     data() {
         return {
             type: 'Default'
-        }
+        };
     },
     methods: {
         setType(type) {
@@ -15,10 +15,10 @@ export default {
     components: {
         TransactionForm
     }
-}
+};
 </script>
 
 <template>
     <h1 class="mb-4">Neue Transaktion</h1>
-    <TransactionForm :fixed-transaction-form-type="type"/>
+    <TransactionForm :fixed-transaction-form-type="type" />
 </template>

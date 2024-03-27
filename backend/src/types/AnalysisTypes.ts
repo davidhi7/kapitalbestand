@@ -7,5 +7,5 @@ export type MonthlySummary = Array<{
         expenses: number;
         incomes: number;
     };
-    balance: number
+    balance: number;
 }>;

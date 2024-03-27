@@ -1,4 +1,4 @@
-<script setup lang="ts" generic="T extends {id: any, name: string}">
+<script setup lang="ts" generic="T extends { id: any; name: string }">
 import { computed, defineModel, ref, watch, withDefaults } from 'vue';
 
 import { normalizeStrings } from '@/common';
@@ -130,7 +130,7 @@ function handleKeyboardInput(evt: KeyboardEvent) {
 <template>
     <!-- Container for input field and suggestion buttons -->
     <div
-        class="group relative focus-within:bg-input-bg rounded-t-lg"
+        class="group relative rounded-t-lg focus-within:bg-input-bg"
         :class="{ 'rounded-b-lg': !textInput && computedSuggestions.length == 0 }"
         @focusin="focusIn()"
         @focusout="focusOut($event)"
@@ -147,13 +147,13 @@ function handleKeyboardInput(evt: KeyboardEvent) {
         />
         <button
             v-show="focused && textInput"
-            class="absolute -right-10 top-1/2 -translate-y-1/2 my-auto material-symbols-outlined text-2xl p-1 rounded-md text-tertiary hover:text-main focus-visible:outline-default"
+            class="material-symbols-outlined focus-visible:outline-default absolute -right-10 top-1/2 my-auto -translate-y-1/2 rounded-md p-1 text-2xl text-tertiary hover:text-main"
             @click.prevent="clear"
         >
             backspace
         </button>
         <div
-            class="absolute rounded-b-lg w-full z-10 hidden group-focus-within:block group-focus-within:bg-input-bg shadow-md"
+            class="absolute z-10 hidden w-full rounded-b-lg shadow-md group-focus-within:block group-focus-within:bg-input-bg"
         >
             <AutoCompleteEntry
                 v-show="textInput && exactMatch == null"
@@ -169,7 +169,12 @@ function handleKeyboardInput(evt: KeyboardEvent) {
                 <span v-show="suggestion.matchFromIndex > 0">{{
                     suggestion.suggestion.name.substring(0, suggestion.matchFromIndex)
                 }}</span>
-                <b>{{ suggestion.suggestion.name.substring(suggestion.matchFromIndex, suggestion.matchToIndex) }}</b>
+                <b>{{
+                    suggestion.suggestion.name.substring(
+                        suggestion.matchFromIndex,
+                        suggestion.matchToIndex
+                    )
+                }}</b>
                 <span v-show="suggestion.matchToIndex < suggestion.suggestion.name.length">{{
                     suggestion.suggestion.name.substring(suggestion.matchToIndex)
                 }}</span>

@@ -9,7 +9,7 @@ import AbstractTransactionController, {
 import { buildWhereConditions } from './transaction-utils.js';
 
 export interface MonthlyTransactionCreateParameters extends TransactionCreateParameters {
-    monthFrom : Date;
+    monthFrom: Date;
     monthTo?: Date;
 }
 
@@ -23,7 +23,10 @@ class MonthlyTransactionController extends AbstractTransactionController<Monthly
         super(MonthlyTransaction);
     }
 
-    async create(user: User, body: MonthlyTransactionCreateParameters): Promise<MonthlyTransaction> {
+    async create(
+        user: User,
+        body: MonthlyTransactionCreateParameters
+    ): Promise<MonthlyTransaction> {
         const { monthFrom, monthTo, isExpense, amount, description, CategoryId, ShopId } = body;
         const instance = await MonthlyTransaction.create(
             {
@@ -48,7 +51,12 @@ class MonthlyTransactionController extends AbstractTransactionController<Monthly
         return this.getByUserAndId(user, instance.id);
     }
 
-    async fetch(user: User, limit: number, offset: number, body: MonthlyTransactionQueryParameters): Promise<MonthlyTransaction[]> {
+    async fetch(
+        user: User,
+        limit: number,
+        offset: number,
+        body: MonthlyTransactionQueryParameters
+    ): Promise<MonthlyTransaction[]> {
         let whereConditions = {};
         const { isExpense, monthFrom, monthTo, amountFrom, amountTo, CategoryId, ShopId } = body;
         whereConditions = buildWhereConditions(user, {
@@ -71,10 +79,17 @@ class MonthlyTransactionController extends AbstractTransactionController<Monthly
         });
     }
 
-    async update(user: User, id: number, body: MonthlyTransactionCreateParameters): Promise<MonthlyTransaction> {
+    async update(
+        user: User,
+        id: number,
+        body: MonthlyTransactionCreateParameters
+    ): Promise<MonthlyTransaction> {
         let instance = await this.getByUserAndId(user, id);
 
-        function setIfNotUndefined(key: keyof MonthlyTransactionCreateParameters, modelInstance: Model = instance) {
+        function setIfNotUndefined(
+            key: keyof MonthlyTransactionCreateParameters,
+            modelInstance: Model = instance
+        ) {
             if (body[key] !== undefined) {
                 modelInstance.set(key, body[key]);
             }

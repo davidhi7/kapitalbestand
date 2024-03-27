@@ -1,6 +1,7 @@
 <script setup>
 import { inject } from 'vue';
-const frequency = inject('frequency')
+
+const frequency = inject('frequency');
 </script>
 
 <template>
@@ -16,6 +17,6 @@ const frequency = inject('frequency')
 
 <style scoped>
 th {
-    @apply text-center p-2 text-xl text-main-dark bg-header-bg font-semibold;
+    @apply bg-header-bg p-2 text-center text-xl font-semibold text-main-dark;
 }
 </style>

@@ -3,12 +3,12 @@ import { computed, ref, watch } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 
 import { format_year_month } from '@/common';
-
-import MonthlyExpensesStats from './monthly/MonthlyExpensesStats.vue';
-import MonthlyExpensesChart from './monthly/MonthlyExpensesChart.vue';
-import Card from './Card.vue';
 import { useAnalysisResultStore } from '@/stores/AnalysisResultStore';
 import { MonthlySummary } from '@backend-types/AnalysisTypes';
+
+import Card from './Card.vue';
+import MonthlyExpensesChart from './monthly/MonthlyExpensesChart.vue';
+import MonthlyExpensesStats from './monthly/MonthlyExpensesStats.vue';
 
 const route = useRoute();
 const AnalysisResultStore = useAnalysisResultStore();
@@ -53,21 +53,30 @@ const currentMonthSelected = computed(() => {
 
 <template>
     <main class="mx-2 space-y-8">
-        <header class="grid grid-cols-2 sm:flex gap-2 justify-between">
+        <header class="grid grid-cols-2 justify-between gap-2 sm:flex">
             <RouterLink
                 :to="`/analysis/${monthBefore.year}/${String(monthBefore.month + 1).padStart(2, '0')}`"
-                class="flex items-center gap-1 row-[2]"
+                class="row-[2] flex items-center gap-1"
             >
                 <span class="material-symbols-outlined relative -bottom-0.5">navigate_before</span>
                 <span>{{
-                    format_year_month({ date: new Date(monthBefore.year, monthBefore.month, 1), style: 'short' })
+                    format_year_month({
+                        date: new Date(monthBefore.year, monthBefore.month, 1),
+                        style: 'short'
+                    })
                 }}</span>
             </RouterLink>
 
-            <h1 class="col-span-2">{{ format_year_month({ date: new Date(year, month, 1), style: 'long' }) }}</h1>
+            <h1 class="col-span-2">
+                {{ format_year_month({ date: new Date(year, month, 1), style: 'long' }) }}
+            </h1>
 
-            <div class="flex row-[2] justify-end">
-                <RouterLink v-if="!currentMonthSelected" to="/analysis" class="flex items-center gap-1">
+            <div class="row-[2] flex justify-end">
+                <RouterLink
+                    v-if="!currentMonthSelected"
+                    to="/analysis"
+                    class="flex items-center gap-1"
+                >
                     <span>heute</span>
                 </RouterLink>
                 <div
@@ -79,17 +88,22 @@ const currentMonthSelected = computed(() => {
                     class="flex items-center gap-1 text-right"
                 >
                     <span>{{
-                        format_year_month({ date: new Date(monthAfter.year, monthAfter.month, 1), style: 'short' })
+                        format_year_month({
+                            date: new Date(monthAfter.year, monthAfter.month, 1),
+                            style: 'short'
+                        })
                     }}</span>
-                    <span class="material-symbols-outlined relative -bottom-0.5">navigate_next</span>
+                    <span class="material-symbols-outlined relative -bottom-0.5"
+                        >navigate_next</span
+                    >
                 </RouterLink>
             </div>
         </header>
-        <div class="flex gap-4 flex-wrap justify-around" v-if="report">
+        <div class="flex flex-wrap justify-around gap-4" v-if="report">
             <Card class="grow">
                 <MonthlyExpensesStats :year="year" :month="month" :report="report" />
             </Card>
-            <Card class="grow min-h-[30rem]">
+            <Card class="min-h-[30rem] grow">
                 <MonthlyExpensesChart :year="year" :report="report" />
             </Card>
         </div>

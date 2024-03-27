@@ -6,7 +6,7 @@
 
 <style scoped>
 div {
-    @apply grid gap-x-2 gap-y-2 items-center;
+    @apply grid items-center gap-x-2 gap-y-2;
     grid-template-columns: max-content max-content;
 
     > :nth-child(even) {

@@ -10,22 +10,21 @@ const monthData = computed(() => props.report[props.month]);
 
 <template>
     <article class="flex flex-col gap-8">
-        <div class="flex gap-4 items-end mx-8 pb-2 border-b-2 border-purple-400 justify-between">
+        <div class="mx-8 flex items-end justify-between gap-4 border-b-2 border-purple-400 pb-2">
             <span class="text-lg text-purple-200">Bilanz</span>
-            <span class="text-purple-400 text-5xl sm:text-6xl font-light">
+            <span class="text-5xl font-light text-purple-400 sm:text-6xl">
                 {{ format_currency(monthData.balance) }}
             </span>
         </div>
         <div class="grid grid-cols-2 child:flex child:justify-center">
             <span class="text-tertiary-dark my-2">Ausgaben</span>
             <span class="text-tertiary-dark my-2">Einnahmen</span>
-            <span class="text-red-400 text-3xl font-light">
+            <span class="text-3xl font-light text-red-400">
                 {{ format_currency(monthData.oneoff.expenses + monthData.monthly.expenses) }}
             </span>
-            <span class="text-green-400 text-3xl font-light">
+            <span class="text-3xl font-light text-green-400">
                 {{ format_currency(monthData.oneoff.incomes + monthData.monthly.incomes) }}
             </span>
-
         </div>
     </article>
 </template>

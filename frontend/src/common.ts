@@ -1,6 +1,9 @@
 const currency_format = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
 const year_month_format_long = new Intl.DateTimeFormat('de-DE', { year: 'numeric', month: 'long' });
-const year_month_format_short = new Intl.DateTimeFormat('de-DE', { year: 'numeric', month: 'short' });
+const year_month_format_short = new Intl.DateTimeFormat('de-DE', {
+    year: 'numeric',
+    month: 'short'
+});
 
 /**
  * Apply number format to amounts of money
@@ -20,7 +23,10 @@ export function format_currency(value: number | string): string {
  * @param {*} style: either 'long', 'short' or 'iso'.
  * @returns
  */
-export function format_year_month(attributes: { date: Date; style: 'long' | 'short' | 'iso' }): string {
+export function format_year_month(attributes: {
+    date: Date;
+    style: 'long' | 'short' | 'iso';
+}): string {
     if (attributes.style === 'long') {
         return year_month_format_long.format(attributes.date);
     } else if (attributes.style === 'short') {
@@ -43,5 +49,5 @@ export function normalizeStrings(input: string) {
  * Format date as `YYYY-MM` string
  */
 export function dateToYearMonth(date: Date) {
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 }

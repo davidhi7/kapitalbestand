@@ -1,4 +1,13 @@
-import { AllowNull, BelongsTo, Column, DataType, DefaultScope, ForeignKey, Model, Table } from 'sequelize-typescript';
+import {
+    AllowNull,
+    BelongsTo,
+    Column,
+    DataType,
+    DefaultScope,
+    ForeignKey,
+    Model,
+    Table
+} from 'sequelize-typescript';
 
 import Category from './Category.js';
 import Shop from './Shop.js';

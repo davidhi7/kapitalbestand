@@ -4,6 +4,7 @@ import { ParseArgsConfig, parseArgs } from 'node:util';
 import { dirname, join } from 'path';
 import { SequelizeOptions } from 'sequelize-typescript';
 import { fileURLToPath } from 'url';
+
 import { parseCli } from './cli.js';
 
 export function readFromEnv(name: string, allowSecretFile: boolean = false): string {

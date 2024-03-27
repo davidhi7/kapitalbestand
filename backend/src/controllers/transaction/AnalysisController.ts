@@ -84,7 +84,9 @@ class AnalysisController {
         // doing the same as with one-off transactions but with monthly transactions is a lot more difficult, so now we approach this in a simpler way
         for (let monthlyTransaction of queryResults[1]) {
             const month0 = new Date(monthlyTransaction.monthFrom).getMonth();
-            const month1 = monthlyTransaction.monthTo ? new Date(monthlyTransaction.monthTo).getMonth() : 11;
+            const month1 = monthlyTransaction.monthTo
+                ? new Date(monthlyTransaction.monthTo).getMonth()
+                : 11;
             for (let monthData of monthlyValues) {
                 if (monthlyTransaction.Transaction.isExpense) {
                     monthData.monthly.expenses += monthlyTransaction.Transaction.amount;

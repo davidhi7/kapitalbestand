@@ -29,7 +29,9 @@ async function submit() {
 
     if (register) {
         if (password.value !== passwordVerification.value) {
-            eventEmitter.dispatchEvent(new NotificationEvent(NotificationStyle.WARNING, 'Passwort falsch wiederholt!'));
+            eventEmitter.dispatchEvent(
+                new NotificationEvent(NotificationStyle.WARNING, 'Passwort falsch wiederholt!')
+            );
             resetPasswordFields();
             return;
         }
@@ -39,7 +41,10 @@ async function submit() {
 
     if (status !== AuthResponse.Success) {
         eventEmitter.dispatchEvent(
-            new NotificationEvent(NotificationStyle.ERROR, `${register ? 'Registrierung' : 'Anmeldung'} fehlgeschlagen`)
+            new NotificationEvent(
+                NotificationStyle.ERROR,
+                `${register ? 'Registrierung' : 'Anmeldung'} fehlgeschlagen`
+            )
         );
     }
 }
@@ -47,13 +52,20 @@ async function submit() {
 
 <template>
     <form @submit.prevent="submit" class="flex flex-col items-center gap-4">
-        <h1 class="bg-gradient w-full bg-clip-text text-7xl font-bold leading-tight text-transparent text-center">
+        <h1
+            class="bg-gradient w-full bg-clip-text text-center text-7xl font-bold leading-tight text-transparent"
+        >
             Kapital&shy;bestand
         </h1>
         <hr class="bg-gradient h-1 w-full border-none" />
         <GridForm>
             <span>Benutzername</span>
-            <TextInput type="text" required :show-required-indicator="false" v-model.lazy="username" />
+            <TextInput
+                type="text"
+                required
+                :show-required-indicator="false"
+                v-model.lazy="username"
+            />
 
             <span>Passwort</span>
             <TextInput
@@ -75,7 +87,7 @@ async function submit() {
             />
         </GridForm>
         <hr class="bg-gradient h-1 w-full border-none" />
-        <div class="flex flex-row gap-4 items-center">
+        <div class="flex flex-row items-center gap-4">
             <button class="btn" type="submit" :name="isRegisterForm ? 'register' : 'login'">
                 {{ isRegisterForm ? 'Registrieren' : 'Anmelden' }}
             </button>
@@ -84,7 +96,7 @@ async function submit() {
                 <button
                     @click="toggleFormType"
                     type="button"
-                    class="cursor-pointer text-inherit underline decoration-1 hover:text-tertiary transition-colors"
+                    class="cursor-pointer text-inherit underline decoration-1 transition-colors hover:text-tertiary"
                 >
                     {{ isRegisterForm ? 'anmelden' : 'neu registrieren' }}</button
                 >?

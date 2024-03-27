@@ -48,32 +48,48 @@ describe('OneoffTransactionController', function () {
     });
     describe('#fetch', function () {
         it('should return fail if body is not an object', async function () {
-            expect(oneoffTransactionController.fetch(await User.findOne(), 100, 0)).to.be.rejectedWith(/TypeError/);
+            expect(
+                oneoffTransactionController.fetch(await User.findOne(), 100, 0)
+            ).to.be.rejectedWith(/TypeError/);
         });
         it('should return all instances if an empty object is provided', async function () {
             const query = await oneoffTransactionController.fetch(await User.findOne(), 100, 0, {});
             expect(query).to.be.lengthOf(8);
         });
         it('should apply isExpense attribute correctly', async function () {
-            const query = await oneoffTransactionController.fetch(await User.findOne(), 100, 0, { isExpense: true });
+            const query = await oneoffTransactionController.fetch(await User.findOne(), 100, 0, {
+                isExpense: true
+            });
             expect(query).to.be.lengthOf(6);
-            const query2 = await oneoffTransactionController.fetch(await User.findOne(), 100, 0, { isExpense: false });
+            const query2 = await oneoffTransactionController.fetch(await User.findOne(), 100, 0, {
+                isExpense: false
+            });
             expect(query2).to.be.lengthOf(2);
         });
         describe('{ dateFrom }', function () {
             it('should apply dateFrom (string) attributes correctly', async function () {
-                const testData = await oneoffTransactionController.fetch(await User.findOne(), 100, 0, {
-                    dateFrom: '2020-01-01'
-                });
+                const testData = await oneoffTransactionController.fetch(
+                    await User.findOne(),
+                    100,
+                    0,
+                    {
+                        dateFrom: '2020-01-01'
+                    }
+                );
                 expect(testData).to.have.lengthOf(5);
                 testData.forEach((oneoffTransaction) => {
                     expect(new Date(oneoffTransaction.date)).to.be.at.least(new Date('2020-01-01'));
                 });
             });
             it('should apply dateFrom (date) attributes correctly', async function () {
-                const testData = await oneoffTransactionController.fetch(await User.findOne(), 100, 0, {
-                    dateFrom: new Date('2020-01-01')
-                });
+                const testData = await oneoffTransactionController.fetch(
+                    await User.findOne(),
+                    100,
+                    0,
+                    {
+                        dateFrom: new Date('2020-01-01')
+                    }
+                );
                 expect(testData).to.have.lengthOf(5);
                 testData.forEach((oneoffTransaction) => {
                     expect(new Date(oneoffTransaction.date)).to.be.at.least(new Date('2020-01-01'));
@@ -82,35 +98,55 @@ describe('OneoffTransactionController', function () {
         });
         describe('{ dateTo }', function () {
             it('should apply dateTo (string) attributes correctly', async function () {
-                const testData = await oneoffTransactionController.fetch(await User.findOne(), 100, 0, {
-                    dateTo: '2020-01-01'
-                });
+                const testData = await oneoffTransactionController.fetch(
+                    await User.findOne(),
+                    100,
+                    0,
+                    {
+                        dateTo: '2020-01-01'
+                    }
+                );
                 expect(testData).to.have.lengthOf(3);
                 testData.forEach((oneoffTransaction) => {
                     expect(new Date(oneoffTransaction.date)).to.be.at.most(new Date('2020-01-01'));
                 });
             });
             it('should apply dateTo (date) attributes correctly', async function () {
-                const testData = await oneoffTransactionController.fetch(await User.findOne(), 100, 0, {
-                    dateTo: new Date('2020-01-01')
-                });
+                const testData = await oneoffTransactionController.fetch(
+                    await User.findOne(),
+                    100,
+                    0,
+                    {
+                        dateTo: new Date('2020-01-01')
+                    }
+                );
                 expect(testData).to.have.lengthOf(3);
                 testData.forEach((oneoffTransaction) => {
                     expect(new Date(oneoffTransaction.date)).to.be.at.most(new Date('2020-01-01'));
                 });
             });
             it('should return nothing if dateFrom > dateTo (using strings)', async function () {
-                const query = await oneoffTransactionController.fetch(await User.findOne(), 100, 0, {
-                    dateFrom: '2022-01-01',
-                    dateTo: '2000-01-01'
-                });
+                const query = await oneoffTransactionController.fetch(
+                    await User.findOne(),
+                    100,
+                    0,
+                    {
+                        dateFrom: '2022-01-01',
+                        dateTo: '2000-01-01'
+                    }
+                );
                 expect(query).to.be.empty;
             });
             it('should return nothing if dateFrom > dateTo (using dates)', async function () {
-                const query = await oneoffTransactionController.fetch(await User.findOne(), 100, 0, {
-                    dateFrom: new Date('2022-01-01'),
-                    dateTo: new Date('2000-01-01')
-                });
+                const query = await oneoffTransactionController.fetch(
+                    await User.findOne(),
+                    100,
+                    0,
+                    {
+                        dateFrom: new Date('2022-01-01'),
+                        dateTo: new Date('2000-01-01')
+                    }
+                );
                 expect(query).to.be.empty;
             });
         });
@@ -124,7 +160,9 @@ describe('OneoffTransactionController', function () {
             });
         });
         it('should apply amountTo attribute correctly', async function () {
-            const testData = await oneoffTransactionController.fetch(await User.findOne(), 100, 0, { amountTo: 10000 });
+            const testData = await oneoffTransactionController.fetch(await User.findOne(), 100, 0, {
+                amountTo: 10000
+            });
             expect(testData).to.have.lengthOf(4);
             testData.forEach((oneoffTransaction) => {
                 expect(oneoffTransaction.Transaction.amount).to.be.at.most(10000);
@@ -139,26 +177,42 @@ describe('OneoffTransactionController', function () {
         });
         it('should apply CategoryId attribute correctly', async function () {
             const user = await User.findOne();
-            const category = await Category.findOne({ where: { UserId: user.id, name: 'property' } });
+            const category = await Category.findOne({
+                where: { UserId: user.id, name: 'property' }
+            });
             const x = await Category.findAll();
-            const testData = await oneoffTransactionController.fetch(user, 100, 0, { CategoryId: category.id });
+            const testData = await oneoffTransactionController.fetch(user, 100, 0, {
+                CategoryId: category.id
+            });
             expect(testData).to.have.lengthOf(1);
             expect(testData[0].Transaction.Category.name).to.be.equal('property');
         });
         it('should apply ShopId attribute correctly', async function () {
             const user = await User.findOne();
             const shop = await Shop.findOne({ where: { UserId: user.id, name: 'hardware store' } });
-            const testData = await oneoffTransactionController.fetch(user, 100, 0, { ShopId: shop.id });
+            const testData = await oneoffTransactionController.fetch(user, 100, 0, {
+                ShopId: shop.id
+            });
             expect(testData).to.have.lengthOf(1);
             expect(testData[0].Transaction.Shop.name).to.be.equal('hardware store');
         });
         it('should apply limit attribute correctly', async function () {
-            const testData = await oneoffTransactionController.fetch(await User.findOne(), 3, 0, {});
+            const testData = await oneoffTransactionController.fetch(
+                await User.findOne(),
+                3,
+                0,
+                {}
+            );
             expect(testData).to.have.lengthOf(3);
         });
         it('should apply offset attribute correctly', async function () {
             // skip first 6 rows, expect the remaining two
-            const testData = await oneoffTransactionController.fetch(await User.findOne(), 10, 6, {});
+            const testData = await oneoffTransactionController.fetch(
+                await User.findOne(),
+                10,
+                6,
+                {}
+            );
             expect(testData).to.have.lengthOf(2);
         });
         it('should order the transactions by date ASC, then by id ASC', async function () {
@@ -202,13 +256,19 @@ describe('OneoffTransactionController', function () {
         it('should get one-off transactions by id', async () => {
             const user = await User.findOne();
             const firstInstance = await OneoffTransaction.findOne({ where: { UserId: user.id } });
-            const instance = await oneoffTransactionController.getByUserAndId(user, firstInstance.id);
+            const instance = await oneoffTransactionController.getByUserAndId(
+                user,
+                firstInstance.id
+            );
             expect(instance.id).to.equal(firstInstance.id);
         });
         it('should also fetch associated transactions, categories and shops', async () => {
             const user = await User.findOne();
             const firstInstance = await OneoffTransaction.findOne({ where: { UserId: user.id } });
-            const instance = await oneoffTransactionController.getByUserAndId(user, firstInstance.id);
+            const instance = await oneoffTransactionController.getByUserAndId(
+                user,
+                firstInstance.id
+            );
             expect(instance.Transaction.id).to.exist;
             expect(instance.Transaction.Shop.id).to.exist;
             expect(instance.Transaction.Category.id).to.exist;
@@ -220,7 +280,9 @@ describe('OneoffTransactionController', function () {
                 hash: 'securehash'
             });
             const instance = await OneoffTransaction.findOne({ where: { UserId: oldUser.id } });
-            expect(oneoffTransactionController.getByUserAndId(newUser, instance.id)).to.be.rejectedWith(/Not Found/);
+            expect(
+                oneoffTransactionController.getByUserAndId(newUser, instance.id)
+            ).to.be.rejectedWith(/Not Found/);
         });
     });
     describe('#delete', () => {
@@ -229,7 +291,9 @@ describe('OneoffTransactionController', function () {
             const countBefore = await OneoffTransaction.count({ where: { UserId: user.id } });
             const instance = await OneoffTransaction.findOne({ where: { UserId: user.id } });
             await oneoffTransactionController.delete(user, instance.id);
-            expect(await OneoffTransaction.count({ where: { UserId: user.id } })).to.be.equal(countBefore - 1);
+            expect(await OneoffTransaction.count({ where: { UserId: user.id } })).to.be.equal(
+                countBefore - 1
+            );
         });
         it('should also delete the associated base transaction', async () => {
             const user = await User.findOne();
@@ -241,9 +305,9 @@ describe('OneoffTransactionController', function () {
             expect(await Transaction.findByPk(transactionId)).to.be.null;
         });
         it('should return an 404 http error if the primary key is invalid', async () => {
-            await expect(oneoffTransactionController.delete(await User.findOne(), -1)).to.be.rejectedWith(
-                createError[404]
-            );
+            await expect(
+                oneoffTransactionController.delete(await User.findOne(), -1)
+            ).to.be.rejectedWith(createError[404]);
         });
         it('should return an 404 http error if the transaction belongs to another user', async () => {
             const oldUser = await User.findOne();
@@ -252,7 +316,9 @@ describe('OneoffTransactionController', function () {
                 hash: 'securehash'
             });
             const instance = await OneoffTransaction.findOne({ where: { UserId: oldUser.id } });
-            expect(oneoffTransactionController.delete(newUser, instance.id)).to.be.rejectedWith(createError.NotFound);
+            expect(oneoffTransactionController.delete(newUser, instance.id)).to.be.rejectedWith(
+                createError.NotFound
+            );
         });
     });
     describe('#update', () => {
@@ -260,13 +326,17 @@ describe('OneoffTransactionController', function () {
             const user = await User.findOne();
             const instance = await OneoffTransaction.findOne({ where: { UserId: user.id } });
             const updatedInstance = await oneoffTransactionController.update(user, instance.id);
-            expect(JSON.parse(JSON.stringify(instance))).to.be.deep.equal(JSON.parse(JSON.stringify(updatedInstance)));
+            expect(JSON.parse(JSON.stringify(instance))).to.be.deep.equal(
+                JSON.parse(JSON.stringify(updatedInstance))
+            );
         });
         it('should return the same instance if body is empty', async () => {
             const user = await User.findOne();
             const instance = await OneoffTransaction.findOne({ where: { UserId: user.id } });
             const updatedInstance = await oneoffTransactionController.update(user, instance.id, {});
-            expect(JSON.parse(JSON.stringify(instance))).to.be.deep.equal(JSON.parse(JSON.stringify(updatedInstance)));
+            expect(JSON.parse(JSON.stringify(instance))).to.be.deep.equal(
+                JSON.parse(JSON.stringify(updatedInstance))
+            );
         });
         it('should modify the body with the provided data', async () => {
             const user = await User.findOne();
@@ -280,7 +350,9 @@ describe('OneoffTransactionController', function () {
             });
             expect(new Date(updatedInstance.date)).to.be.deep.equal(new Date('2023-01-04'));
             expect(updatedInstance.Transaction.amount).to.be.equal(12345);
-            expect(updatedInstance.Transaction.description).to.be.equal('testing update method ...');
+            expect(updatedInstance.Transaction.description).to.be.equal(
+                'testing update method ...'
+            );
             expect(updatedInstance.Transaction.Category.name).to.be.equal('update-test');
             expect(updatedInstance.Transaction.Shop.name).to.be.equal('update-test');
             expect(updatedInstance.updatedAt).to.be.above(instance.updatedAt);
@@ -303,9 +375,9 @@ describe('OneoffTransactionController', function () {
             expect(updatedInstance.Transaction.ShopId).to.be.null;
         });
         it('should return an 404 http error if the primary key is invalid', async () => {
-            await expect(oneoffTransactionController.update(await User.findOne(), -1, {})).to.be.rejectedWith(
-                createError[404]
-            );
+            await expect(
+                oneoffTransactionController.update(await User.findOne(), -1, {})
+            ).to.be.rejectedWith(createError[404]);
         });
         it('should return an 404 http error if the transaction belongs to another user', async () => {
             const oldUser = await User.findOne();

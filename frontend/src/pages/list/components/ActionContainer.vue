@@ -1,16 +1,16 @@
 <script setup>
-import { ExpandAction, EditAction, DeleteAction } from '.';
+import { DeleteAction, EditAction, ExpandAction } from '.';
 
 const actions = {
-    'ExpandAction': {
+    ExpandAction: {
         component: ExpandAction,
         durationClass: 'duration-100'
     },
-    'EditAction': {
+    EditAction: {
         component: EditAction,
         durationClass: 'duration-200'
     },
-    'DeleteAction': {
+    DeleteAction: {
         component: DeleteAction,
         durationClass: 'duration-100'
     }
@@ -35,12 +35,19 @@ defineEmits(['done']);
 <template>
     <div v-if="props.action" class="mx-2 my-0 h-px bg-tertiary-bg"></div>
     <Transition name="action">
-        <div v-if="props.action" class="grid overflow-hidden" :class="actions[props.action].durationClass">
+        <div
+            v-if="props.action"
+            class="grid overflow-hidden"
+            :class="actions[props.action].durationClass"
+        >
             <div class="min-h-0 self-end">
                 <div class="m-2">
                     <KeepAlive>
-                        <component :is="actions[props.action].component" @done="$emit('done')"
-                            :transaction="props.transaction" />
+                        <component
+                            :is="actions[props.action].component"
+                            @done="$emit('done')"
+                            :transaction="props.transaction"
+                        />
                     </KeepAlive>
                 </div>
             </div>
@@ -64,7 +71,7 @@ defineEmits(['done']);
     grid-template-rows: 0fr;
     opacity: 0;
 
-    &>* {
+    & > * {
         visibility: hidden;
     }
 }
@@ -73,7 +80,7 @@ defineEmits(['done']);
 .action-leave-from {
     grid-template-rows: 1fr;
 
-    &>* {
+    & > * {
         visibility: visible;
     }
 }

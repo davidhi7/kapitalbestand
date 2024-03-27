@@ -34,4 +34,3 @@ export async function connectToDatabase() {
 
 export default sequelize;
 export { Category, MonthlyTransaction, OneoffTransaction, Shop, Transaction, User };
-

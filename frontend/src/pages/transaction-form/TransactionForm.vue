@@ -17,7 +17,7 @@ import GridForm from './GridForm.vue';
 
 const props = defineProps<{
     transaction?: OneoffTransaction | MonthlyTransaction;
-    showCancelButton?: boolean
+    showCancelButton?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -25,9 +25,11 @@ const emit = defineEmits<{
 }>();
 
 const CategoryShopStore = useCategoryShopStore();
-const TransactionStore = useTransactionStore(); 
+const TransactionStore = useTransactionStore();
 
-function isOneoffTransaction(transaction: OneoffTransaction | MonthlyTransaction): transaction is OneoffTransaction {
+function isOneoffTransaction(
+    transaction: OneoffTransaction | MonthlyTransaction
+): transaction is OneoffTransaction {
     return (transaction as OneoffTransaction).date != undefined;
 }
 
@@ -105,7 +107,9 @@ watch(
         if (isOneoffTransaction(transaction)) {
             allowedTransactionType.value = 'oneoff';
             var now = new Date();
-            var today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+            var today = new Date(
+                Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+            );
 
             if (today.getTime() === new Date(transaction.date).getTime()) {
                 transactionProperties.oneoffTransactionProperties.today = true;
@@ -126,7 +130,7 @@ watch(
                 transactionProperties.monthlyTransactionProperties.monthTo = {
                     year: Number(toYear),
                     month: Number(toMonth)
-                }
+                };
             }
             isMonthlyTransaction.value = true;
         }
@@ -165,14 +169,20 @@ function submit() {
             throw Error('`monthFrom` is empty');
         }
 
-        if (monthTo && new Date(monthTo.year, monthTo.month - 1) <= new Date(monthFrom.year, monthFrom.month - 1)) {
+        if (
+            monthTo &&
+            new Date(monthTo.year, monthTo.month - 1) <=
+                new Date(monthFrom.year, monthFrom.month - 1)
+        ) {
             throw Error('`monthTo` is before than `monthFrom`');
         }
 
         payload = {
             ...baesPayload,
             monthFrom: dateToYearMonth(new Date(monthFrom.year, monthFrom.month - 1)),
-            monthTo: monthTo ? dateToYearMonth(new Date(monthTo.year, monthTo.month - 1)) : undefined
+            monthTo: monthTo
+                ? dateToYearMonth(new Date(monthTo.year, monthTo.month - 1))
+                : undefined
         };
     } else {
         let date: Date;
@@ -189,10 +199,17 @@ function submit() {
     }
 
     if (props.transaction) {
-        TransactionStore.update(isMonthlyTransaction.value ? 'monthly' : 'oneoff', props.transaction.id, payload)
+        TransactionStore.update(
+            isMonthlyTransaction.value ? 'monthly' : 'oneoff',
+            props.transaction.id,
+            payload
+        )
             .then(() => {
                 eventEmitter.dispatchEvent(
-                    new NotificationEvent(NotificationStyle.SUCCESS, 'Transaktion erfolgreich bearbeitet')
+                    new NotificationEvent(
+                        NotificationStyle.SUCCESS,
+                        'Transaktion erfolgreich bearbeitet'
+                    )
                 );
             })
             .catch((err) => {
@@ -205,12 +222,17 @@ function submit() {
         TransactionStore.create(isMonthlyTransaction.value ? 'monthly' : 'oneoff', payload)
             .then(() => {
                 eventEmitter.dispatchEvent(
-                    new NotificationEvent(NotificationStyle.SUCCESS, 'Transaktion erfolgreich erstellt')
+                    new NotificationEvent(
+                        NotificationStyle.SUCCESS,
+                        'Transaktion erfolgreich erstellt'
+                    )
                 );
             })
             .catch((err) => {
                 console.log(err);
-                eventEmitter.dispatchEvent(new NotificationEvent(NotificationStyle.ERROR, 'Fehler bei der Erstellung'));
+                eventEmitter.dispatchEvent(
+                    new NotificationEvent(NotificationStyle.ERROR, 'Fehler bei der Erstellung')
+                );
             });
     }
 
@@ -262,7 +284,7 @@ function submit() {
                     />
                     am
                     <TextInput
-                        class="inline-block ml-1"
+                        class="ml-1 inline-block"
                         type="date"
                         id="manual-date-input"
                         v-model="transactionProperties.oneoffTransactionProperties.customDate"
@@ -305,7 +327,7 @@ function submit() {
 
                 <label for="category">Kategorie</label>
                 <AutoComplete
-                    :suggestions="(CategoryShopStore.categories as Required<Category>[])"
+                    :suggestions="CategoryShopStore.categories as Required<Category>[]"
                     :required="true"
                     v-model="transactionProperties.Category"
                     @request-create="(name) => createCategoryShop('Category', name)"
@@ -313,7 +335,7 @@ function submit() {
 
                 <label for="shop">Ort/Geschäft</label>
                 <AutoComplete
-                    :suggestions="(CategoryShopStore.shops as Required<Shop>[])"
+                    :suggestions="CategoryShopStore.shops as Required<Shop>[]"
                     v-model="transactionProperties.Shop"
                     @request-create="(name) => createCategoryShop('Shop', name)"
                 />
@@ -332,7 +354,9 @@ function submit() {
                 <LoadingSpinner v-show="submitLocks.size > 0" />
                 <span v-show="submitLocks.size === 0">Speichern</span>
             </button>
-            <button v-if="showCancelButton" type="button" class="btn" @click="emit('done')">Verwerfen</button>
+            <button v-if="showCancelButton" type="button" class="btn" @click="emit('done')">
+                Verwerfen
+            </button>
         </div>
     </form>
 </template>

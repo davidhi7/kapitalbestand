@@ -1,6 +1,8 @@
 import { body } from 'express-validator';
 
-import CategoryShopController, { CategoryOrShop } from '../../controllers/category-shop/CategoryShopController.js';
+import CategoryShopController, {
+    CategoryOrShop
+} from '../../controllers/category-shop/CategoryShopController.js';
 import { Category, Shop } from '../../database/db.js';
 import { EndpointBuilder } from './EndpointBuilder.js';
 

@@ -1,4 +1,13 @@
-import { AllowNull, BelongsTo, Column, ForeignKey, HasMany, Model, Table, Unique } from 'sequelize-typescript';
+import {
+    AllowNull,
+    BelongsTo,
+    Column,
+    ForeignKey,
+    HasMany,
+    Model,
+    Table,
+    Unique
+} from 'sequelize-typescript';
 
 import Transaction from './Transaction.js';
 import User from './User.js';

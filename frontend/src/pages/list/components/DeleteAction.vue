@@ -1,5 +1,5 @@
 <script setup>
-import {ref, inject} from 'vue';
+import { inject, ref } from 'vue';
 
 import { useTransactionStore } from '@/stores/TransactionStore';
 
@@ -35,5 +35,4 @@ function cancel() {
     </div>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>

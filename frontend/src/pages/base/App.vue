@@ -24,8 +24,15 @@ watch(
 
 <template>
     <Notification :class="{ 'mt-16': AuthStateStore.authenticated }" />
-    <MenuBar v-if="AuthStateStore.authenticated" :username="AuthStateStore.username" @logout="AuthStateStore.logout" />
-    <div class="sm:mx-auto mx-2 my-16" :class="[customWidth ? `sm:max-w-[${customWidth}]` : 'sm:max-w-[600px]']">
+    <MenuBar
+        v-if="AuthStateStore.authenticated"
+        :username="AuthStateStore.username"
+        @logout="AuthStateStore.logout"
+    />
+    <div
+        class="mx-2 my-16 sm:mx-auto"
+        :class="[customWidth ? `sm:max-w-[${customWidth}]` : 'sm:max-w-[600px]']"
+    >
         <Login v-if="!AuthStateStore.authenticated"></Login>
         <router-view v-else></router-view>
     </div>

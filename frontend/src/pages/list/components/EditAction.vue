@@ -1,5 +1,5 @@
 <script>
-import TransactionForm from '@/pages/transaction-form/TransactionForm.vue'
+import TransactionForm from '@/pages/transaction-form/TransactionForm.vue';
 
 export default {
     props: {
@@ -17,10 +17,7 @@ export default {
 </script>
 
 <template>
-    <TransactionForm
-        :transaction="transaction"
-        @done="data => $emit('done')"
-    ></TransactionForm>
+    <TransactionForm :transaction="transaction" @done="(data) => $emit('done')"></TransactionForm>
 </template>
 
 <style scoped>

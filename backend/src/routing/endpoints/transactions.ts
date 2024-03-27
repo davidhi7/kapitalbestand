@@ -1,7 +1,9 @@
 import express from 'express';
 import { body, query } from 'express-validator';
 
-import CategoryShopController, { CategoryOrShop } from '../../controllers/category-shop/CategoryShopController.js';
+import CategoryShopController, {
+    CategoryOrShop
+} from '../../controllers/category-shop/CategoryShopController.js';
 import MonthlyTransactionController, {
     MonthlyTransactionCreateParameters,
     MonthlyTransactionQueryParameters
@@ -19,7 +21,11 @@ const monthPattern = /\d{4}-\d{1,2}/;
 function getCategoryShopValidator(model: CategoryOrShop) {
     // Typing { req } with { req: express.Request } doesn't stop Typescript from complaining
     return async (value: number, { req }: { req: any }) =>
-        (await CategoryShopController.getById(model, (req as AuthenticatedRequest).session.user, value)) != null;
+        (await CategoryShopController.getById(
+            model,
+            (req as AuthenticatedRequest).session.user,
+            value
+        )) != null;
 }
 
 const transactionCreateValidators = [
@@ -62,7 +68,10 @@ const oneoffTransactionRouter = new EndpointBuilder<
         OneoffTransactionController.create.bind(OneoffTransactionController)
     )
     .patch(
-        [...transactionUpdateValidators, body('date').isISO8601({ strict: true }).toDate().optional()],
+        [
+            ...transactionUpdateValidators,
+            body('date').isISO8601({ strict: true }).toDate().optional()
+        ],
         OneoffTransactionController.update.bind(OneoffTransactionController)
     )
     .delete(OneoffTransactionController.delete.bind(OneoffTransactionController))
@@ -87,7 +96,10 @@ const monthlyTransactionRouter = new EndpointBuilder<
             body('monthFrom').matches(monthPattern),
             body('monthTo').matches(monthPattern).optional(),
             body('monthTo').custom((monthTo, { req }) => {
-                return new Date(monthTo) >= new Date((req.body as MonthlyTransactionCreateParameters).monthFrom);
+                return (
+                    new Date(monthTo) >=
+                    new Date((req.body as MonthlyTransactionCreateParameters).monthFrom)
+                );
             })
         ],
         MonthlyTransactionController.create.bind(MonthlyTransactionController)

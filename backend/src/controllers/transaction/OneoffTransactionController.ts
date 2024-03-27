@@ -2,7 +2,10 @@ import createError from 'http-errors';
 import { Model } from 'sequelize-typescript';
 
 import { OneoffTransaction, Transaction, User } from '../../database/db.js';
-import AbstractTransactionController, { TransactionCreateParameters, TransactionQueryParameters } from './AbstractTransactionController.js';
+import AbstractTransactionController, {
+    TransactionCreateParameters,
+    TransactionQueryParameters
+} from './AbstractTransactionController.js';
 import { buildWhereConditions } from './transaction-utils.js';
 
 export interface OneoffTransactionCreateParameters extends TransactionCreateParameters {
@@ -51,7 +54,7 @@ class OneoffTransactionController extends AbstractTransactionController<OneoffTr
             ShopId: ShopId,
             isExpense: isExpense
         });
-        
+
         return OneoffTransaction.findAll({
             where: whereConditions,
             order: [
@@ -66,12 +69,15 @@ class OneoffTransactionController extends AbstractTransactionController<OneoffTr
     async update(user: User, id: number, body: OneoffTransactionCreateParameters) {
         let instance = await this.getByUserAndId(user, id);
 
-        function setIfNotUndefined(key: keyof OneoffTransactionCreateParameters, modelInstance: Model = instance) {
+        function setIfNotUndefined(
+            key: keyof OneoffTransactionCreateParameters,
+            modelInstance: Model = instance
+        ) {
             if (body[key] !== undefined) {
                 modelInstance.set(key, body[key]);
             }
         }
-        
+
         if (!instance) {
             throw createError.NotFound();
         }
