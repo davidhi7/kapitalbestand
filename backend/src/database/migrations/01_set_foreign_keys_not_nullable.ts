@@ -11,10 +11,6 @@ export async function up({ context }: { context: QueryInterface }) {
         type: DataTypes.INTEGER,
         allowNull: false
     });
-    await context.changeColumn('Transactions', 'ShopId', {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    });
 }
 
 export async function down({ context }: { context: QueryInterface }) {
@@ -25,10 +21,6 @@ export async function down({ context }: { context: QueryInterface }) {
         });
     }
     await context.changeColumn('Transactions', 'CategoryId', {
-        type: DataTypes.INTEGER,
-        allowNull: true
-    });
-    await context.changeColumn('Transactions', 'ShopId', {
         type: DataTypes.INTEGER,
         allowNull: true
     });

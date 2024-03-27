@@ -33,7 +33,7 @@ export default class Transaction extends Model {
     declare Category: ReturnType<() => Category>;
 
     @ForeignKey(() => Shop)
-    @AllowNull(false)
+    @AllowNull(true)
     @Column
     declare ShopId: number;
 
