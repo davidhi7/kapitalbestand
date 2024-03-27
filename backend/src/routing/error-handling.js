@@ -1,5 +1,5 @@
-import createError from 'http-errors';
 import { validationResult } from 'express-validator';
+import createError from 'http-errors';
 
 import ResponseBuilder from './response-builder.js';
 
@@ -21,7 +21,9 @@ export const asyncEndpointWrapper = async (req, res, next, handler) => {
 export const errorHandler = (error, req, res, next) => {
     try {
         if (createError.isHttpError(error)) {
-            console.error(error);
+            if (error.statusCode >= 500) {
+                console.error(error);
+            }
             res.status(error.statusCode).json(
                 ResponseBuilder({ status: 'error' })
             );
