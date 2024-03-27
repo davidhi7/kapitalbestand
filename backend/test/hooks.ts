@@ -1,8 +1,18 @@
 import { readFileSync } from 'fs';
 import sinon from 'sinon';
 
-import sequelize, { MonthlyTransaction, OneoffTransaction, Shop, Transaction, User } from '../src/database/db.js';
+import {
+    MonthlyTransaction,
+    OneoffTransaction,
+    Shop,
+    Transaction,
+    User,
+    connectToDatabase
+} from '../src/database/db.js';
 import { Category } from '../src/database/db.js';
+
+let sequelize = await connectToDatabase();
+await sequelize.sync();
 
 type OneoffTransactionParameters = {
     isExpense: boolean;
@@ -23,7 +33,7 @@ type MonthlyTransactionParameters = {
     monthTo: string;
 };
 
-const sampleData = JSON.parse(readFileSync('test/sample-transactions.json'));
+const sampleData = JSON.parse(readFileSync('test/sample-transactions.json', 'utf-8'));
 const oneoffSample = sampleData.oneoffTransactions;
 const monthlySample = sampleData.monthlyTransactions;
 
