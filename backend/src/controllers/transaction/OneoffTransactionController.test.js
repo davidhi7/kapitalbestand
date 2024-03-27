@@ -38,8 +38,8 @@ describe('OneoffTransactionController', function () {
                 isExpense: true,
                 date: '2022-01-01',
                 amount: 1,
-                CategoryId: (await Category.create({ name: 'test' })).id,
-                ShopId: (await Shop.findOne({ name: 'shop' })).id
+                CategoryId: (await Category.create({ name: 'test', UserId: user.id })).id,
+                ShopId: (await Shop.findOne({ name: 'shop', UserId: user.id })).id
             });
             expect(instance.Transaction.id).to.exist;
             expect(instance.Transaction.Category.id).to.exist;
@@ -193,7 +193,7 @@ describe('OneoffTransactionController', function () {
                 date: '2023-01-01',
                 isExpense: true,
                 amount: 1,
-                CategoryId: (await Category.create({ name: 'test' })).id
+                CategoryId: (await Category.create({ name: 'test', UserId: newUser.id })).id
             });
             expect(await oneoffTransactionController.fetch(newUser, 100, 0, {})).to.be.of.length(1);
         });
@@ -274,8 +274,8 @@ describe('OneoffTransactionController', function () {
             const updatedInstance = await oneoffTransactionController.update(user, instance.id, {
                 amount: 12345,
                 date: '2023-01-04',
-                CategoryId: (await Category.create({ name: 'update-test' })).id,
-                ShopId: (await Shop.create({ name: 'update-test' })).id,
+                CategoryId: (await Category.create({ name: 'update-test', UserId: user.id })).id,
+                ShopId: (await Shop.create({ name: 'update-test', UserId: user.id })).id,
                 description: 'testing update method ...'
             });
             expect(new Date(updatedInstance.date)).to.be.deep.equal(new Date('2023-01-04'));
@@ -294,8 +294,8 @@ describe('OneoffTransactionController', function () {
                 isExpense: true,
                 date: '2023-01-01',
                 amount: 1,
-                category: (await Category.findOne()).id,
-                shop: (await Shop.findOne()).id
+                CategoryId: (await Category.findOne()).id,
+                ShopId: (await Shop.findOne()).id
             });
             const updatedInstance = await oneoffTransactionController.update(user, instance.id, {
                 ShopId: null

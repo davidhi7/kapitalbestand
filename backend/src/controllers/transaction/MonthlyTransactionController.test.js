@@ -251,8 +251,8 @@ describe('MonthlyTransactionController', function () {
                 monthFrom: new Date('2018-06'),
                 description: 'test-transaction',
                 amount: '1',
-                category: (await Category.create({ name: 'test-category', UserId: user.id })).id,
-                shop: (await Shop.create({ name: 'test-shop', UserId: user.id })).id
+                CategoryId: (await Category.create({ name: 'test-category', UserId: user.id })).id,
+                ShopId: (await Shop.create({ name: 'test-shop', UserId: user.id })).id
             };
             const instance = await monthlyTransactionController.create(user, test_data);
             const instance2 = await monthlyTransactionController.create(user, test_data);
@@ -277,7 +277,7 @@ describe('MonthlyTransactionController', function () {
                 monthFrom: '2023-01',
                 isExpense: true,
                 amount: 1,
-                category: (await Category.create({ name: 'test', UserId: newUser.id })).id
+                CategoryId: (await Category.create({ name: 'test', UserId: newUser.id })).id
             });
             expect(await monthlyTransactionController.fetch(newUser, 100, 0, {})).to.be.of.length(1);
         });
