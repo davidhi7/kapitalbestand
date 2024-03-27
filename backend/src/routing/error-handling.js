@@ -21,20 +21,10 @@ export const asyncEndpointWrapper = async (req, res, next, handler) => {
 export const errorHandler = (error, req, res, next) => {
     try {
         if (createError.isHttpError(error)) {
-            if (!error.expose) {
-                console.error(error);
-                res.status(error.statusCode).json(
-                    ResponseBuilder({ status: 'error' })
-                );
-            } else {
-                res.status(error.statusCode).json(
-                    ResponseBuilder({
-                        status: 'error',
-                        error: error.message,
-                        data: error.cause
-                    })
-                );
-            }
+            console.error(error);
+            res.status(error.statusCode).json(
+                ResponseBuilder({ status: 'error' })
+            );
         } else {
             console.error(error);
             res.status(500).json(ResponseBuilder({ status: 'error' }));
