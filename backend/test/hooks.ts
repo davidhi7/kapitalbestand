@@ -11,7 +11,7 @@ import {
 } from '../src/database/db.js';
 import { Category } from '../src/database/db.js';
 
-let sequelize = await connectToDatabase();
+const sequelize = await connectToDatabase();
 await sequelize.sync();
 
 type OneoffTransactionParameters = {
@@ -86,7 +86,9 @@ export const mochaHooks = {
                 {
                     UserId: defaultUser.id,
                     monthFrom: new Date(monthlyTransaction.monthFrom),
-                    monthTo: monthlyTransaction.monthTo ? new Date(monthlyTransaction.monthTo) : null,
+                    monthTo: monthlyTransaction.monthTo
+                        ? new Date(monthlyTransaction.monthTo)
+                        : null,
                     Transaction: {
                         isExpense: monthlyTransaction.isExpense,
                         amount: monthlyTransaction.amount,

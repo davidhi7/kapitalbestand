@@ -5,7 +5,7 @@
         <button
             class="w-full overflow-hidden text-ellipsis rounded-md border-[1px] border-transparent px-2 py-1 text-left"
         >
-            <slot></slot>
+            <slot />
         </button>
     </div>
 </template>

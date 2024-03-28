@@ -11,8 +11,8 @@ Delete the monthly transaction with the corresponding id.
 **Parameters**:
 
 | Parameter | Accepted values | Required | Description                    |
-| --------- |:---------------:|:--------:| ------------------------------ |
-| `id`      | `int`           | x        | Id of the monthly transaction. |
+| --------- | :-------------: | :------: | ------------------------------ |
+| `id`      |      `int`      |    x     | Id of the monthly transaction. |
 
 ## Success response
 

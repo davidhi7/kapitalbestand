@@ -33,8 +33,7 @@ defineEmits(['logout']);
                 class="relative -left-0.5 text-2xl"
                 :icon="display_menu ? 'close' : 'menu'"
                 @click="display_menu = !display_menu"
-            >
-            </IconRouterLink>
+            />
         </section>
 
         <!-- Main pages -->
@@ -43,21 +42,14 @@ defineEmits(['logout']);
             :class="{ 'msm:hidden': !display_menu }"
             @click="display_menu = false"
         >
-            <IconRouterLink
-                to="/"
-                icon="home"
-                :label="mq.current === 'xs' ? 'Start' : null"
-            ></IconRouterLink>
-            <IconRouterLink to="/new" icon="add" label="Neue Transaktion"> </IconRouterLink>
-            <IconRouterLink to="/list" icon="list" label="Liste"></IconRouterLink>
-            <IconRouterLink to="/analysis" icon="query_stats" label="Analyse"></IconRouterLink>
+            <IconRouterLink to="/" icon="home" :label="mq.current === 'xs' ? 'Start' : null" />
+            <IconRouterLink to="/new" icon="add" label="Neue Transaktion" />
+            <IconRouterLink to="/list" icon="list" label="Liste" />
+            <IconRouterLink to="/analysis" icon="query_stats" label="Analyse" />
         </section>
 
         <!-- Separator between main pages and logout; only on small screens -->
-        <div
-            class="m-1 h-px w-auto bg-main-dark sm:hidden"
-            :class="{ hidden: !display_menu }"
-        ></div>
+        <div class="m-1 h-px w-auto bg-main-dark sm:hidden" :class="{ hidden: !display_menu }" />
 
         <!-- Account settings & logout -->
         <section class="flex msm:justify-between" :class="{ 'msm:hidden': !display_menu }">
@@ -66,16 +58,16 @@ defineEmits(['logout']);
                 icon="manage_accounts"
                 :label="props.username"
                 :label-left="mq.current !== 'xs'"
-                @click="display_menu = false"
                 class="flex-grow"
-            ></IconRouterLink>
+                @click="display_menu = false"
+            />
             <IconRouterLink
                 icon="logout"
                 @click="
                     display_menu = false;
                     $emit('logout');
                 "
-            ></IconRouterLink>
+            />
         </section>
     </nav>
 </template>

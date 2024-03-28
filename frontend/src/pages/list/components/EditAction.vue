@@ -2,22 +2,22 @@
 import TransactionForm from '@/pages/transaction-form/TransactionForm.vue';
 
 export default {
+    components: {
+        TransactionForm
+    },
+    inject: ['frequency'],
     props: {
         transaction: {
             type: Object,
             required: true
         }
     },
-    components: {
-        TransactionForm
-    },
-    inject: ['frequency'],
     emits: ['done']
 };
 </script>
 
 <template>
-    <TransactionForm :transaction="transaction" @done="(data) => $emit('done')"></TransactionForm>
+    <TransactionForm :transaction="transaction" @done="(data) => $emit('done')" />
 </template>
 
 <style scoped>

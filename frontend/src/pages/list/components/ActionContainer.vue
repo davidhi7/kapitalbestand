@@ -21,7 +21,8 @@ const props = defineProps({
         type: String,
         validator(value) {
             return value === null || ['ExpandAction', 'EditAction', 'DeleteAction'].includes(value);
-        }
+        },
+        required: true
     },
     transaction: {
         type: Object,
@@ -33,7 +34,7 @@ defineEmits(['done']);
 </script>
 
 <template>
-    <div v-if="props.action" class="mx-2 my-0 h-px bg-tertiary-bg"></div>
+    <div v-if="props.action" class="mx-2 my-0 h-px bg-tertiary-bg" />
     <Transition name="action">
         <div
             v-if="props.action"
@@ -45,8 +46,8 @@ defineEmits(['done']);
                     <KeepAlive>
                         <component
                             :is="actions[props.action].component"
-                            @done="$emit('done')"
                             :transaction="props.transaction"
+                            @done="$emit('done')"
                         />
                     </KeepAlive>
                 </div>

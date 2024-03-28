@@ -15,7 +15,7 @@ const customWidth = ref();
 
 watch(
     () => route.meta,
-    (meta) => {
+    () => {
         customWidth.value = route.meta.customWidth;
     },
     { immediate: true }
@@ -33,7 +33,7 @@ watch(
         class="mx-2 my-16 sm:mx-auto"
         :class="[customWidth ? `sm:max-w-[${customWidth}]` : 'sm:max-w-[600px]']"
     >
-        <Login v-if="!AuthStateStore.authenticated"></Login>
-        <router-view v-else></router-view>
+        <Login v-if="!AuthStateStore.authenticated" />
+        <router-view v-else />
     </div>
 </template>

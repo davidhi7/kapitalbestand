@@ -76,18 +76,18 @@ class AnalysisController {
                 balance: 0
             };
         }
-        for (let entry of queryResults[0]) {
+        for (const entry of queryResults[0]) {
             monthlyValues[entry.month - 1].oneoff.expenses = Number(entry.expenses);
             monthlyValues[entry.month - 1].oneoff.incomes = Number(entry.incomes);
         }
 
         // doing the same as with one-off transactions but with monthly transactions is a lot more difficult, so now we approach this in a simpler way
-        for (let monthlyTransaction of queryResults[1]) {
+        for (const monthlyTransaction of queryResults[1]) {
             const month0 = new Date(monthlyTransaction.monthFrom).getMonth();
             const month1 = monthlyTransaction.monthTo
                 ? new Date(monthlyTransaction.monthTo).getMonth()
                 : 11;
-            for (let monthData of monthlyValues) {
+            for (const monthData of monthlyValues) {
                 if (monthlyTransaction.Transaction.isExpense) {
                     monthData.monthly.expenses += monthlyTransaction.Transaction.amount;
                 } else {
@@ -97,7 +97,7 @@ class AnalysisController {
         }
 
         // finally calculate the balance
-        for (let month in monthlyValues) {
+        for (const month in monthlyValues) {
             monthlyValues[month].balance =
                 monthlyValues[month].oneoff.incomes +
                 monthlyValues[month].monthly.incomes -

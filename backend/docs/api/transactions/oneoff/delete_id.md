@@ -11,8 +11,8 @@ Delete the one-off transaction with the corresponding id.
 **Parameters**:
 
 | Parameter | Accepted values | Required | Description                    |
-| --------- |:---------------:|:--------:| ------------------------------ |
-| `id`      | `int`           | x        | Id of the one-off transaction. |
+| --------- | :-------------: | :------: | ------------------------------ |
+| `id`      |      `int`      |    x     | Id of the one-off transaction. |
 
 ## Success response
 

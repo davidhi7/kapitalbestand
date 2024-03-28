@@ -1,6 +1,5 @@
 import crypto from 'crypto';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
-import { ParseArgsConfig, parseArgs } from 'node:util';
 import { dirname, join } from 'path';
 import { SequelizeOptions } from 'sequelize-typescript';
 import { fileURLToPath } from 'url';

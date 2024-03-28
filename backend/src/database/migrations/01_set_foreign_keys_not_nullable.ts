@@ -1,7 +1,7 @@
 import { DataTypes, QueryInterface } from 'sequelize';
 
 export async function up({ context }: { context: QueryInterface }) {
-    for (let tableName of ['Categories', 'Shops', 'OneoffTransactions', 'MonthlyTransactions']) {
+    for (const tableName of ['Categories', 'Shops', 'OneoffTransactions', 'MonthlyTransactions']) {
         await context.changeColumn(tableName, 'UserId', {
             type: DataTypes.INTEGER,
             allowNull: false
@@ -14,7 +14,7 @@ export async function up({ context }: { context: QueryInterface }) {
 }
 
 export async function down({ context }: { context: QueryInterface }) {
-    for (let tableName of ['Categories', 'Shops', 'OneoffTransactions', 'MonthlyTransactions']) {
+    for (const tableName of ['Categories', 'Shops', 'OneoffTransactions', 'MonthlyTransactions']) {
         await context.changeColumn(tableName, 'UserId', {
             type: DataTypes.INTEGER,
             allowNull: true

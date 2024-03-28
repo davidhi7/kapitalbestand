@@ -2,8 +2,8 @@ import { expect } from 'chai';
 
 import { User } from './db.js';
 
-describe('user model', () => {
-    it('should not include the password hash on default query', async () => {
+describe('user model', function () {
+    it('should not include the password hash on default query', async function () {
         User.create({
             username: 'testuser',
             hash: 'testhash'
@@ -11,7 +11,8 @@ describe('user model', () => {
         const user = await User.findOne();
         expect(user.hash).to.be.undefined;
     });
-    it('should include the password hash using the `with_hash` scope', async () => {
+
+    it('should include the password hash using the `with_hash` scope', async function () {
         User.create({
             username: 'testuser',
             hash: 'testhash'

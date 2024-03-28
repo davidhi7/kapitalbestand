@@ -51,7 +51,7 @@ async function submit() {
 </script>
 
 <template>
-    <form @submit.prevent="submit" class="flex flex-col items-center gap-4">
+    <form class="flex flex-col items-center gap-4" @submit.prevent="submit">
         <h1
             class="bg-gradient w-full bg-clip-text text-center text-7xl font-bold leading-tight text-transparent"
         >
@@ -61,29 +61,29 @@ async function submit() {
         <GridForm>
             <span>Benutzername</span>
             <TextInput
+                v-model.lazy="username"
                 type="text"
                 required
                 :show-required-indicator="false"
-                v-model.lazy="username"
             />
 
             <span>Passwort</span>
             <TextInput
+                v-model.lazy="password"
                 type="password"
                 minlength="8"
                 required
                 :show-required-indicator="false"
-                v-model.lazy="password"
             />
 
             <span v-if="isRegisterForm">Passwort bestätigen</span>
             <TextInput
                 v-if="isRegisterForm"
+                v-model.lazy="passwordVerification"
                 type="password"
                 minlength="8"
                 required
                 :show-required-indicator="false"
-                v-model.lazy="passwordVerification"
             />
         </GridForm>
         <hr class="bg-gradient h-1 w-full border-none" />
@@ -94,9 +94,9 @@ async function submit() {
             <span>
                 Oder
                 <button
-                    @click="toggleFormType"
                     type="button"
                     class="cursor-pointer text-inherit underline decoration-1 transition-colors hover:text-tertiary"
+                    @click="toggleFormType"
                 >
                     {{ isRegisterForm ? 'anmelden' : 'neu registrieren' }}</button
                 >?

@@ -9,12 +9,9 @@
         "sourceMap": true,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
-        "strictPropertyInitialization": false,
+        "strictPropertyInitialization": false
     },
-    "include": [
-        "./src/**/*",
-        "./test/**/*"
-    ],
+    "include": ["./src/**/*", "./test/**/*"],
     "ts-node": {
         "transpileOnly": true
     }

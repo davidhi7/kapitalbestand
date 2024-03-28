@@ -32,11 +32,11 @@ provide('frequency', props.frequency);
     >
         <TransactionListHeader />
         <TransactionListRow
-            v-if="transactions && transactions.length > 0"
             v-for="t in transactions"
+            v-if="transactions && transactions.length > 0"
             :key="t.id"
             :transaction="t"
-        ></TransactionListRow>
+        />
         <td v-else class="col-span-full justify-self-center p-2">Keine Einträge</td>
     </table>
 </template>

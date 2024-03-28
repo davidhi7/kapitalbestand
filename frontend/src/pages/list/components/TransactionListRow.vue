@@ -75,15 +75,17 @@ const frequency = inject('frequency');
                 <span
                     class="material-symbols-outlined"
                     :class="{ 'material-symbols-filled': enabledAction === actions.EDIT }"
-                    >edit</span
                 >
+                    edit
+                </span>
             </button>
             <button @click="toggle(actions.DELETE)">
                 <span
                     class="material-symbols-outlined"
                     :class="{ 'material-symbols-filled': enabledAction === actions.DELETE }"
-                    >delete</span
                 >
+                    delete
+                </span>
             </button>
         </td>
         <td class="col-span-full !p-0">

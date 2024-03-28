@@ -11,16 +11,10 @@
         "isolatedModules": true,
         "baseUrl": ".",
         "paths": {
-            "@/*": [
-                "./src/*"
-            ],
-            "@backend-types/*": [
-                "../backend/src/types/*"
-            ]
+            "@/*": ["./src/*"],
+            "@backend-types/*": ["../backend/src/types/*"]
         },
         "outDir": "dist/"
     },
-    "include": [
-        "src/"
-    ]
+    "include": ["src/"]
 }

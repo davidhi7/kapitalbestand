@@ -2,6 +2,9 @@
 import TransactionForm from './TransactionForm.vue';
 
 export default {
+    components: {
+        TransactionForm
+    },
     data() {
         return {
             type: 'Default'
@@ -11,9 +14,6 @@ export default {
         setType(type) {
             this.type = type;
         }
-    },
-    components: {
-        TransactionForm
     }
 };
 </script>

@@ -48,14 +48,23 @@ export default {
             concurrentAnimation: null
         };
     },
+    mounted() {
+        eventEmitter.addEventListener('notification', (event: Event) => {
+            const { content, style } = event as NotificationEvent;
+            this.notificationContent = content;
+            this.notificationStyle = style;
+
+            this.show();
+        });
+    },
     methods: {
-        mouseEnter(evt: MouseEvent) {
+        mouseEnter() {
             // Pause the ongoing animation only if the current animation is timeout
             if (this.currentAnimationStage === AnimationStage.TIMEOUT) {
                 this.currentAnimation.pause();
             }
         },
-        mouseLeave(evt: MouseEvent) {
+        mouseLeave() {
             if (this.currentAnimationStage === AnimationStage.TIMEOUT) {
                 this.currentAnimation.play();
             }
@@ -121,7 +130,7 @@ export default {
             );
             await this.currentAnimation.finished;
         },
-        async suppress(evt: MouseEvent) {
+        async suppress() {
             // closing notification during slide in is a irrelevant niche case and closing during slideout serves no purpose, so let's skip in these cases
             if (this.currentAnimationStage !== AnimationStage.TIMEOUT) {
                 return;
@@ -145,15 +154,6 @@ export default {
                 }
             });
         }
-    },
-    mounted() {
-        eventEmitter.addEventListener('notification', (event: Event) => {
-            const { content, style } = event as NotificationEvent;
-            this.notificationContent = content;
-            this.notificationStyle = style;
-
-            this.show();
-        });
     }
 };
 </script>
@@ -174,7 +174,7 @@ export default {
                 <span class="material-symbols-outlined">close</span>
             </button>
         </div>
-        <div ref="timeout" class="notification-timeout"></div>
+        <div ref="timeout" class="notification-timeout" />
     </div>
 </template>
 

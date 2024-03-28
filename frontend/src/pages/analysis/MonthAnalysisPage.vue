@@ -82,7 +82,7 @@ const currentMonthSelected = computed(() => {
                 <div
                     v-if="!currentMonthSelected"
                     class="mx-2 my-auto h-6 w-px bg-main opacity-50"
-                ></div>
+                />
                 <RouterLink
                     :to="`/analysis/${monthAfter.year}/${String(monthAfter.month + 1).padStart(2, '0')}`"
                     class="flex items-center gap-1 text-right"
@@ -93,13 +93,13 @@ const currentMonthSelected = computed(() => {
                             style: 'short'
                         })
                     }}</span>
-                    <span class="material-symbols-outlined relative -bottom-0.5"
-                        >navigate_next</span
-                    >
+                    <span class="material-symbols-outlined relative -bottom-0.5">
+                        navigate_next
+                    </span>
                 </RouterLink>
             </div>
         </header>
-        <div class="flex flex-wrap justify-around gap-4" v-if="report">
+        <div v-if="report" class="flex flex-wrap justify-around gap-4">
             <Card class="grow">
                 <MonthlyExpensesStats :year="year" :month="month" :report="report" />
             </Card>

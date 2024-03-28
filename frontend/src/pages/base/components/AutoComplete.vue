@@ -130,20 +130,20 @@ function handleKeyboardInput(evt: KeyboardEvent) {
 <template>
     <!-- Container for input field and suggestion buttons -->
     <div
+        ref="root"
         class="group relative rounded-t-lg focus-within:bg-input-bg"
         :class="{ 'rounded-b-lg': !textInput && computedSuggestions.length == 0 }"
         @focusin="focusIn()"
         @focusout="focusOut($event)"
         @keyup="handleKeyboardInput($event)"
-        ref="root"
     >
         <TextInput
+            v-model="textInput"
             class="group-focus-within:bg-input-bg group-focus-within:shadow-none has-[:focus-visible]:relative has-[:focus-visible]:z-20"
             :type="$props.type"
             :placeholder="props.placeholder"
             :required="props.required"
             :show-required-indicator="!focused"
-            v-model="textInput"
         />
         <button
             v-show="focused && textInput"

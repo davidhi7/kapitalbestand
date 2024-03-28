@@ -91,5 +91,5 @@ const options: ChartOptions<'line'> = {
 </script>
 
 <template>
-    <Line :data="chartData" :options="options"></Line>
+    <Line :data="chartData" :options="options" />
 </template>

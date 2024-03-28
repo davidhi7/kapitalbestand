@@ -1,12 +1,13 @@
 <script>
 export default {
+    inject: ['frequency'],
     props: {
         transaction: {
             type: Object,
             required: true
         }
     },
-    inject: ['frequency'],
+    emits: ['done'],
     computed: {
         keyValuePairs() {
             const { createdAt, updatedAt, id, Transaction } = this.transaction;
@@ -14,13 +15,13 @@ export default {
             const isMonthly = this.frequency === 'monthly';
             let type;
             if (isMonthly) {
-                if (Boolean(isExpense)) {
+                if (isExpense) {
                     type = 'monatliche Ausgabe';
                 } else {
                     type = 'monatliches Einkommen';
                 }
             } else {
-                if (Boolean(isExpense)) {
+                if (isExpense) {
                     type = 'einmalige Ausgabe';
                 } else {
                     type = 'einmaliges Einkommen';
@@ -36,8 +37,7 @@ export default {
                 Typ: type
             };
         }
-    },
-    emits: ['done']
+    }
 };
 </script>
 

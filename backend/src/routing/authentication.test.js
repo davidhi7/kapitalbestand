@@ -6,11 +6,15 @@ import { User } from '../database/db.js';
 import auth from './authentication.js';
 import { errorHandler } from './error-handling.js';
 
-describe('authentication middlewares', () => {
-    const app = express();
-    app.use(express.json());
-    app.use('/api', auth);
-    app.use(errorHandler);
+describe('authentication middlewares', function () {
+    let app;
+
+    before(function () {
+        app = express();
+        app.use(express.json());
+        app.use('/api', auth);
+        app.use(errorHandler);
+    });
 
     async function register_test_account(username = 'test') {
         const password = '12345678';
@@ -27,14 +31,15 @@ describe('authentication middlewares', () => {
         return { username, password, sessionId, sessionTimeout };
     }
 
-    describe('general behaviour', () => {
-        it('should not return a session id if the user is not logged in to prevent session fixations', async () => {
+    describe('general behaviour', function () {
+        it('should not return a session id if the user is not logged in to prevent session fixations', async function () {
             const res = await request(app).post('/api/auth/whoami').send();
             expect(res.headers['set-cookie']).to.be.undefined;
         });
     });
-    describe('/auth/register', () => {
-        it('should allow to create a new user, returning the new username and session id and set a session id cookie', async () => {
+
+    describe('/auth/register', function () {
+        it('should allow to create a new user, returning the new username and session id and set a session id cookie', async function () {
             const res = await request(app)
                 .post('/api/auth/register')
                 .send({ username: 'auth-test-user', password: '12345678Ab_' });
@@ -53,7 +58,8 @@ describe('authentication middlewares', () => {
                 1
             );
         });
-        it('should fail to create a new user if the password does not match the minimum length of 8', async () => {
+
+        it('should fail to create a new user if the password does not match the minimum length of 8', async function () {
             const res = await request(app)
                 .post('/api/auth/register')
                 .send({ username: 'auth-test-user', password: '1234567' });
@@ -76,7 +82,8 @@ describe('authentication middlewares', () => {
             });
             expect(await User.count()).to.equal(1);
         });
-        it('should fail to create a new user if the username is already taken', async () => {
+
+        it('should fail to create a new user if the username is already taken', async function () {
             await request(app)
                 .post('/api/auth/register')
                 .send({ username: 'auth-test-user', password: '12345679010' });
@@ -93,7 +100,8 @@ describe('authentication middlewares', () => {
             });
             expect(await User.count()).to.equal(2);
         });
-        it('should fail if no username is provided', async () => {
+
+        it('should fail if no username is provided', async function () {
             const res = await request(app)
                 .post('/api/auth/register')
                 .send({ password: '123456790' });
@@ -102,7 +110,8 @@ describe('authentication middlewares', () => {
             expect(res.headers['content-type']).to.match(/json/);
             expect(await User.count()).to.equal(1);
         });
-        it('should fail if no password is provided', async () => {
+
+        it('should fail if no password is provided', async function () {
             const res = await request(app)
                 .post('/api/auth/register')
                 .send({ username: 'auth-test-user' });
@@ -111,14 +120,16 @@ describe('authentication middlewares', () => {
             expect(res.headers['content-type']).to.match(/json/);
             expect(await User.count()).to.equal(1);
         });
-        it('should change the session id if an already registered user registers again, thus changing the logged-in account', async () => {
+
+        it('should change the session id if an already registered user registers again, thus changing the logged-in account', async function () {
             const { sessionId: firstSessionId } = await register_test_account('test1');
             const { sessionId: secondSessionId } = await register_test_account('test2');
             expect(firstSessionId).not.to.equal(secondSessionId);
         });
     });
-    describe('/auth/login', () => {
-        it('should successfully login and return the username and session id on success', async () => {
+
+    describe('/auth/login', function () {
+        it('should successfully login and return the username and session id on success', async function () {
             const user_data = { username: 'auth-test-user', password: '12345678' };
             await request(app).post('/api/auth/register').send(user_data);
             const res = await request(app).post('/api/auth/login').send(user_data);
@@ -130,7 +141,8 @@ describe('authentication middlewares', () => {
             });
             expect(res.headers['set-cookie']).to.be.lengthOf(1);
         });
-        it('should fail to login on wrong username', async () => {
+
+        it('should fail to login on wrong username', async function () {
             const user_data = { username: 'auth-test-user', password: '12345678' };
             await request(app).post('/api/auth/register').send(user_data);
             const res = await request(app)
@@ -142,7 +154,8 @@ describe('authentication middlewares', () => {
                 error: 'Forbidden'
             });
         });
-        it('should fail to login on wrong password', async () => {
+
+        it('should fail to login on wrong password', async function () {
             const user_data = { username: 'auth-test-user', password: '12345678' };
             await request(app).post('/api/auth/register').send(user_data);
             const res = await request(app)
@@ -154,14 +167,16 @@ describe('authentication middlewares', () => {
                 error: 'Forbidden'
             });
         });
-        it('should fail if no username is provided', async () => {
+
+        it('should fail if no username is provided', async function () {
             const res = await request(app).post('/api/auth/login').send({ password: '123456790' });
 
             expect(res.status).to.equal(400);
             expect(res.headers['content-type']).to.match(/json/);
             expect(await User.count()).to.equal(1);
         });
-        it('should fail if no password is provided', async () => {
+
+        it('should fail if no password is provided', async function () {
             const res = await request(app)
                 .post('/api/auth/login')
                 .send({ username: 'auth-test-user' });
@@ -170,7 +185,8 @@ describe('authentication middlewares', () => {
             expect(res.headers['content-type']).to.match(/json/);
             expect(await User.count()).to.equal(1);
         });
-        it('should change the session id if an already registered user logs in again, thus changing the logged-in account', async () => {
+
+        it('should change the session id if an already registered user logs in again, thus changing the logged-in account', async function () {
             const { username, password } = await register_test_account('test1');
             const { sessionId: firstSessionId } = await register_test_account('test2');
             const loginResponse = await request(app)
@@ -181,8 +197,9 @@ describe('authentication middlewares', () => {
             expect(firstSessionId).not.to.equal(secondSessionId);
         });
     });
-    describe('/auth/whoami', async () => {
-        it('should return username and session timeout if the user is authenticated', async () => {
+
+    describe('/auth/whoami', function () {
+        it('should return username and session timeout if the user is authenticated', async function () {
             const { username, sessionId, sessionTimeout } = await register_test_account();
             const res = await request(app)
                 .get('/api/auth/whoami')
@@ -192,15 +209,17 @@ describe('authentication middlewares', () => {
             expect(res.body.data.username).to.equal(username);
             expect(res.body.data.sessionTimeout).to.be.greaterThanOrEqual(sessionTimeout);
         });
-        it('should fail if the user is not authenticated', async () => {
+
+        it('should fail if the user is not authenticated', async function () {
             await request(app).get('/api/auth/whoami').expect(401, {
                 status: 'error',
                 error: 'Unauthorized'
             });
         });
     });
-    describe('/auth/logout', () => {
-        it('should logout if the user is authenticated', async () => {
+
+    describe('/auth/logout', function () {
+        it('should logout if the user is authenticated', async function () {
             const { sessionId } = await register_test_account();
 
             await request(app)
@@ -212,15 +231,17 @@ describe('authentication middlewares', () => {
                 error: 'Unauthorized'
             });
         });
-        it('should fail if the user is not authenticated', async () => {
+
+        it('should fail if the user is not authenticated', async function () {
             await request(app).get('/api/auth/whoami').expect(401, {
                 status: 'error',
                 error: 'Unauthorized'
             });
         });
     });
-    describe('/auth/refresh', () => {
-        it('should refresh the session and reset the timeout if the user is authenticated', async () => {
+
+    describe('/auth/refresh', function () {
+        it('should refresh the session and reset the timeout if the user is authenticated', async function () {
             const { sessionId, sessionTimeout } = await register_test_account();
 
             const res = await request(app).get('/api/auth/refresh').set('Cookie', [sessionId]);
@@ -229,7 +250,8 @@ describe('authentication middlewares', () => {
             expect(res.body.data.username).to.equal('test');
             expect(res.body.data.sessionTimeout).to.be.greaterThan(sessionTimeout);
         });
-        it('should fail if the user is not authenticated', async () => {
+
+        it('should fail if the user is not authenticated', async function () {
             await request(app).get('/api/auth/refresh').expect(401, {
                 status: 'error',
                 error: 'Unauthorized'

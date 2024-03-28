@@ -32,6 +32,7 @@ describe('MonthlyTransactionController', function () {
             expect(attributes.ShopId).to.equal(instanceShop.id);
             expect(await instance.getUser()).to.deep.equal(user);
         });
+
         it("should successfully add a new monthly transaction with monthTo being 'null'", async function () {
             const user = await User.findOne();
             const attributes = {
@@ -55,6 +56,7 @@ describe('MonthlyTransactionController', function () {
             expect(attributes.CategoryId).to.equal(instanceCategory.id);
             expect(attributes.ShopId).to.equal(instanceShop.id);
         });
+
         it("should fail to add a new monthly transaction with monthFrom being 'null'", async function () {
             const transactionAttributes = {
                 isExpense: true,
@@ -69,7 +71,8 @@ describe('MonthlyTransactionController', function () {
                 monthlyTransactionController.create(await User.findOne(), transactionAttributes)
             ).to.be.rejected;
         });
-        it('should also return associated transactions, categories and shops for the created instance', async () => {
+
+        it('should also return associated transactions, categories and shops for the created instance', async function () {
             const user = await User.findOne();
             const instance = await monthlyTransactionController.create(user, {
                 isExpense: true,
@@ -83,25 +86,14 @@ describe('MonthlyTransactionController', function () {
             expect(instance.Transaction.Shop.id).to.exist;
         });
     });
+
     describe('#fetch', function () {
-        async function nSampleTransactions(user, n) {
-            for (let i = 0; i < n; i++) {
-                await monthlyTransactionController.create(
-                    user,
-                    await categoryShopIdResolver(user, {
-                        isExpense: true,
-                        category: 'test-category',
-                        amount: 1,
-                        monthFrom: '2023-01'
-                    })
-                );
-            }
-        }
         it('should return all instances if no parameters are provided', async function () {
             expect(
                 monthlyTransactionController.fetch(await User.findOne(), 100, 0)
             ).to.be.rejectedWith(/TypeError/);
         });
+
         it('should return all instances if an empty object is provided', async function () {
             const query = await monthlyTransactionController.fetch(
                 await User.findOne(),
@@ -111,6 +103,7 @@ describe('MonthlyTransactionController', function () {
             );
             expect(query).to.be.lengthOf(5);
         });
+
         it('should apply isExpense attribute correctly', async function () {
             const user = await User.findOne();
             const query = await monthlyTransactionController.fetch(user, 100, 0, {
@@ -122,6 +115,7 @@ describe('MonthlyTransactionController', function () {
             });
             expect(query2).to.be.lengthOf(2);
         });
+
         describe('{ monthFrom }', function () {
             it('should apply monthFrom (string) attribute correctly', async function () {
                 const query = await monthlyTransactionController.fetch(
@@ -137,6 +131,7 @@ describe('MonthlyTransactionController', function () {
                     expect(new Date(t.monthFrom)).to.be.at.least(new Date('2022-01'));
                 });
             });
+
             it('should apply monthFrom (date) attribute correctly', async function () {
                 const query = await monthlyTransactionController.fetch(
                     await User.findOne(),
@@ -152,6 +147,7 @@ describe('MonthlyTransactionController', function () {
                 });
             });
         });
+
         describe('{ monthTo }', function () {
             it('should apply monthTo (string) attribute correctly, get only mly transactions with monthTo higher or equal', async function () {
                 const query = await monthlyTransactionController.fetch(
@@ -167,6 +163,7 @@ describe('MonthlyTransactionController', function () {
                     expect(new Date(t.monthTo)).to.be.at.least(new Date('2018-05'));
                 });
             });
+
             it('should apply monthTo (date) attribute correctly, get only mly transactions with monthTo higher or equal', async function () {
                 const query = await monthlyTransactionController.fetch(
                     await User.findOne(),
@@ -181,6 +178,7 @@ describe('MonthlyTransactionController', function () {
                     expect(new Date(t.monthTo)).to.be.at.least(new Date('2018-05'));
                 });
             });
+
             it('should apply monthTo (string) attribute correctly, get only mly transactions with monthTo being null', async function () {
                 const query = await monthlyTransactionController.fetch(
                     await User.findOne(),
@@ -195,6 +193,7 @@ describe('MonthlyTransactionController', function () {
                     expect(t.monthTo).to.be.null;
                 });
             });
+
             it('should apply monthTo (date) attribute correctly, get only mly transactions with monthTo being null', async function () {
                 const query = await monthlyTransactionController.fetch(
                     await User.findOne(),
@@ -209,6 +208,7 @@ describe('MonthlyTransactionController', function () {
                     expect(t.monthTo).to.be.null;
                 });
             });
+
             it('should apply monthTo == null attribute correctly, get only mly transactions with monthTo being null', async function () {
                 const query = await monthlyTransactionController.fetch(
                     await User.findOne(),
@@ -221,6 +221,7 @@ describe('MonthlyTransactionController', function () {
                     expect(t.monthTo).to.be.null;
                 });
             });
+
             it('should return nothing if monthFrom > monthTo (using strings)', async function () {
                 const query = await monthlyTransactionController.fetch(
                     await User.findOne(),
@@ -233,6 +234,7 @@ describe('MonthlyTransactionController', function () {
                 );
                 expect(query).to.be.empty;
             });
+
             it('should return nothing if monthFrom > monthTo (using dates)', async function () {
                 const query = await monthlyTransactionController.fetch(
                     await User.findOne(),
@@ -246,6 +248,7 @@ describe('MonthlyTransactionController', function () {
                 expect(query).to.be.empty;
             });
         });
+
         it('should apply amountFrom attribute correctly', async function () {
             const testData = await monthlyTransactionController.fetch(
                 await User.findOne(),
@@ -260,6 +263,7 @@ describe('MonthlyTransactionController', function () {
                 expect(oneoffTransaction.Transaction.amount).to.be.at.least(1501);
             });
         });
+
         it('should apply amountTo attribute correctly', async function () {
             const query = await monthlyTransactionController.fetch(await User.findOne(), 100, 0, {
                 amountTo: 100000
@@ -269,6 +273,7 @@ describe('MonthlyTransactionController', function () {
                 expect(oneoffTransaction.Transaction.amount).to.be.at.most(100000);
             });
         });
+
         it('should return nothing if amountFrom > amountTo', async function () {
             const query = await monthlyTransactionController.fetch(await User.findOne(), 100, 0, {
                 amountFrom: 10000,
@@ -276,6 +281,7 @@ describe('MonthlyTransactionController', function () {
             });
             expect(query).to.be.empty;
         });
+
         it('should apply category attribute correctly', async function () {
             const user = await User.findOne();
             const category = await Category.findOne({ where: { UserId: user.id, name: 'income' } });
@@ -287,6 +293,7 @@ describe('MonthlyTransactionController', function () {
                 expect(oneoffTransaction.Transaction.Category.name).to.be.equal('income');
             });
         });
+
         it('should apply shop attribute correctly', async function () {
             const user = await User.findOne();
             const shop = await Shop.findOne({
@@ -303,15 +310,18 @@ describe('MonthlyTransactionController', function () {
                 expect(oneoffTransaction.Transaction.Shop.name).to.be.equal('music streaming');
             });
         });
+
         it('should apply limit attribute correctly', async function () {
             const query = await monthlyTransactionController.fetch(await User.findOne(), 3, 0, {});
             expect(query).to.have.lengthOf(3);
         });
+
         it('should apply offset attribute correctly', async function () {
             // skip first 3 rows, return the remaining two
             const query = await monthlyTransactionController.fetch(await User.findOne(), 10, 3, {});
             expect(query).to.have.lengthOf(2);
         });
+
         it('should order the transactions by monthFrom ASC, then by monthTo ASC with nulls last and finally by the auto incremented id', async function () {
             const user = await User.findOne();
             const test_data = {
@@ -329,7 +339,8 @@ describe('MonthlyTransactionController', function () {
             expect(JSON.stringify(query[2])).to.equal(JSON.stringify(instance));
             expect(JSON.stringify(query[3])).to.equal(JSON.stringify(instance2));
         });
-        it('should also fetch associated transactions, categories and shops', async () => {
+
+        it('should also fetch associated transactions, categories and shops', async function () {
             const query = await monthlyTransactionController.fetch(
                 await User.findOne(),
                 100,
@@ -340,7 +351,8 @@ describe('MonthlyTransactionController', function () {
             expect(query[0].Transaction.Shop.id).to.exist;
             expect(query[0].Transaction.Category.id).to.exist;
         });
-        it('should only fetch transactions of the provided user', async () => {
+
+        it('should only fetch transactions of the provided user', async function () {
             const newUser = await User.create({
                 username: 'testuser2',
                 hash: 'securehash'
@@ -359,8 +371,9 @@ describe('MonthlyTransactionController', function () {
             );
         });
     });
-    describe('#getByUserAndId', () => {
-        it('should get one-off transactions by id', async () => {
+
+    describe('#getByUserAndId', function () {
+        it('should get one-off transactions by id', async function () {
             const user = await User.findOne();
             const firstInstance = await MonthlyTransaction.findOne({ where: { UserId: user.id } });
             const instance = await monthlyTransactionController.getByUserAndId(
@@ -369,7 +382,8 @@ describe('MonthlyTransactionController', function () {
             );
             expect(instance.id).to.equal(firstInstance.id);
         });
-        it('should also fetch associated transactions, categories and shops', async () => {
+
+        it('should also fetch associated transactions, categories and shops', async function () {
             const user = await User.findOne();
             const firstInstance = await MonthlyTransaction.findOne({ where: { UserId: user.id } });
             const instance = await monthlyTransactionController.getByUserAndId(
@@ -380,7 +394,8 @@ describe('MonthlyTransactionController', function () {
             expect(instance.Transaction.Shop.id).to.exist;
             expect(instance.Transaction.Category.id).to.exist;
         });
-        it('should throw a 404 error if the transactions does not belong to the provided user', async () => {
+
+        it('should throw a 404 error if the transactions does not belong to the provided user', async function () {
             const oldUser = await User.findOne();
             const newUser = await User.create({
                 username: 'testuser2',
@@ -392,8 +407,9 @@ describe('MonthlyTransactionController', function () {
             ).to.be.rejectedWith(/Not Found/);
         });
     });
-    describe('#delete', () => {
-        it('should delete one-off transactions by id', async () => {
+
+    describe('#delete', function () {
+        it('should delete one-off transactions by id', async function () {
             const user = await User.findOne();
             const countBefore = await MonthlyTransaction.count({ where: { UserId: user.id } });
             const instance = await MonthlyTransaction.findOne({ where: { UserId: user.id } });
@@ -402,7 +418,8 @@ describe('MonthlyTransactionController', function () {
                 countBefore - 1
             );
         });
-        it('should also delete the associated base transaction', async () => {
+
+        it('should also delete the associated base transaction', async function () {
             const user = await User.findOne();
             const instance = await MonthlyTransaction.findOne({ where: { UserId: user.id } });
             const monthlyTransactionId = instance.id;
@@ -411,12 +428,14 @@ describe('MonthlyTransactionController', function () {
             expect(await MonthlyTransaction.findByPk(monthlyTransactionId)).to.be.null;
             expect(await Transaction.findByPk(transactionId)).to.be.null;
         });
-        it('should return an 404 http error if the primary key is invalid', async () => {
+
+        it('should return an 404 http error if the primary key is invalid', async function () {
             await expect(
                 monthlyTransactionController.delete(await User.findOne(), -1)
             ).to.be.rejectedWith(createError[404]);
         });
-        it('should return an 404 http error if the transaction belongs to another user', async () => {
+
+        it('should return an 404 http error if the transaction belongs to another user', async function () {
             const oldUser = await User.findOne();
             const newUser = await User.create({
                 username: 'testuser2',
@@ -428,8 +447,9 @@ describe('MonthlyTransactionController', function () {
             );
         });
     });
-    describe('#update', () => {
-        it('should return the same instance if no body is provided', async () => {
+
+    describe('#update', function () {
+        it('should return the same instance if no body is provided', async function () {
             const user = await User.findOne();
             const instance = await MonthlyTransaction.findOne({ where: { UserId: user.id } });
             const updatedInstance = await monthlyTransactionController.update(user, instance.id);
@@ -437,7 +457,8 @@ describe('MonthlyTransactionController', function () {
                 JSON.parse(JSON.stringify(updatedInstance))
             );
         });
-        it('should return the same instance if body is empty', async () => {
+
+        it('should return the same instance if body is empty', async function () {
             const user = await User.findOne();
             const instance = await MonthlyTransaction.findOne({ where: { UserId: user.id } });
             const updatedInstance = await monthlyTransactionController.update(
@@ -449,7 +470,8 @@ describe('MonthlyTransactionController', function () {
                 JSON.parse(JSON.stringify(updatedInstance))
             );
         });
-        it('should modify the body with the provided data', async () => {
+
+        it('should modify the body with the provided data', async function () {
             const user = await User.findOne();
             const instance = await MonthlyTransaction.findOne({ where: { UserId: user.id } });
             const updatedInstance = await monthlyTransactionController.update(user, instance.id, {
@@ -472,7 +494,8 @@ describe('MonthlyTransactionController', function () {
             // this property does not exist?
             //expect(new Date(updatedInstance.Transaction.updatedAt)).to.be.above(new Date(instance.Transaction.updatedAt));
         });
-        it('should apply setting monthTo to null', async () => {
+
+        it('should apply setting monthTo to null', async function () {
             const user = await User.findOne();
             const instance = await monthlyTransactionController.create(user, {
                 isExpense: true,
@@ -486,7 +509,8 @@ describe('MonthlyTransactionController', function () {
             });
             expect(updatedInstance.monthTo).to.be.null;
         });
-        it('should apply setting ShopId to null', async () => {
+
+        it('should apply setting ShopId to null', async function () {
             const user = await User.findOne();
             const instance = await monthlyTransactionController.create(user, {
                 isExpense: true,
@@ -500,12 +524,14 @@ describe('MonthlyTransactionController', function () {
             });
             expect(updatedInstance.Transaction.ShopId).to.be.null;
         });
-        it('should return an 404 http error if the primary key is invalid', async () => {
+
+        it('should return an 404 http error if the primary key is invalid', async function () {
             await expect(
                 monthlyTransactionController.update(await User.findOne(), -1, {})
             ).to.be.rejectedWith(createError[404]);
         });
-        it('should return an 404 http error if the transaction belongs to another user', async () => {
+
+        it('should return an 404 http error if the transaction belongs to another user', async function () {
             const oldUser = await User.findOne();
             const newUser = await User.create({
                 username: 'testuser2',

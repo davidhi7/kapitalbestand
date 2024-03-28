@@ -77,7 +77,7 @@ function focusAmountInput() {
 
 function unfocusAmountInput() {
     let input = rawAmountInput.value;
-    if (!input.match(/^[^\.,\d]*\d*\.\d+[^\.,\d]*$/)) {
+    if (!input.match(/^[^.,\d]*\d*\.\d+[^.,\d]*$/)) {
         // assume the use of a comma as decimal separator instead of a point
         input = input.replace('.', '').replace(',', '.');
     }
@@ -242,20 +242,20 @@ function submit() {
 </script>
 
 <template>
-    <form @submit.prevent="submit" class="flex flex-col gap-8">
+    <form class="flex flex-col gap-8" @submit.prevent="submit">
         <section>
             <h2>Es handelt sich um einen</h2>
             <div class="mx-4 flex flex-col">
                 <label>
-                    <input type="radio" v-model="transactionProperties.isExpense" value="true" />
+                    <input v-model="transactionProperties.isExpense" type="radio" value="true" />
                     Geldausgang
                 </label>
                 <label>
-                    <input type="radio" v-model="transactionProperties.isExpense" value="false" />
+                    <input v-model="transactionProperties.isExpense" type="radio" value="false" />
                     Geldeingang
                 </label>
                 <label v-if="allowedTransactionType === 'any'" class="mt-4">
-                    <input type="checkbox" v-model="isMonthlyTransaction" />
+                    <input v-model="isMonthlyTransaction" type="checkbox" />
                     Monatlicher Umsatz
                 </label>
             </div>
@@ -266,9 +266,9 @@ function submit() {
             <div class="mx-4">
                 <label for="current-date-radio">
                     <input
-                        type="radio"
                         id="current-date-radio"
                         v-model="transactionProperties.oneoffTransactionProperties.today"
+                        type="radio"
                         :value="true"
                     />
                     Heute:
@@ -277,17 +277,17 @@ function submit() {
                 <br />
                 <label for="manual-date-radio">
                     <input
-                        type="radio"
                         id="manual-date-radio"
                         v-model="transactionProperties.oneoffTransactionProperties.today"
+                        type="radio"
                         :value="false"
                     />
                     am
                     <TextInput
-                        class="ml-1 inline-block"
-                        type="date"
                         id="manual-date-input"
                         v-model="transactionProperties.oneoffTransactionProperties.customDate"
+                        class="ml-1 inline-block"
+                        type="date"
                         :required="!transactionProperties.oneoffTransactionProperties.today"
                         @click="transactionProperties.oneoffTransactionProperties.today = false"
                     />
@@ -303,12 +303,12 @@ function submit() {
                     id="transaction-first"
                     v-model="transactionProperties.monthlyTransactionProperties.monthFrom"
                     :required="true"
-                ></MonthInput>
+                />
                 <label for="transaction-last">Letzter Umsatz</label>
                 <MonthInput
                     id="transaction-last"
                     v-model="transactionProperties.monthlyTransactionProperties.monthTo"
-                ></MonthInput>
+                />
             </GridForm>
         </section>
 
@@ -317,31 +317,31 @@ function submit() {
             <GridForm class="mx-4">
                 <label for="amount">Betrag</label>
                 <TextInput
+                    v-model="rawAmountInput"
                     type="text"
                     placeholder="0,00 €"
                     required
-                    v-model="rawAmountInput"
                     @focus="focusAmountInput"
                     @focusout="unfocusAmountInput"
                 />
 
                 <label for="category">Kategorie</label>
                 <AutoComplete
+                    v-model="transactionProperties.Category"
                     :suggestions="CategoryShopStore.categories as Required<Category>[]"
                     :required="true"
-                    v-model="transactionProperties.Category"
                     @request-create="(name) => createCategoryShop('Category', name)"
                 />
 
                 <label for="shop">Ort/Geschäft</label>
                 <AutoComplete
-                    :suggestions="CategoryShopStore.shops as Required<Shop>[]"
                     v-model="transactionProperties.Shop"
+                    :suggestions="CategoryShopStore.shops as Required<Shop>[]"
                     @request-create="(name) => createCategoryShop('Shop', name)"
                 />
 
                 <label for="description">Beschreibung</label>
-                <TextInput type="text" v-model.lazy.trim="transactionProperties.description" />
+                <TextInput v-model.lazy.trim="transactionProperties.description" type="text" />
             </GridForm>
         </section>
 

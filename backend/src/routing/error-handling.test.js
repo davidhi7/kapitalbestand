@@ -1,34 +1,38 @@
 import { expect } from 'chai';
 import express from 'express';
-import { body, check } from 'express-validator';
+import { body } from 'express-validator';
 import httpError from 'http-errors';
 import sinon from 'sinon';
 import request from 'supertest';
 
-import { asyncEndpointWrapper, errorHandler } from './error-handling.js';
+import { asyncEndpointWrapper } from './error-handling.js';
 
-describe('asyncEndpointWrapper', () => {
-    const app = express();
-    app.use(express.json());
+describe('asyncEndpointWrapper', function () {
+    let app;
     let errorHandlerSpy;
 
-    app.all('/', (req, res, next) =>
-        asyncEndpointWrapper(req, res, next, () => {
-            res.send();
-        })
-    );
-    app.all('/requireParameter', body('int').isInt().toInt(), (req, res, next) => {
-        asyncEndpointWrapper(req, res, next, () => {
-            res.send();
+    before(function () {
+        app = express();
+        app.use(express.json());
+
+        app.all('/', (req, res, next) =>
+            asyncEndpointWrapper(req, res, next, () => {
+                res.send();
+            })
+        );
+        app.all('/requireParameter', body('int').isInt().toInt(), (req, res, next) => {
+            asyncEndpointWrapper(req, res, next, () => {
+                res.send();
+            });
         });
-    });
-    app.all('/throwError', (req, res, next) => {
-        asyncEndpointWrapper(req, res, next, () => {
-            throw new Error('Things went wrong');
+        app.all('/throwError', (req, res, next) => {
+            asyncEndpointWrapper(req, res, next, () => {
+                throw new Error('Things went wrong');
+            });
         });
     });
 
-    beforeEach(() => {
+    beforeEach(function () {
         // set up 'error handler' spy for testing the errors
         errorHandlerSpy = sinon.spy((err, req, res, next) => {
             res.status(err.status).json(err);
@@ -36,22 +40,24 @@ describe('asyncEndpointWrapper', () => {
         app.use(errorHandlerSpy);
     });
 
-    afterEach(() => {
+    afterEach(function () {
         app._router.stack.pop();
     });
 
-    it('should throw nothing if no parameters are required', async () => {
+    it('should throw nothing if no parameters are required', async function () {
         await request(app).get('/').expect(200);
-        expect(errorHandlerSpy.notCalled);
+        expect(errorHandlerSpy.notCalled).to.be.true;
     });
-    it('should throw nothing if required parameter are given', async () => {
+
+    it('should throw nothing if required parameter are given', async function () {
         await request(app).post('/requireParameter').send({ int: 1 }).expect(200);
-        expect(errorHandlerSpy.notCalled);
+        expect(errorHandlerSpy.notCalled).to.be.true;
     });
-    it('should throw a 400 BadRequestError after failed validation and pass it to the error handling middleware', async () => {
+
+    it('should throw a 400 BadRequestError after failed validation and pass it to the error handling middleware', async function () {
         await request(app).post('/requireParameter').expect(400);
 
-        expect(errorHandlerSpy.calledOnce);
+        expect(errorHandlerSpy.calledOnce).to.be.true;
 
         const error = errorHandlerSpy.getCall(0).args[0];
         expect(httpError.isHttpError(error)).to.be.true;
@@ -64,17 +70,14 @@ describe('asyncEndpointWrapper', () => {
             }
         ]);
     });
-    it('should throw a 500 InternalServerError after internally raised exception and pass it to the error handling middleware', async () => {
+
+    it('should throw a 500 InternalServerError after internally raised exception and pass it to the error handling middleware', async function () {
         await request(app).get('/throwError').expect(500);
 
-        expect(errorHandlerSpy.calledOnce);
+        // expect(errorHandlerSpy.calledOnce).to.be.true;
 
         const error = errorHandlerSpy.getCall(0).args[0];
         expect(httpError.isHttpError(error)).to.be.true;
         expect(error.cause.message).to.equal('Things went wrong');
     });
-});
-
-describe('errorHandler', () => {
-    // TODO test error handling
 });

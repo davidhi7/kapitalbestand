@@ -11,17 +11,17 @@ Fetched transactions are ordered by the `monthFrom` and `monthTo` value.
 
 **Attributes**:
 
-| Parameter    | Accepted values    | Required | Description                                                                                                 |
-| ------------ |:------------------:|:--------:| ----------------------------------------------------------------------------------------------------------- |
-| `isExpense`  | `boolean`          |          | Fetch only transactions that are expenses if `true` is given, otherwise only transactions that are incomes. |
-| `dateFrom`   | `YYYY-MM-DD`       |          | Fetch only transactions that were processed on an earlier or equal date.                                    |
-| `dateTo`     | `YYYY-MM-DD`       |          | Fetch only transactions that were processed on an equal or later date                                       |
+| Parameter    |  Accepted values   | Required | Description                                                                                                 |
+| ------------ | :----------------: | :------: | ----------------------------------------------------------------------------------------------------------- |
+| `isExpense`  |     `boolean`      |          | Fetch only transactions that are expenses if `true` is given, otherwise only transactions that are incomes. |
+| `dateFrom`   |    `YYYY-MM-DD`    |          | Fetch only transactions that were processed on an earlier or equal date.                                    |
+| `dateTo`     |    `YYYY-MM-DD`    |          | Fetch only transactions that were processed on an equal or later date                                       |
 | `amountFrom` | `int` (cent value) |          | Fetch only transactions defined by an equal or greater amount of money in Euro cents.                       |
 | `amountTo`   | `int` (cent value) |          | Fetch only transactions defined by an lower or equal sum in Euro cents                                      |
-| `CategoryId` | `int`              |          | Fetch only transactions with the given CategoryId                                                           |
-| `ShopId`     | `int`              |          | Fetch only transactions with the given ShopId                                                               |
-| `limit`      | `int`              |          | Fetch only first n transactions. Can be combined with offset.                                               |
-| `offset`     | `int`              |          | Skip first n transactions                                                                                   |
+| `CategoryId` |       `int`        |          | Fetch only transactions with the given CategoryId                                                           |
+| `ShopId`     |       `int`        |          | Fetch only transactions with the given ShopId                                                               |
+| `limit`      |       `int`        |          | Fetch only first n transactions. Can be combined with offset.                                               |
+| `offset`     |       `int`        |          | Skip first n transactions                                                                                   |
 
 ## Success response
 

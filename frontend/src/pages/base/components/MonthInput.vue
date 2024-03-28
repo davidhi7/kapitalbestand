@@ -33,14 +33,14 @@ function handleInput(evt: InputEvent) {
         v-if="browserSupport"
         type="month"
         :value="model ? `${model.year}-${model.month.toString().padStart(2, '0')}` : ''"
-        @input="handleInput"
         v-bind="$attrs"
+        @input="handleInput"
     />
     <TextInput
         v-if="!browserSupport"
         :value="model ? `${model.year}-${model.month.toString().padStart(2, '0')}-01` : ''"
         type="date"
-        @input="handleInput"
         v-bind="$attrs"
+        @input="handleInput"
     />
 </template>
