@@ -1,5 +1,5 @@
 <script>
-import TransactionForm from '@/pages/transaction-form/TransactionForm.vue';
+import TransactionForm from '@/components/forms/TransactionForm.vue';
 
 export default {
     components: {

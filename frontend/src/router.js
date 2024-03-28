@@ -1,16 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-import AccountPage from './pages/AccountPage.vue';
-import Index from './pages/Index.vue';
-import MonthAnalysisPage from './pages/analysis/MonthAnalysisPage.vue';
-import YearAnalysisPage from './pages/analysis/YearAnalysisPage.vue';
-import List from './pages/list/ListPage.vue';
-import TransactionForm from './pages/transaction-form/TransactionFormPage.vue';
+import AccountPage from '@/components/pages/AccountPage.vue';
+import IndexPage from '@/components/pages/IndexPage.vue';
+import List from '@/components/pages/ListPage.vue';
+import MonthAnalysisPage from '@/components/pages/MonthAnalysisPage.vue';
+import TransactionForm from '@/components/pages/TransactionFormPage.vue';
+import YearAnalysisPage from '@/components/pages/YearAnalysisPage.vue';
 
 const routes = [
     {
         path: '/',
-        component: Index
+        component: IndexPage
     },
     {
         path: '/new',

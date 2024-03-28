@@ -6,9 +6,9 @@ import { format_year_month } from '@/common';
 import { useAnalysisResultStore } from '@/stores/AnalysisResultStore';
 import { MonthlySummary } from '@backend-types/AnalysisTypes';
 
-import Card from './Card.vue';
-import MonthlyExpensesChart from './monthly/MonthlyExpensesChart.vue';
-import MonthlyExpensesStats from './monthly/MonthlyExpensesStats.vue';
+import Card from '@/components/analysis/Card.vue';
+import MonthlyExpensesChart from '@/components/analysis/monthly/MonthlyExpensesChart.vue';
+import MonthlyExpensesStats from '@/components/analysis/monthly/MonthlyExpensesStats.vue';
 
 const route = useRoute();
 const AnalysisResultStore = useAnalysisResultStore();

@@ -2,11 +2,10 @@
 import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
+import MenuBar from '@/components/MenuBar.vue';
+import Notification from '@/components/Notification.vue';
+import AuthenticationPage from '@/components/pages/Authentication.vue';
 import { useAuthStateStore } from '@/stores/AuthStateStore';
-
-import Login from '../LoginRegisterPage.vue';
-import MenuBar from './MenuBar.vue';
-import Notification from './Notification.vue';
 
 const AuthStateStore = useAuthStateStore();
 const route = useRoute();
@@ -31,9 +30,13 @@ watch(
     />
     <div
         class="mx-2 my-16 sm:mx-auto"
-        :class="[customWidth ? `sm:max-w-[${customWidth}]` : 'sm:max-w-[600px]']"
+        :class="[
+            customWidth && AuthStateStore.authenticated
+                ? `sm:max-w-[${customWidth}]`
+                : 'sm:max-w-2xl'
+        ]"
     >
-        <Login v-if="!AuthStateStore.authenticated" />
+        <AuthenticationPage v-if="!AuthStateStore.authenticated" />
         <router-view v-else />
     </div>
 </template>

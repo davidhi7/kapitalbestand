@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import TextInput from './TextInput.vue';
+import TextInput from '@/components/TextInput.vue';
 
 export interface MonthType {
     year: number;

@@ -1,7 +1,7 @@
 <script setup>
 import { useTransactionStore } from '@/stores/TransactionStore';
 
-import TransactionList from './TransactionList.vue';
+import TransactionList from '@/components/lists/TransactionList.vue';
 
 const TransactionStore = useTransactionStore();
 </script>

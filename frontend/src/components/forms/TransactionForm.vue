@@ -2,17 +2,17 @@
 import { reactive, ref, watch } from 'vue';
 
 import { dateToYearMonth, format_currency } from '@/common';
-import { NotificationEvent, NotificationStyle, eventEmitter } from '@/pages/base/Notification.vue';
-import AutoComplete from '@/pages/base/components/AutoComplete.vue';
-import MonthInput, { MonthType } from '@/pages/base/components/MonthInput.vue';
+import AutoComplete from '@/components/autocomplete/AutoComplete.vue';
+import MonthInput, { MonthType } from '@/components/MonthInput.vue';
+import { eventEmitter, NotificationEvent, NotificationStyle } from '@/components/Notification.vue';
 import { useCategoryShopStore } from '@/stores/CategoryShopStore';
 import { useTransactionStore } from '@/stores/TransactionStore';
 import { Category, Shop } from '@backend-types/CategoryShopTypes';
 import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
 import { useDateFormat, useNow } from '@vueuse/core';
 
-import LoadingSpinner from '../base/components/LoadingSpinner.vue';
-import TextInput from '../base/components/TextInput.vue';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import TextInput from '@/components/TextInput.vue';
 import GridForm from './GridForm.vue';
 
 const props = defineProps<{

@@ -4,12 +4,12 @@ import { Vue3Mq } from 'vue3-mq';
 
 import '@/assets/base.css';
 import '@/assets/icons.css';
-import App from '@/pages/base/App.vue';
+import App from '@/components/App.vue';
 import router from '@/router';
 import { authEventTarget, useAuthStateStore } from '@/stores/AuthStateStore';
 import { useCategoryShopStore } from '@/stores/CategoryShopStore';
 
-import { useTransactionStore } from './stores/TransactionStore';
+import { useTransactionStore } from '@/stores/TransactionStore';
 
 const app = createApp(App);
 const pinia = createPinia();

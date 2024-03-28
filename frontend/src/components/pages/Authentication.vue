@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-import { NotificationEvent, NotificationStyle, eventEmitter } from '@/pages/base/Notification.vue';
-import GridForm from '@/pages/transaction-form/GridForm.vue';
+import { NotificationEvent, NotificationStyle, eventEmitter } from '@/components/Notification.vue';
+import GridForm from '@/components/forms/GridForm.vue';
 import { AuthResponse, useAuthStateStore } from '@/stores/AuthStateStore';
 
-import TextInput from './base/components/TextInput.vue';
+import TextInput from '@/components/TextInput.vue';
 
 const AuthStateStore = useAuthStateStore();
 

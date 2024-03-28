@@ -1,10 +1,9 @@
 <script setup>
 import { computed, provide } from 'vue';
 
+import TransactionListHeader from '@/components/lists/TransactionListHeader.vue';
+import TransactionListRow from '@/components/lists/TransactionListRow.vue';
 import { useTransactionStore } from '@/stores/TransactionStore';
-
-import TransactionListHeader from './components/TransactionListHeader.vue';
-import TransactionListRow from './components/TransactionListRow.vue';
 
 const props = defineProps({
     frequency: {

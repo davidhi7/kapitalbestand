@@ -3,8 +3,8 @@ import { computed, defineModel, ref, watch, withDefaults } from 'vue';
 
 import { normalizeStrings } from '@/common';
 
+import TextInput from '@/components/TextInput.vue';
 import AutoCompleteEntry from './AutoCompleteEntry.vue';
-import TextInput from './TextInput.vue';
 
 interface MatchedSuggestion {
     suggestion: T;
