@@ -10,12 +10,12 @@ import { useAuthStateStore } from '@/stores/AuthStateStore';
 const AuthStateStore = useAuthStateStore();
 const route = useRoute();
 
-const customWidth = ref();
+const fillWidth = ref(false);
 
 watch(
     () => route.meta,
     () => {
-        customWidth.value = route.meta.customWidth;
+        fillWidth.value = route.meta.fillWidth || false;
     },
     { immediate: true }
 );
@@ -29,11 +29,11 @@ watch(
         @logout="AuthStateStore.logout"
     />
     <div
-        class="mx-2 my-16 sm:mx-auto"
+        class="mx-2 my-16"
         :class="[
-            customWidth && AuthStateStore.authenticated
-                ? `sm:max-w-[${customWidth}]`
-                : 'sm:max-w-2xl'
+            fillWidth && AuthStateStore.authenticated
+                ? `sm:mx-8 sm:w-auto`
+                : 'sm:mx-auto sm:max-w-2xl'
         ]"
     >
         <AuthenticationPage v-if="!AuthStateStore.authenticated" />

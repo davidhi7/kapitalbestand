@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 import AccountPage from '@/components/pages/AccountPage.vue';
 import IndexPage from '@/components/pages/IndexPage.vue';
-import List from '@/components/pages/ListPage.vue';
+import ListPage from '@/components/pages/ListPage.vue';
 import MonthAnalysisPage from '@/components/pages/MonthAnalysisPage.vue';
 import TransactionForm from '@/components/pages/TransactionFormPage.vue';
 import YearAnalysisPage from '@/components/pages/YearAnalysisPage.vue';
@@ -18,7 +18,10 @@ const routes = [
     },
     {
         path: '/list',
-        component: List
+        component: ListPage,
+        meta: {
+            fillWidth: true
+        }
     },
     {
         path: '/account',
@@ -28,21 +31,21 @@ const routes = [
         path: '/analysis/',
         component: MonthAnalysisPage,
         meta: {
-            customWidth: '1200px'
+            fillWidth: true
         }
     },
     {
         path: '/analysis/:year',
         component: YearAnalysisPage,
         meta: {
-            customWidth: '1200px'
+            fillWidth: true
         }
     },
     {
         path: '/analysis/:year/:month',
         component: MonthAnalysisPage,
         meta: {
-            customWidth: '1200px'
+            fillWidth: true
         }
     }
 ];
