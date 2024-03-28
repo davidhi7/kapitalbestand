@@ -34,7 +34,7 @@ if (props.value) {
             v-bind="$attrs"
             v-model="model"
             :required="props.required"
-            class="box-border rounded-lg bg-inherit py-1 pl-2 pr-3 outline-none"
+            class="rounded-lg bg-inherit py-1 pl-2 pr-3 outline-none w-full"
         />
     </div>
 </template>
