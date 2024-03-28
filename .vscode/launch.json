@@ -3,10 +3,9 @@
     "configurations": [
         {
             "args": [
-                "mocha",
-                "--no-timeouts",
-                "--colors",
-                "${workspaceFolder}/backend/src/**/*.test.{js,ts}"
+                "npm",
+                "run",
+                "test"
             ],
             "internalConsoleOptions": "openOnSessionStart",
             "name": "Backend tests",

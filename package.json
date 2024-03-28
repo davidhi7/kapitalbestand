@@ -4,12 +4,16 @@
     "version": "0.1.0",
     "description": "NodeJS/Vue web application for keeping track of expenses",
     "scripts": {
+        "lint": "eslint backend frontend",
+        "lint:fix": "eslint --fix backend frontend",
+        "format": "prettier --write backend frontend",
         "dev": "concurrently 'cd backend && npm run dev' 'cd frontend && npm run dev'",
         "build": "concurrently 'cd backend && npm run build' 'cd frontend && npm run build'"
     },
     "license": "MIT",
     "dependencies": {
-        "concurrently": "^7.6.0"
+        "concurrently": "^7.6.0",
+        "eslint-config-prettier": "^9.1.0"
     },
     "devDependencies": {
         "@trivago/prettier-plugin-sort-imports": "^4.1.1",

@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "start": "NODE_ENV=production node dist/app.js",
-    "dev": "source ./test_env.sh ; nodemon src/app.js",
+    "dev": "source ./test_env.sh ; nodemon src/app.js --migrate",
     "test": "NODE_ENV=test source ./test_env.sh ; c8 mocha 'src/**/*.test.{js,ts}'",
     "test:debug": "NODE_ENV=test source ./test_env.sh ; mocha --no-timeouts 'src/**/*.test.{js,ts}'"
   },
