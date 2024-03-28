@@ -247,11 +247,11 @@ function submit() {
             <h2>Es handelt sich um einen</h2>
             <div class="mx-4 flex flex-col">
                 <label>
-                    <input v-model="transactionProperties.isExpense" type="radio" value="true" />
+                    <input v-model="transactionProperties.isExpense" type="radio" :value="true" />
                     Geldausgang
                 </label>
                 <label>
-                    <input v-model="transactionProperties.isExpense" type="radio" value="false" />
+                    <input v-model="transactionProperties.isExpense" type="radio" :value="false" />
                     Geldeingang
                 </label>
                 <label v-if="allowedTransactionType === 'any'" class="mt-4">
