@@ -2,13 +2,13 @@
 import { computed, ref, watch } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 
-import { format_year_month } from '@/common';
-import { useAnalysisResultStore } from '@/stores/AnalysisResultStore';
 import { MonthlySummary } from '@backend-types/AnalysisTypes';
 
+import { format_year_month } from '@/common';
 import Card from '@/components/analysis/Card.vue';
 import MonthlyExpensesChart from '@/components/analysis/monthly/MonthlyExpensesChart.vue';
 import MonthlyExpensesStats from '@/components/analysis/monthly/MonthlyExpensesStats.vue';
+import { useAnalysisResultStore } from '@/stores/AnalysisResultStore';
 
 const route = useRoute();
 const AnalysisResultStore = useAnalysisResultStore();

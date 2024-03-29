@@ -29,7 +29,7 @@ import Shop from './Shop.js';
 @Table
 export default class User extends Model {
     declare id: number;
-    
+
     @AllowNull(false)
     @Unique
     @Column

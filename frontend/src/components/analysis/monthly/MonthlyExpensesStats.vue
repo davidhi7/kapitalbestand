@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import { format_currency } from '@/common';
 import { MonthlySummary } from '@backend-types/AnalysisTypes';
+
+import { format_currency } from '@/common';
 
 const props = defineProps<{ year: number; month: number; report: MonthlySummary }>();
 const monthData = computed(() => props.report[props.month]);

@@ -15,8 +15,9 @@ import colors from 'tailwindcss/colors';
 import { computed } from 'vue';
 import { Line } from 'vue-chartjs';
 
-import { format_currency, format_year_month } from '@/common';
 import type { MonthlySummary } from '@backend-types/AnalysisTypes';
+
+import { format_currency, format_year_month } from '@/common';
 
 Chart.register(Title, Tooltip, Legend, LineElement, CategoryScale, LinearScale, PointElement);
 

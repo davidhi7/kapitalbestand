@@ -6,8 +6,10 @@ import TransactionListHeader from './TransactionListHeader.vue';
 import TransactionListRow from './TransactionListRow.vue';
 
 export {
-    ActionContainer, DeleteAction,
+    ActionContainer,
+    DeleteAction,
     EditAction,
-    ExpandAction, TransactionListHeader,
+    ExpandAction,
+    TransactionListHeader,
     TransactionListRow
 };

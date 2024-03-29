@@ -15,7 +15,7 @@ import User from './User.js';
 @Table
 export default class Shop extends Model {
     declare id: number;
-    
+
     @Unique
     @AllowNull(false)
     @Column

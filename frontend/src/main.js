@@ -8,7 +8,6 @@ import App from '@/components/App.vue';
 import router from '@/router';
 import { authEventTarget, useAuthStateStore } from '@/stores/AuthStateStore';
 import { useCategoryShopStore } from '@/stores/CategoryShopStore';
-
 import { useTransactionStore } from '@/stores/TransactionStore';
 
 const app = createApp(App);

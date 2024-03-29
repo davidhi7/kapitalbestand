@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia';
 
-import HttpError from '@/HttpError';
 import { Category, Shop } from '@backend-types/CategoryShopTypes';
+
+import HttpError from '@/HttpError';
 
 interface State {
     categories: Category[];

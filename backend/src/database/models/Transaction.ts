@@ -21,7 +21,7 @@ import Shop from './Shop.js';
 @Table
 export default class Transaction extends Model {
     declare id: number;
-    
+
     @AllowNull(false)
     @Column
     declare isExpense: boolean;
