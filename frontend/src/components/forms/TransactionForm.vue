@@ -1,19 +1,20 @@
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue';
 
-import { dateToYearMonth, format_currency } from '@/common';
-import AutoComplete from '@/components/autocomplete/AutoComplete.vue';
-import MonthInput, { MonthType } from '@/components/MonthInput.vue';
-import { eventEmitter, NotificationEvent, NotificationStyle } from '@/components/Notification.vue';
-import { useCategoryShopStore } from '@/stores/CategoryShopStore';
-import { useTransactionStore } from '@/stores/TransactionStore';
 import { Category, Shop } from '@backend-types/CategoryShopTypes';
 import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
 import { useDateFormat, useNow } from '@vueuse/core';
 
+import { dateToYearMonth, format_currency } from '@/common';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
-import TextInput from '@/components/TextInput.vue';
-import GridForm from './GridForm.vue';
+import { NotificationEvent, NotificationStyle, eventEmitter } from '@/components/Notification.vue';
+import AutoComplete from '@/components/autocomplete/AutoComplete.vue';
+import GridForm from '@/components/forms/GridForm.vue';
+import CurrencyInput from '@/components/input/CurrencyInput.vue';
+import MonthInput, { MonthType } from '@/components/input/MonthInput.vue';
+import TextInput from '@/components/input/TextInput.vue';
+import { useCategoryShopStore } from '@/stores/CategoryShopStore';
+import { useTransactionStore } from '@/stores/TransactionStore';
 
 const props = defineProps<{
     transaction?: OneoffTransaction | MonthlyTransaction;
@@ -70,22 +71,6 @@ const isMonthlyTransaction = ref(false);
 const rawAmountInput = ref<string>('');
 type Lock = 'submit' | 'createCategory' | 'createShop';
 const submitLocks = ref<Set<Lock>>(new Set());
-
-function focusAmountInput() {
-    rawAmountInput.value = rawAmountInput.value.replace(/[\s€]+/, '');
-}
-
-function unfocusAmountInput() {
-    let input = rawAmountInput.value;
-    if (!input.match(/^[^.,\d]*\d*\.\d+[^.,\d]*$/)) {
-        // assume the use of a comma as decimal separator instead of a point
-        input = input.replace('.', '').replace(',', '.');
-    }
-    const raw_input = Number(input.replace(/[^0-9.]+/, ''));
-    const sanitizedNumber = Math.max(1, Math.round(100 * raw_input));
-    transactionProperties.amount = sanitizedNumber;
-    rawAmountInput.value = format_currency(sanitizedNumber);
-}
 
 watch(
     props,
@@ -316,14 +301,7 @@ function submit() {
             <h2>Transaktion</h2>
             <GridForm class="mx-4">
                 <label for="amount">Betrag</label>
-                <TextInput
-                    v-model="rawAmountInput"
-                    type="text"
-                    placeholder="0,00 €"
-                    required
-                    @focus="focusAmountInput"
-                    @focusout="unfocusAmountInput"
-                />
+                <CurrencyInput v-model="transactionProperties.amount" required />
 
                 <label for="category">Kategorie</label>
                 <AutoComplete

@@ -3,9 +3,8 @@ import { ref } from 'vue';
 
 import { NotificationEvent, NotificationStyle, eventEmitter } from '@/components/Notification.vue';
 import GridForm from '@/components/forms/GridForm.vue';
+import TextInput from '@/components/input/TextInput.vue';
 import { AuthResponse, useAuthStateStore } from '@/stores/AuthStateStore';
-
-import TextInput from '@/components/TextInput.vue';
 
 const AuthStateStore = useAuthStateStore();
 
