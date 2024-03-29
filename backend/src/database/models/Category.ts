@@ -14,6 +14,8 @@ import User from './User.js';
 
 @Table
 export default class Category extends Model {
+    declare id: number;
+
     @Unique
     @AllowNull(false)
     @Column

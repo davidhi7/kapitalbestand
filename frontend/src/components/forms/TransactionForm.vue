@@ -328,7 +328,7 @@ function submit() {
                 <label for="category">Kategorie</label>
                 <AutoComplete
                     v-model="transactionProperties.Category"
-                    :suggestions="CategoryShopStore.categories as Required<Category>[]"
+                    :suggestions="CategoryShopStore.categories"
                     :required="true"
                     @request-create="(name) => createCategoryShop('Category', name)"
                 />
@@ -336,7 +336,7 @@ function submit() {
                 <label for="shop">Ort/Geschäft</label>
                 <AutoComplete
                     v-model="transactionProperties.Shop"
-                    :suggestions="CategoryShopStore.shops as Required<Shop>[]"
+                    :suggestions="CategoryShopStore.shops"
                     @request-create="(name) => createCategoryShop('Shop', name)"
                 />
 

@@ -24,6 +24,8 @@ import User from './User.js';
 }))
 @Table
 export default class MonthlyTransaction extends Model {
+    declare id: number;
+    
     @AllowNull(false)
     @Column(DataType.DATEONLY)
     declare monthFrom: Date;
