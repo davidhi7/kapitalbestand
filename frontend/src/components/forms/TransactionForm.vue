@@ -308,6 +308,7 @@ function submit() {
                     v-model="transactionProperties.Category"
                     :suggestions="CategoryShopStore.categories"
                     :required="true"
+                    :suggest-create-object="true"
                     @request-create="(name) => createCategoryShop('Category', name)"
                 />
 
@@ -315,6 +316,7 @@ function submit() {
                 <AutoComplete
                     v-model="transactionProperties.Shop"
                     :suggestions="CategoryShopStore.shops"
+                    :suggest-create-object="true"
                     @request-create="(name) => createCategoryShop('Shop', name)"
                 />
 

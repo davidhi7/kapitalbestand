@@ -18,12 +18,14 @@ const props = withDefaults(
         type?: 'date' | 'month' | 'text';
         placeholder?: string;
         required?: boolean;
+        suggestCreateObject?: boolean;
     }>(),
     {
         suggestions: () => [],
         type: 'text',
         placeholder: '',
-        required: false
+        required: false,
+        suggestCreateObject: false
     }
 );
 
@@ -139,9 +141,9 @@ function handleKeyboardInput(evt: KeyboardEvent) {
         <TextInput
             v-model="textInput"
             class="group-focus-within:bg-input-bg group-focus-within:shadow-none has-[:focus-visible]:relative has-[:focus-visible]:z-20"
-            :type="$props.type"
-            :placeholder="props.placeholder"
-            :required="props.required"
+            :type="type"
+            :placeholder="placeholder"
+            :required="required"
             :show-required-indicator="!focused"
         />
         <button
@@ -155,7 +157,7 @@ function handleKeyboardInput(evt: KeyboardEvent) {
             class="absolute z-10 hidden w-full rounded-b-lg shadow-md group-focus-within:block group-focus-within:bg-input-bg"
         >
             <AutoCompleteEntry
-                v-show="textInput && exactMatch == null"
+                v-show="suggestCreateObject && textInput && exactMatch == null"
                 @click.prevent="emit('requestCreate', textInput.trim())"
             >
                 Erstelle <b>{{ textInput }}</b>
