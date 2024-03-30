@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ref } from 'vue';
+
 import TextInput from '@/components/input/TextInput.vue';
 
 export interface MonthType {
@@ -10,6 +12,7 @@ defineOptions({
     inheritAttrs: false
 });
 
+const rawInput = ref('');
 const model = defineModel<MonthType>();
 
 // Firefox desktop does not support input[type='month'] tags on desktop and falls back to a simple text input.
@@ -17,30 +20,27 @@ const testElement = document.createElement('input');
 testElement.setAttribute('type', 'month');
 const browserSupport = testElement.type === 'month';
 
-function handleInput(evt: InputEvent) {
-    const value = (evt.target! as HTMLInputElement).value;
+function handleInput() {
+    const value = rawInput.value;
     if (!value) {
         model.value = undefined;
         return;
     }
-    const [year, month] = value.split('-');
-    model.value = { year: Number(year), month: Number(month) };
+    const [year, month, day] = value.split('-').map(Number);
+    model.value = { year, month };
+    if (!browserSupport && day !== 1) {
+        rawInput.value = `${year}-${month.toString().padStart(2, '0')}-01`;
+    }
 }
 </script>
 
 <template>
     <TextInput
         v-if="browserSupport"
+        v-model="rawInput"
         type="month"
-        :value="model ? `${model.year}-${model.month.toString().padStart(2, '0')}` : ''"
         v-bind="$attrs"
-        @input="handleInput"
+        @focusout="handleInput"
     />
-    <TextInput
-        v-if="!browserSupport"
-        :value="model ? `${model.year}-${model.month.toString().padStart(2, '0')}-01` : ''"
-        type="date"
-        v-bind="$attrs"
-        @input="handleInput"
-    />
+    <TextInput v-else v-model="rawInput" type="date" v-bind="$attrs" @focusout="handleInput" />
 </template>
