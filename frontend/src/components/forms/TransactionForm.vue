@@ -133,96 +133,103 @@ async function createCategoryShop(type: 'Category' | 'Shop', name: string) {
 function submit() {
     submitLocks.value.add('submit');
 
-    const { isExpense, amount, Category, Shop, description } = transactionProperties;
+    try {
+        const { isExpense, amount, Category, Shop, description } = transactionProperties;
 
-    if (!Category) {
-        throw Error('`Category` is null');
-    }
-
-    let payload;
-    let baesPayload = {
-        isExpense,
-        amount,
-        CategoryId: Category.id,
-        ShopId: Shop?.id,
-        description: description || undefined
-    };
-
-    if (isMonthlyTransaction.value) {
-        const { monthFrom, monthTo } = transactionProperties.monthlyTransactionProperties;
-        if (!monthFrom) {
-            throw Error('`monthFrom` is empty');
+        if (!Category) {
+            throw Error('`Category` is null');
         }
 
-        if (
-            monthTo &&
-            new Date(monthTo.year, monthTo.month - 1) <=
-                new Date(monthFrom.year, monthFrom.month - 1)
-        ) {
-            throw Error('`monthTo` is before than `monthFrom`');
-        }
-
-        payload = {
-            ...baesPayload,
-            monthFrom: dateToYearMonth(new Date(monthFrom.year, monthFrom.month - 1)),
-            monthTo: monthTo
-                ? dateToYearMonth(new Date(monthTo.year, monthTo.month - 1))
-                : undefined
+        let payload;
+        let baesPayload = {
+            isExpense,
+            amount,
+            CategoryId: Category.id,
+            ShopId: Shop?.id,
+            description: description || undefined
         };
-    } else {
-        let date: Date;
-        const { today, customDate } = transactionProperties.oneoffTransactionProperties;
-        if (today) {
-            date = new Date();
+
+        if (isMonthlyTransaction.value) {
+            const { monthFrom, monthTo } = transactionProperties.monthlyTransactionProperties;
+            if (!monthFrom) {
+                throw Error('`monthFrom` is empty');
+            }
+
+            if (
+                monthTo &&
+                new Date(monthTo.year, monthTo.month - 1) <=
+                    new Date(monthFrom.year, monthFrom.month - 1)
+            ) {
+                throw Error('`monthTo` is before than `monthFrom`');
+            }
+
+            payload = {
+                ...baesPayload,
+                monthFrom: dateToYearMonth(new Date(monthFrom.year, monthFrom.month - 1)),
+                monthTo: monthTo
+                    ? dateToYearMonth(new Date(monthTo.year, monthTo.month - 1))
+                    : undefined
+            };
         } else {
-            date = new Date(customDate);
+            let date: Date;
+            const { today, customDate } = transactionProperties.oneoffTransactionProperties;
+            if (today) {
+                date = new Date();
+            } else {
+                date = new Date(customDate);
+            }
+            payload = {
+                ...baesPayload,
+                date: date.toISOString().split('T')[0]
+            };
         }
-        payload = {
-            ...baesPayload,
-            date: date.toISOString().split('T')[0]
-        };
-    }
 
-    if (props.transaction) {
-        TransactionStore.update(
-            isMonthlyTransaction.value ? 'monthly' : 'oneoff',
-            props.transaction.id,
-            payload
-        )
-            .then(() => {
-                eventEmitter.dispatchEvent(
-                    new NotificationEvent(
-                        NotificationStyle.SUCCESS,
-                        'Transaktion erfolgreich bearbeitet'
-                    )
-                );
-            })
-            .catch((err) => {
-                console.log(err);
-                eventEmitter.dispatchEvent(
-                    new NotificationEvent(NotificationStyle.ERROR, 'Fehler bei der Bearbeitung')
-                );
-            });
-    } else {
-        TransactionStore.create(isMonthlyTransaction.value ? 'monthly' : 'oneoff', payload)
-            .then(() => {
-                eventEmitter.dispatchEvent(
-                    new NotificationEvent(
-                        NotificationStyle.SUCCESS,
-                        'Transaktion erfolgreich erstellt'
-                    )
-                );
-            })
-            .catch((err) => {
-                console.log(err);
-                eventEmitter.dispatchEvent(
-                    new NotificationEvent(NotificationStyle.ERROR, 'Fehler bei der Erstellung')
-                );
-            });
+        if (props.transaction) {
+            TransactionStore.update(
+                isMonthlyTransaction.value ? 'monthly' : 'oneoff',
+                props.transaction.id,
+                payload
+            )
+                .then(() => {
+                    eventEmitter.dispatchEvent(
+                        new NotificationEvent(
+                            NotificationStyle.SUCCESS,
+                            'Transaktion erfolgreich bearbeitet'
+                        )
+                    );
+                })
+                .catch((err) => {
+                    console.log(err);
+                    eventEmitter.dispatchEvent(
+                        new NotificationEvent(NotificationStyle.ERROR, 'Fehler bei der Bearbeitung')
+                    );
+                });
+        } else {
+            TransactionStore.create(isMonthlyTransaction.value ? 'monthly' : 'oneoff', payload)
+                .then(() => {
+                    eventEmitter.dispatchEvent(
+                        new NotificationEvent(
+                            NotificationStyle.SUCCESS,
+                            'Transaktion erfolgreich erstellt'
+                        )
+                    );
+                })
+                .catch((err) => {
+                    console.log(err);
+                    eventEmitter.dispatchEvent(
+                        new NotificationEvent(NotificationStyle.ERROR, 'Fehler bei der Erstellung')
+                    );
+                });
+        }
+        emit('done');
+    } catch (err) {
+        console.error(err)
+        eventEmitter.dispatchEvent(
+            new NotificationEvent(NotificationStyle.ERROR, 'Ungültiges Formular')
+        );
+    } finally {
+        submitLocks.value.delete('submit');
     }
-
-    submitLocks.value.delete('submit');
-    emit('done');
 }
 </script>
 
