@@ -7,19 +7,14 @@ const props = withDefaults(
         required?: boolean;
         class?: string;
         showRequiredIndicator?: boolean;
-        value?: string;
     }>(),
     {
         required: false,
         class: '',
-        showRequiredIndicator: true,
-        value: ''
+        showRequiredIndicator: true
     }
 );
 const model = defineModel<string>();
-if (props.value) {
-    model.value = props.value;
-}
 </script>
 
 <template>
