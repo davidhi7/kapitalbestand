@@ -45,7 +45,7 @@ const transactionProperties: {
         customDate: string;
     };
     isExpense: boolean;
-    amount: number;
+    amount: number | undefined;
     Category: Category | undefined;
     Shop: Shop | undefined;
     description: string;
@@ -137,7 +137,11 @@ function submit() {
         const { isExpense, amount, Category, Shop, description } = transactionProperties;
 
         if (!Category) {
-            throw Error('`Category` is null');
+            throw Error('`Category` is undefined');
+        }
+
+        if (!amount) {
+            throw Error('`amount` is undefined');
         }
 
         let payload;
@@ -223,7 +227,7 @@ function submit() {
         }
         emit('done');
     } catch (err) {
-        console.error(err)
+        console.error(err);
         eventEmitter.dispatchEvent(
             new NotificationEvent(NotificationStyle.ERROR, 'Ungültiges Formular')
         );
