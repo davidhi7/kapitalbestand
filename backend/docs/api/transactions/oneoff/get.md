@@ -1,7 +1,7 @@
 # Fetch one-off transactions
 
 Fetch one-pff transactions of the user using various optional attributes for filtering.
-Fetched transactions are ordered by the `monthFrom` and `monthTo` value.
+Fetched transactions are ordered by the `date` value.
 
 **URL**: `/api/transactions/oneoff`
 
