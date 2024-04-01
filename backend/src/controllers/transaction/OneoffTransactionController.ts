@@ -2,6 +2,7 @@ import createError from 'http-errors';
 import { Model } from 'sequelize-typescript';
 
 import { OneoffTransaction, Transaction, User } from '../../database/db.js';
+import { BaseFetchParameters } from '../types.js';
 import AbstractTransactionController, {
     TransactionCreateParameters,
     TransactionQueryParameters
@@ -12,7 +13,9 @@ export interface OneoffTransactionCreateParameters extends TransactionCreatePara
     date: Date;
 }
 
-export interface OneoffTransactionQueryParameters extends TransactionQueryParameters {
+export interface OneoffTransactionQueryParameters
+    extends TransactionQueryParameters,
+        BaseFetchParameters {
     dateFrom?: Date;
     dateTo?: Date;
 }

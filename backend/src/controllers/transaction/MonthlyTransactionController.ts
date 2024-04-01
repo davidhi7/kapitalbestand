@@ -2,6 +2,7 @@ import createError from 'http-errors';
 import { Model } from 'sequelize';
 
 import { MonthlyTransaction, Transaction, User } from '../../database/db.js';
+import { BaseFetchParameters } from '../types.js';
 import AbstractTransactionController, {
     TransactionCreateParameters,
     TransactionQueryParameters
@@ -13,7 +14,9 @@ export interface MonthlyTransactionCreateParameters extends TransactionCreatePar
     monthTo?: Date;
 }
 
-export interface MonthlyTransactionQueryParameters extends TransactionQueryParameters {
+export interface MonthlyTransactionQueryParameters
+    extends TransactionQueryParameters,
+        BaseFetchParameters {
     monthFrom?: Date;
     monthTo?: Date;
 }

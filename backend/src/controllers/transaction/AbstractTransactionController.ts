@@ -23,8 +23,6 @@ export type TransactionQueryParameters = {
     description?: string;
     CategoryId?: number;
     ShopId?: number;
-    limit: number;
-    offset: number;
 };
 
 export default class AbstractTransactionController<Type extends GenericTransaction> {
