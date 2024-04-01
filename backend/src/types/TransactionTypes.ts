@@ -24,14 +24,20 @@ type MonthlyTransaction = Omit<
     'User' | 'Transaction' | 'monthFrom' | 'monthTo'
 > & { Transaction: Transaction; monthFrom: string; monthTo?: string };
 
-export type OneoffTransactionQueryParameters = Omit<
+type OneoffTransactionQueryParameters = Omit<
     PartialBy<FullOneoffTransactionQueryParameters, keyof BaseFetchParameters>,
     'dateFrom' | 'dateTo'
 > & { dateFrom?: string; dateTo?: string };
 
-export type MonthlyTransactionQueryParameters = Omit<
+type MonthlyTransactionQueryParameters = Omit<
     PartialBy<FullMonthlyTransactionQueryParameters, keyof BaseFetchParameters>,
     'monthFrom' | 'monthTo'
 > & { monthFrom?: string; monthTo?: string };
 
-export { MonthlyTransaction, OneoffTransaction, Transaction };
+export {
+    MonthlyTransaction,
+    OneoffTransaction,
+    Transaction,
+    MonthlyTransactionQueryParameters,
+    OneoffTransactionQueryParameters
+};
