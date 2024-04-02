@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
+import { dateToIsoDate, dateToYearMonth } from '@/common';
 import TextInput from '@/components/input/TextInput.vue';
 
 export interface MonthType {
@@ -29,9 +30,26 @@ function handleInput() {
     const [year, month, day] = value.split('-').map(Number);
     model.value = { year, month };
     if (!browserSupport && day !== 1) {
-        rawInput.value = `${year}-${month.toString().padStart(2, '0')}-01`;
+        rawInput.value = dateToIsoDate(new Date(year, month));
     }
 }
+
+watch(
+    model,
+    (value) => {
+        if (!value) {
+            rawInput.value = '';
+            return;
+        }
+
+        if (browserSupport) {
+            rawInput.value = dateToYearMonth(new Date(value.year, value.month));
+        } else {
+            rawInput.value = dateToIsoDate(new Date(value.year, value.month - 1));
+        }
+    },
+    { immediate: true }
+);
 </script>
 
 <template>

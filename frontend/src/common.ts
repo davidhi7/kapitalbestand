@@ -51,3 +51,10 @@ export function normalizeStrings(input: string) {
 export function dateToYearMonth(date: Date) {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 }
+
+/**
+ * Format date as `YYYY-MM-DD` string
+ */
+export function dateToIsoDate(date: Date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
