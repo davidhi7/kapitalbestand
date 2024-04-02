@@ -1,7 +1,13 @@
 import { InferAttributes } from 'sequelize';
 
-import type { MonthlyTransactionQueryParameters as FullMonthlyTransactionQueryParameters } from '../controllers/transaction/MonthlyTransactionController.js';
-import type { OneoffTransactionQueryParameters as FullOneoffTransactionQueryParameters } from '../controllers/transaction/OneoffTransactionController.js';
+import type {
+    MonthlyTransactionCreateParameters as FullMonthlyTransactionCreateParameters,
+    MonthlyTransactionQueryParameters as FullMonthlyTransactionQueryParameters
+} from '../controllers/transaction/MonthlyTransactionController.js';
+import type {
+    OneoffTransactionCreateParameters as FullOneoffTransactionCreateParameters,
+    OneoffTransactionQueryParameters as FullOneoffTransactionQueryParameters
+} from '../controllers/transaction/OneoffTransactionController.js';
 import { BaseFetchParameters } from '../controllers/types.js';
 import {
     MonthlyTransaction as MonthlyTransactionClass,
@@ -34,10 +40,21 @@ type MonthlyTransactionQueryParameters = Omit<
     'monthFrom' | 'monthTo'
 > & { monthFrom?: string; monthTo?: string };
 
+type OneoffTransactionCreateParameters = Omit<FullOneoffTransactionCreateParameters, 'date'> & {
+    date: string;
+};
+
+type MonthlyTransactionCreateParameters = Omit<
+    FullMonthlyTransactionCreateParameters,
+    'monthFrom' | 'monthTo'
+> & { monthFrom: string; monthTo?: string };
+
 export {
     MonthlyTransaction,
     OneoffTransaction,
     Transaction,
+    OneoffTransactionCreateParameters,
+    MonthlyTransactionCreateParameters,
     MonthlyTransactionQueryParameters,
     OneoffTransactionQueryParameters
 };
