@@ -145,7 +145,7 @@ function submit() {
         }
 
         let payload;
-        let baesPayload = {
+        let basePayload = {
             isExpense,
             amount,
             CategoryId: Category.id,
@@ -168,7 +168,7 @@ function submit() {
             }
 
             payload = {
-                ...baesPayload,
+                ...basePayload,
                 monthFrom: dateToYearMonth(new Date(monthFrom.year, monthFrom.month - 1)),
                 monthTo: monthTo
                     ? dateToYearMonth(new Date(monthTo.year, monthTo.month - 1))
@@ -183,7 +183,7 @@ function submit() {
                 date = new Date(customDate);
             }
             payload = {
-                ...baesPayload,
+                ...basePayload,
                 date: date.toISOString().split('T')[0]
             };
         }
