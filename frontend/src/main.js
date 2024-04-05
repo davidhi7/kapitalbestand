@@ -1,6 +1,5 @@
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
-import { Vue3Mq } from 'vue3-mq';
 
 import '@/assets/base.css';
 import '@/assets/icons.css';
@@ -15,9 +14,6 @@ const pinia = createPinia();
 
 app.use(router);
 app.use(pinia);
-app.use(Vue3Mq, {
-    preset: 'tailwind'
-});
 
 const AuthStateStore = useAuthStateStore();
 const CategoryShopStore = useCategoryShopStore();

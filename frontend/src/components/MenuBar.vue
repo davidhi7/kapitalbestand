@@ -1,6 +1,7 @@
 <script setup>
-import { onMounted, ref } from 'vue';
-import { useMq } from 'vue3-mq';
+import { onMounted, ref, watch } from 'vue';
+
+import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
 
 import IconRouterLink from '@/components/IconRouterLink.vue';
 
@@ -11,11 +12,15 @@ const props = defineProps({
     }
 });
 
-const mq = useMq();
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const compactMode = breakpoints.smaller('sm');
 
 const display_menu = ref(false);
 
 onMounted(() => {
+    display_menu.value = false;
+});
+watch(compactMode, () => {
     display_menu.value = false;
 });
 
@@ -42,7 +47,7 @@ defineEmits(['logout']);
             :class="{ 'msm:hidden': !display_menu }"
             @click="display_menu = false"
         >
-            <IconRouterLink to="/" icon="home" :label="mq.current === 'xs' ? 'Start' : null" />
+            <IconRouterLink to="/" icon="home" :label="compactMode ? 'Start' : null" />
             <IconRouterLink to="/new" icon="add" label="Neue Transaktion" />
             <IconRouterLink to="/list" icon="list" label="Liste" />
             <IconRouterLink to="/analysis" icon="query_stats" label="Analyse" />
@@ -57,7 +62,7 @@ defineEmits(['logout']);
                 to="/account"
                 icon="manage_accounts"
                 :label="props.username"
-                :label-left="mq.current !== 'xs'"
+                :label-left="!compactMode"
                 class="flex-grow"
                 @click="display_menu = false"
             />
