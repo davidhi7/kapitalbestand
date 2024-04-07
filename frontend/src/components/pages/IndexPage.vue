@@ -19,11 +19,11 @@ if (currentHour >= 18 || currentHour < 4) {
 <template>
     <div class="flex-column flex justify-center">
         <span class="mt-8 text-center text-5xl font-light">
-            {{ greeting }},
+            <span>{{ greeting }}, </span>
             <span class="bg-gradient bg-clip-text font-medium text-transparent">{{
                 AuthStateStore.username
             }}</span>
-            .
+            <span>.</span>
         </span>
     </div>
 </template>
