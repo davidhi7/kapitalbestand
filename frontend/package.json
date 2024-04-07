@@ -10,7 +10,7 @@
         "@types/chart.js": "^2.9.41",
         "@vitejs/plugin-vue": "^4.0.0",
         "@vue/compiler-sfc": "^3.4.0",
-        "@vueuse/core": "^9.13.0",
+        "@vueuse/core": "^10.9.0",
         "autoprefixer": "^10.4.13",
         "chart.js": "^4.2.1",
         "pinia": "^2.0.29",
