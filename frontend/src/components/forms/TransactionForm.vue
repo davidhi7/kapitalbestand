@@ -14,7 +14,7 @@ import CurrencyInput from '@/components/input/CurrencyInput.vue';
 import MonthInput, { MonthType } from '@/components/input/MonthInput.vue';
 import TextInput from '@/components/input/TextInput.vue';
 import { useCategoryShopStore } from '@/stores/CategoryShopStore';
-import { useTransactionStore } from '@/stores/TransactionStore';
+import { isOneoffTransaction, useTransactionStore } from '@/stores/TransactionStore';
 
 const props = defineProps<{
     transaction?: OneoffTransaction | MonthlyTransaction;
@@ -27,12 +27,6 @@ const emit = defineEmits<{
 
 const CategoryShopStore = useCategoryShopStore();
 const TransactionStore = useTransactionStore();
-
-function isOneoffTransaction(
-    transaction: OneoffTransaction | MonthlyTransaction
-): transaction is OneoffTransaction {
-    return (transaction as OneoffTransaction).date != undefined;
-}
 
 const formattedDate = useDateFormat(useNow(), 'dddd, DD.MM.YYYY');
 const transactionProperties: {
@@ -125,8 +119,7 @@ watch(
 
 async function createCategoryShop(type: 'Category' | 'Shop', name: string) {
     submitLocks.value.add(`create${type}`);
-    const instance = await CategoryShopStore.create(type, name);
-    transactionProperties[type] = instance;
+    transactionProperties[type] = await CategoryShopStore.create(type, name);
     submitLocks.value.delete(`create${type}`);
 }
 

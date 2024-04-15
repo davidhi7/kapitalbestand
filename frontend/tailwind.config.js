@@ -38,5 +38,11 @@ export default {
         function ({ addVariant }) {
             addVariant('child', '& > *');
         }
+    ],
+    safelist: [
+        {
+            pattern: /grid-cols-\d+/,
+            variants: ['sm', 'md', 'lg', 'xl', '2xl']
+        }
     ]
 };
