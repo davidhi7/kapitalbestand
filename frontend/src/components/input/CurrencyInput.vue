@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 import { format_currency } from '@/common';
 import TextInput from '@/components/input/TextInput.vue';
@@ -29,8 +29,17 @@ function unfocus() {
     const inputNumber = Number(input);
     const sanitizedNumber = Math.max(1, Math.round(100 * inputNumber));
     model.value = sanitizedNumber;
-    rawInput.value = format_currency(sanitizedNumber);
 }
+
+watch(
+    model,
+    (value) => {
+        if (value != null) {
+            rawInput.value = format_currency(value);
+        }
+    },
+    { immediate: true }
+);
 </script>
 
 <template>
