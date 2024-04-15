@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, ref } from 'vue';
+import { ref } from 'vue';
 
 import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
 
