@@ -59,7 +59,7 @@ const transactionProperties: {
         customDate: ''
     },
     isExpense: true,
-    amount: 0,
+    amount: undefined,
     Category: undefined,
     Shop: undefined,
     description: ''
