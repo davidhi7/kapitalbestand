@@ -21,7 +21,6 @@ const TransactionStore = useTransactionStore();
 
 authEventTarget.addEventListener('authentication', () => {
     CategoryShopStore.fetch();
-    TransactionStore.fetch();
 });
 
 AuthStateStore.requestWhoAmI().then(() => {
