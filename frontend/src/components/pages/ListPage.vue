@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-
 import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
 import { useAsyncState } from '@vueuse/core';
 

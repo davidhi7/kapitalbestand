@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="T extends OneoffTransaction | MonthlyTransaction">
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 
 import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
