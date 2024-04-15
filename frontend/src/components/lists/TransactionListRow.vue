@@ -1,25 +1,29 @@
-<script setup>
-import { inject, ref } from 'vue';
+<script setup lang="ts" generic="T extends OneoffTransaction | MonthlyTransaction">
+import { computed, ref } from 'vue';
 
-import { format_currency as formatCurrency, format_year_month as formatMonth } from '@/common';
+import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
+import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
 
-import { ActionContainer } from '.';
+import { ColumnSettings } from '@/components/lists/listConfig';
 
-const actions = {
-    EXPAND: 'ExpandAction',
-    EDIT: 'EditAction',
-    DELETE: 'DeleteAction'
-};
+import { Action, ActionContainer } from '.';
 
-const props = defineProps({
-    transaction: {
-        type: Object,
-        required: true
-    }
+const props = defineProps<{
+    transaction: T;
+    columnSettings: ColumnSettings<T>[];
+}>();
+
+const breakpoints = useBreakpoints(breakpointsTailwind);
+
+const filteredColumns = computed(() => {
+    return props.columnSettings.filter((value) => {
+        return value.breakpoint === '' || breakpoints.greaterOrEqual(value.breakpoint).value;
+    });
 });
 
-let enabledAction = ref(null);
-function toggle(action) {
+let enabledAction = ref<Action | null>(null);
+
+function toggle(action: Action | null) {
     const newValue = enabledAction.value === action ? null : action;
     enabledAction.value = null;
     // by setting the enabled action later, the new action is displayed with a transition. Otherwise, there would be no transition.
@@ -27,62 +31,38 @@ function toggle(action) {
         enabledAction.value = newValue;
     });
 }
-
-const frequency = inject('frequency');
 </script>
 
 <template>
     <tr class="contents child:odd:bg-secondary-bg child:even:bg-main-bg">
-        <td v-if="frequency === 'oneoff'">
-            {{ props.transaction.date }}
+        <td v-for="(column, index) in filteredColumns" :key="index">
+            {{ column.extractor(props.transaction) }}
         </td>
-        <td v-if="frequency === 'monthly'">
-            {{ formatMonth({ date: new Date(props.transaction.monthFrom), style: 'iso' }) }}
-        </td>
-        <td v-if="frequency === 'monthly'">
-            {{
-                props.transaction.monthTo
-                    ? formatMonth({ date: new Date(props.transaction.monthTo), style: 'iso' })
-                    : '-'
-            }}
-        </td>
-        <td>
-            {{ props.transaction.Transaction.Category.name }}
-        </td>
-        <td
-            data-postive-prefix="+"
-            :class="{
-                'text-positive before:relative before:left-[1px] before:content-[attr(data-postive-prefix)]':
-                    !props.transaction.Transaction.isExpense
-            }"
-        >
-            {{ formatCurrency(props.transaction.Transaction.amount) }}
-        </td>
-        <td class="flex justify-center !py-1 msm:col-span-full msm:justify-end">
+        <td class="col-span-full flex justify-end !py-1 sm:col-span-1 sm:justify-center">
             <!-- Disable animation on hiding to avoid unneccessary distractions -->
             <!--<button :class="{ 'child:rotate-180 child:transition-transform child:duration-200': expandEnabled }" @click="toggle(actions.EXPAND)">-->
-            <button
-                :class="{
-                    'child:rotate-180 child:transition-transform child:duration-200':
-                        enabledAction === actions.EXPAND
-                }"
-                class="child:transition-transform child:duration-200"
-                @click="toggle(actions.EXPAND)"
-            >
-                <span class="material-symbols-outlined">expand_more</span>
+            <button @click="toggle(Action.EXPAND)">
+                <span
+                    class="material-symbols-outlined transition-transform duration-200"
+                    :class="{
+                        'rotate-180': enabledAction === Action.EXPAND
+                    }"
+                >
+                    expand_more
+                </span>
             </button>
-            <button @click="toggle(actions.EDIT)">
+            <button @click="toggle(Action.EDIT)">
                 <span
                     class="material-symbols-outlined"
-                    :class="{ 'material-symbols-filled': enabledAction === actions.EDIT }"
+                    :class="{ 'material-symbols-filled': enabledAction === Action.EDIT }"
                 >
                     edit
                 </span>
             </button>
-            <button @click="toggle(actions.DELETE)">
+            <button @click="toggle(Action.DELETE)">
                 <span
                     class="material-symbols-outlined"
-                    :class="{ 'material-symbols-filled': enabledAction === actions.DELETE }"
+                    :class="{ 'material-symbols-filled': enabledAction === Action.DELETE }"
                 >
                     delete
                 </span>
@@ -104,7 +84,15 @@ td {
 }
 
 td > button {
-    @apply grid aspect-square content-center;
+    @apply grid aspect-square content-center border-r-[1px] border-input-bg;
+
+    &:first-child {
+        @apply rounded-l-md;
+    }
+
+    &:last-child {
+        @apply rounded-r-md border-none;
+    }
 
     &:hover {
         @apply bg-tertiary-bg;

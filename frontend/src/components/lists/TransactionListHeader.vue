@@ -1,22 +1,35 @@
-<script setup>
-import { inject } from 'vue';
+<script setup lang="ts" generic="T extends OneoffTransaction | MonthlyTransaction">
+import { computed, ref } from 'vue';
 
-const frequency = inject('frequency');
+import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
+import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
+
+import { ColumnSettings } from '@/components/lists/listConfig';
+
+const props = defineProps<{
+    columnSettings: ColumnSettings<T>[];
+}>();
+
+const breakpoints = useBreakpoints(breakpointsTailwind);
+
+const filteredColumns = computed(() => {
+    return props.columnSettings.filter((value) => {
+        return value.breakpoint === '' || breakpoints.greaterOrEqual(value.breakpoint).value;
+    });
+});
 </script>
 
 <template>
     <tr class="contents">
-        <th v-if="frequency === 'oneoff'">Datum</th>
-        <th v-if="frequency === 'monthly'">erster Monat</th>
-        <th v-if="frequency === 'monthly'">letzter Monat</th>
-        <th>Kategorie</th>
-        <th>Betrag</th>
-        <th class="msm:hidden">Aktionen</th>
+        <th v-for="(column, index) in filteredColumns" :key="index">
+            {{ column.title }}
+        </th>
+        <th class="hidden sm:block">Aktionen</th>
     </tr>
 </template>
 
 <style scoped>
 th {
-    @apply bg-header-bg p-2 text-center text-xl font-semibold text-main-dark;
+    @apply bg-header-bg p-2 text-center  font-semibold text-main-dark;
 }
 </style>

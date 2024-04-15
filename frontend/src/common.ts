@@ -10,7 +10,7 @@ const year_month_format_short = new Intl.DateTimeFormat('de-DE', {
  * @param {*} value Integer amount of money in cents
  * @returns Formatted string
  */
-export function format_currency(value: number | string): string {
+export function format_currency(value: number): string {
     return currency_format.format(Number(value) / 100);
 }
 

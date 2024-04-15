@@ -1,28 +1,29 @@
-<script setup>
+<script setup lang="ts">
 import { inject, ref } from 'vue';
 
-import { useTransactionStore } from '@/stores/TransactionStore';
+import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
 
-const props = defineProps({
-    transaction: {
-        type: Object,
-        required: true
-    }
-});
-const frequency = inject('frequency');
-const emit = defineEmits(['done']);
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import { isOneoffTransaction, useTransactionStore } from '@/stores/TransactionStore';
+
+const props = defineProps<{
+    transaction: OneoffTransaction | MonthlyTransaction;
+}>();
+
+const emit = defineEmits<{
+    done: [];
+}>();
 
 const TransactionStore = useTransactionStore();
 const requestPending = ref(false);
 
 async function del() {
     requestPending.value = true;
-    await TransactionStore.delete(frequency, props.transaction.id);
+    await TransactionStore.delete(
+        isOneoffTransaction(props.transaction) ? 'oneoff' : 'monthly',
+        props.transaction.id
+    );
     requestPending.value = false;
-    cancel();
-}
-
-function cancel() {
     emit('done');
 }
 </script>
@@ -30,8 +31,11 @@ function cancel() {
 <template>
     Transaktion wirklich löschen?
     <div class="flex justify-center gap-2">
-        <button class="btn btn-red" :disabled="requestPending" @click="del">Löschen</button>
-        <button class="btn" :disabled="requestPending" @click="cancel">Abbrechen</button>
+        <button class="btn btn-red" :disabled="requestPending" @click="del">
+            <span v-show="!requestPending">Löschen</span>
+            <LoadingSpinner v-show="requestPending"></LoadingSpinner>
+        </button>
+        <button class="btn" :disabled="requestPending" @click="emit('done')">Abbrechen</button>
     </div>
 </template>
 

@@ -5,6 +5,12 @@ import ExpandAction from './ExpandAction.vue';
 import TransactionListHeader from './TransactionListHeader.vue';
 import TransactionListRow from './TransactionListRow.vue';
 
+export enum Action {
+    EXPAND,
+    EDIT,
+    DELETE
+}
+
 export {
     ActionContainer,
     DeleteAction,
