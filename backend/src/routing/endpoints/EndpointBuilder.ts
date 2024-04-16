@@ -73,11 +73,14 @@ export class EndpointBuilder<CreateParameters, FetchParameters> {
         this.router.patch('/:id', ...validators, idValidator, (req, res, next) => {
             asyncEndpointWrapper(req, res, next, async () => {
                 res.json(
-                    await handler(
-                        (req as AuthenticatedRequest).session.user,
-                        req.params!.id,
-                        req.body
-                    )
+                    ResponseBuilder({
+                        status: 'success',
+                        data: await handler(
+                            (req as AuthenticatedRequest).session.user,
+                            req.params!.id,
+                            req.body
+                        )
+                    })
                 );
             });
         });
@@ -88,7 +91,8 @@ export class EndpointBuilder<CreateParameters, FetchParameters> {
     delete(handler: DeleteHandler) {
         this.router.delete('/:id', idValidator, (req, res, next) => {
             asyncEndpointWrapper(req, res, next, async () => {
-                res.json(await handler((req as AuthenticatedRequest).session.user, req.params!.id));
+                await handler((req as AuthenticatedRequest).session.user, req.params!.id);
+                res.json(ResponseBuilder({ status: 'success' }));
             });
         });
 
@@ -98,7 +102,15 @@ export class EndpointBuilder<CreateParameters, FetchParameters> {
     getId(handler: GetByIdHandler) {
         this.router.get('/:id', idValidator, (req, res, next) => {
             asyncEndpointWrapper(req, res, next, async () => {
-                res.json(await handler((req as AuthenticatedRequest).session.user, req.params!.id));
+                res.json(
+                    ResponseBuilder({
+                        status: 'success',
+                        data: await handler(
+                            (req as AuthenticatedRequest).session.user,
+                            req.params!.id
+                        )
+                    })
+                );
             });
         });
 
