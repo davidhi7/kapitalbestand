@@ -50,7 +50,7 @@ export class EndpointBuilder<CreateParameters, FetchParameters> {
     }
 
     get(validators: ValidatorArray, handler: FetchHandler<FetchParameters>) {
-        this.router.get('/', limitValidator, offsetValidator, (req, res, next) => {
+        this.router.get('/', limitValidator, offsetValidator, ...validators, (req, res, next) => {
             asyncEndpointWrapper(req, res, next, async () => {
                 res.json(
                     ResponseBuilder({
