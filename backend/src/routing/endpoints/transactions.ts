@@ -40,7 +40,9 @@ const transactionQueryValidators = [
     query('amountFrom').isInt().toInt().optional(),
     query('amountTo').isInt().toInt().optional(),
     query('ShopId').isInt().toInt().optional(),
-    query('CategoryId').isInt().toInt().optional()
+    query('CategoryId').isInt().toInt().optional(),
+    query('orderKey').isString().isIn(['time', 'amount', 'Category', 'Shop']).optional(),
+    query('order').isString().isIn(['ASC', 'DESC']).optional()
 ];
 
 const transactionUpdateValidators = [

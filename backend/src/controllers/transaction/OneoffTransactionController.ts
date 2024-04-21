@@ -1,4 +1,6 @@
 import createError from 'http-errors';
+import { Order } from 'sequelize';
+import sequelize from 'sequelize';
 import { Model } from 'sequelize-typescript';
 
 import { OneoffTransaction, Transaction, User } from '../../database/db.js';
@@ -58,12 +60,34 @@ class OneoffTransactionController extends AbstractTransactionController<OneoffTr
             isExpense: isExpense
         });
 
+        const orderRules: Order = [];
+        const order = body.order ?? 'ASC';
+        const orderKey = body.orderKey ?? 'time';
+        switch (orderKey) {
+            case 'time':
+                orderRules.push(['date', order]);
+                break;
+            case 'amount':
+                orderRules.push([Transaction, 'amount', order]);
+                break;
+            case 'Category':
+                orderRules.push([
+                    sequelize.fn('lower', sequelize.col('Transaction.Category.name')),
+                    order
+                ]);
+                break;
+            case 'Shop':
+                orderRules.push([
+                    sequelize.fn('lower', sequelize.col('Transaction.Shop.name')),
+                    order
+                ]);
+                break;
+        }
+        orderRules.push(['id', order]);
+
         return OneoffTransaction.findAll({
             where: whereConditions,
-            order: [
-                ['date', 'ASC'],
-                ['id', 'ASC']
-            ],
+            order: orderRules,
             limit: limit,
             offset: offset
         });

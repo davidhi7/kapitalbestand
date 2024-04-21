@@ -11,17 +11,19 @@ Fetched transactions are ordered by the `date` value.
 
 **Attributes**:
 
-| Parameter    |  Accepted values   | Required | Description                                                                                                 |
-| ------------ | :----------------: | :------: | ----------------------------------------------------------------------------------------------------------- |
-| `isExpense`  |     `boolean`      |          | Fetch only transactions that are expenses if `true` is given, otherwise only transactions that are incomes. |
-| `dateFrom`   |    `YYYY-MM-DD`    |          | Fetch only transactions that were processed on an earlier or equal date.                                    |
-| `dateTo`     |    `YYYY-MM-DD`    |          | Fetch only transactions that were processed on an equal or later date                                       |
-| `amountFrom` | `int` (cent value) |          | Fetch only transactions defined by an equal or greater amount of money in Euro cents.                       |
-| `amountTo`   | `int` (cent value) |          | Fetch only transactions defined by an lower or equal sum in Euro cents                                      |
-| `CategoryId` |       `int`        |          | Fetch only transactions with the given CategoryId                                                           |
-| `ShopId`     |       `int`        |          | Fetch only transactions with the given ShopId                                                               |
-| `limit`      |       `int`        |          | Fetch only first n transactions. Can be combined with offset.                                               |
-| `offset`     |       `int`        |          | Skip first n transactions                                                                                   |
+| Parameter    |            Accepted values             | Required | Description                                                                                                 |
+| ------------ | :------------------------------------: | :------: | ----------------------------------------------------------------------------------------------------------- |
+| `isExpense`  |               `boolean`                |          | Fetch only transactions that are expenses if `true` is given, otherwise only transactions that are incomes. |
+| `dateFrom`   |              `YYYY-MM-DD`              |          | Fetch only transactions that were processed on an earlier or equal date.                                    |
+| `dateTo`     |              `YYYY-MM-DD`              |          | Fetch only transactions that were processed on an equal or later date                                       |
+| `amountFrom` |           `int` (cent value)           |          | Fetch only transactions defined by an equal or greater amount of money in Euro cents.                       |
+| `amountTo`   |           `int` (cent value)           |          | Fetch only transactions defined by an lower or equal sum in Euro cents                                      |
+| `CategoryId` |                 `int`                  |          | Fetch only transactions with the given CategoryId                                                           |
+| `ShopId`     |                 `int`                  |          | Fetch only transactions with the given ShopId                                                               |
+| `order`      |            `ASC` or `DESC`             |          | Sort fetched transactions ascending or descending. Defaults to `ASC`.                                       |
+| `orderKey`   | `time`, `amount`, `Category` or `Shop` |          | Sort fetched transactions by the selected key. If set to `time`, order by `date`. Defaults to `time`.       |
+| `limit`      |                 `int`                  |          | Fetch only first n transactions. Can be combined with offset.                                               |
+| `offset`     |                 `int`                  |          | Skip first n transactions                                                                                   |
 
 ## Success response
 
