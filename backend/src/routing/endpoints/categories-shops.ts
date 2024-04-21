@@ -17,7 +17,7 @@ function generateRouterByModel(model: CategoryOrShop) {
         .post([nameLengthValidator], async (user, body) => {
             return await CategoryShopController.create(model, user, body.name);
         })
-        .get([nameLengthValidator], async (user, limit, offset, { name }) => {
+        .get([], async (user, limit, offset, { name }) => {
             return await CategoryShopController.fetch(model, user, limit, offset, name);
         })
         .patch([nameLengthValidator], async (user, id, body) => {
