@@ -11,17 +11,19 @@ Fetched transactions are ordered by the `monthFrom` and `monthTo` value.
 
 **Attributes**:
 
-| Attribute    |   Accepted values   | Required | Description                                                                                                                                                                  |
-| ------------ | :-----------------: | :------: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `isExpense`  |      `boolean`      |          | Fetch only transactions that are expenses if `true` is given, otherwise only transactions that are incomes.                                                                  |
-| `monthFrom`  |      `YYYY-MM`      |          | Fetch only transactions that were processed in an equal or later month. If `monthTo` is also provided, `monthFrom` must be earlier than or equal to `monthTo`.               |
-| `monthTo`    | `YYYY-MM` or `null` |          | Fetch only transactions that were last processed in an earlier or equal month. If `monthTo` is `null`, only fetch transactions which don't have a final month.               |
-| `amountFrom` | `int` (cent value)  |          | Fetch only transactions defined by an equal or greater amount of money in Euro cents. If `amountTo` is also provided, `amountFrom` must be less than or equal to `amountTo`. |
-| `amountTo`   | `int` (cent value)  |          | Fetch only transactions defined by an lower or equal sum in Euro cents                                                                                                       |
-| `CategoryId` |        `int`        |          | Fetch only transactions with the given CategoryId                                                                                                                            |
-| `ShopId`     |        `int`        |          | Fetch only transactions with the given ShopId                                                                                                                                |
-| `limit`      |        `int`        |          | Fetch only first n transactions. Can be combined with offset.                                                                                                                |
-| `offset`     |        `int`        |          | Skip first n transactions                                                                                                                                                    |
+| Attribute    |            Accepted values             | Required | Description                                                                                                                                                                  |
+| ------------ | :------------------------------------: | :------: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `isExpense`  |               `boolean`                |          | Fetch only transactions that are expenses if `true` is given, otherwise only transactions that are incomes.                                                                  |
+| `monthFrom`  |               `YYYY-MM`                |          | Fetch only transactions that were processed in an equal or later month. If `monthTo` is also provided, `monthFrom` must be earlier than or equal to `monthTo`.               |
+| `monthTo`    |          `YYYY-MM` or `null`           |          | Fetch only transactions that were last processed in an earlier or equal month. If `monthTo` is `null`, only fetch transactions which don't have a final month.               |
+| `amountFrom` |           `int` (cent value)           |          | Fetch only transactions defined by an equal or greater amount of money in Euro cents. If `amountTo` is also provided, `amountFrom` must be less than or equal to `amountTo`. |
+| `amountTo`   |           `int` (cent value)           |          | Fetch only transactions defined by an lower or equal sum in Euro cents                                                                                                       |
+| `CategoryId` |                 `int`                  |          | Fetch only transactions with the given CategoryId                                                                                                                            |
+| `ShopId`     |                 `int`                  |          | Fetch only transactions with the given ShopId                                                                                                                                |
+| `order`      |            `ASC` or `DESC`             |          | Sort fetched transactions ascending or descending. Defaults to `ASC`.                                                                                                        |
+| `orderKey`   | `time`, `amount`, `Category` or `Shop` |          | Sort fetched transactions by the selected key. If set to `time`, order by `monthFrom`, then by `monthTo`. Defaults to `time`.                                                |
+| `limit`      |                 `int`                  |          | Fetch only first n transactions. Can be combined with offset.                                                                                                                |
+| `offset`     |                 `int`                  |          | Skip first n transactions                                                                                                                                                    |
 
 ## Success response
 

@@ -40,7 +40,7 @@ describe('OneoffTransactionController', function () {
                 date: '2022-01-01',
                 amount: 1,
                 CategoryId: (await Category.create({ name: 'test', UserId: user.id })).id,
-                ShopId: (await Shop.findOne({ name: 'shop', UserId: user.id })).id
+                ShopId: (await Shop.create({ name: 'shop', UserId: user.id })).id
             });
             expect(instance.Transaction.id).to.exist;
             expect(instance.Transaction.Category.id).to.exist;
@@ -232,7 +232,7 @@ describe('OneoffTransactionController', function () {
             expect(testData).to.have.lengthOf(2);
         });
 
-        it('should order the transactions by date ASC, then by id ASC', async function () {
+        it('should by default order the transactions by date ASC, then by id ASC', async function () {
             const user = await User.findOne();
             const parameters = {
                 isExpense: true,
@@ -248,6 +248,49 @@ describe('OneoffTransactionController', function () {
             expect(query).to.be.of.length(10);
             expect(JSON.stringify(query[3])).to.equal(JSON.stringify(instance));
             expect(JSON.stringify(query[4])).to.equal(JSON.stringify(instance2));
+        });
+
+        async function testOrderKeys(key, modelExtractor) {
+            const user = await User.findOne();
+            const queryAsc = await oneoffTransactionController.fetch(user, 100, 0, {
+                order: 'ASC',
+                orderKey: key
+            });
+            const queryDesc = await oneoffTransactionController.fetch(user, 100, 0, {
+                order: 'DESC',
+                orderKey: key
+            });
+
+            for (let i = 0; i < queryAsc.length; i++) {
+                expect(queryAsc[i].id).to.be.equal(queryDesc[queryDesc.length - i - 1].id);
+            }
+
+            for (let i = 0; i < queryAsc.length - 1; i++) {
+                expect(
+                    modelExtractor(queryAsc[i]) < modelExtractor(queryAsc[i + 1]) ||
+                        (modelExtractor(queryAsc[i]) === modelExtractor(queryAsc[i + 1]) &&
+                            queryAsc[i].id < queryAsc[i + 1].id)
+                ).to.be.true;
+            }
+        }
+
+        it('should order by time', async function () {
+            await testOrderKeys('time', (transaction) => new Date(transaction.date).getTime());
+        });
+
+        it('should order by amount', async function () {
+            await testOrderKeys('amount', (transaction) => transaction.Transaction.amount);
+        });
+
+        it('should order by category name', async function () {
+            await testOrderKeys('Category', (transaction) => transaction.Transaction.Category.name);
+        });
+
+        it('should order by shop name', async function () {
+            await testOrderKeys('Shop', (transaction) =>
+                // Since shop can be null, fall back to a string that is probably considered greater than all other strings
+                transaction.Transaction.Shop ? transaction.Transaction.Shop.name : 'z'.repeat(1000)
+            );
         });
 
         it('should also fetch associated transactions, categories and shops', async function () {

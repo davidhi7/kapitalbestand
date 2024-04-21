@@ -23,6 +23,8 @@ export type TransactionQueryParameters = {
     description?: string;
     CategoryId?: number;
     ShopId?: number;
+    orderKey?: 'time' | 'amount' | 'Category' | 'Shop';
+    order?: 'ASC' | 'DESC';
 };
 
 export default class AbstractTransactionController<Type extends GenericTransaction> {

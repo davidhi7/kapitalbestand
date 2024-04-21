@@ -340,6 +340,59 @@ describe('MonthlyTransactionController', function () {
             expect(JSON.stringify(query[3])).to.equal(JSON.stringify(instance2));
         });
 
+        async function testOrderKeys(key, modelExtractor) {
+            const user = await User.findOne();
+            const queryAsc = await monthlyTransactionController.fetch(user, 100, 0, {
+                order: 'ASC',
+                orderKey: key
+            });
+            const queryDesc = await monthlyTransactionController.fetch(user, 100, 0, {
+                order: 'DESC',
+                orderKey: key
+            });
+
+            for (let i = 0; i < queryAsc.length; i++) {
+                expect(queryAsc[i].id).to.be.equal(queryDesc[queryDesc.length - i - 1].id);
+            }
+
+            for (let i = 0; i < queryAsc.length - 1; i++) {
+                expect(
+                    modelExtractor(queryAsc[i]) < modelExtractor(queryAsc[i + 1]) ||
+                        (modelExtractor(queryAsc[i]) === modelExtractor(queryAsc[i + 1]) &&
+                            queryAsc[i].id < queryAsc[i + 1].id)
+                ).to.be.true;
+            }
+        }
+
+        it('should order by time', async function () {
+            await testOrderKeys('time', (transaction) => {
+                // We construct artificial keys that represent both relevant values
+                const tokens = [];
+                tokens.push(...transaction.monthFrom.split('-'));
+                if (transaction.monthTo) {
+                    tokens.push(...transaction.monthTo.split('-'));
+                } else {
+                    tokens.push('9'.repeat(6));
+                }
+                return tokens.join('');
+            });
+        });
+
+        it('should order by amount', async function () {
+            await testOrderKeys('amount', (transaction) => transaction.Transaction.amount);
+        });
+
+        it('should order by category name', async function () {
+            await testOrderKeys('Category', (transaction) => transaction.Transaction.Category.name);
+        });
+
+        it('should order by shop name', async function () {
+            await testOrderKeys('Shop', (transaction) =>
+                // Since shop can be null, fall back to a string that is probably considered greater than all other strings
+                transaction.Transaction.Shop ? transaction.Transaction.Shop.name : 'z'.repeat(1000)
+            );
+        });
+
         it('should also fetch associated transactions, categories and shops', async function () {
             const query = await monthlyTransactionController.fetch(
                 await User.findOne(),

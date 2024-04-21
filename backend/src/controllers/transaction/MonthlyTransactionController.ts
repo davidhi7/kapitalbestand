@@ -1,5 +1,6 @@
 import createError from 'http-errors';
-import { Model } from 'sequelize';
+import { Model, Order } from 'sequelize';
+import sequelize from 'sequelize';
 
 import { MonthlyTransaction, Transaction, User } from '../../database/db.js';
 import { BaseFetchParameters } from '../types.js';
@@ -70,13 +71,34 @@ class MonthlyTransactionController extends AbstractTransactionController<Monthly
             isExpense: isExpense
         });
 
+        const orderRules: Order = [];
+        const order = body.order ?? 'ASC';
+        const orderKey = body.orderKey ?? 'time';
+        switch (orderKey) {
+            case 'time':
+                orderRules.push(['monthFrom', order], ['monthTo', order]);
+                break;
+            case 'amount':
+                orderRules.push([Transaction, 'amount', order]);
+                break;
+            case 'Category':
+                orderRules.push([
+                    sequelize.fn('lower', sequelize.col('Transaction.Category.name')),
+                    order
+                ]);
+                break;
+            case 'Shop':
+                orderRules.push([
+                    sequelize.fn('lower', sequelize.col('Transaction.Shop.name')),
+                    order
+                ]);
+                break;
+        }
+        orderRules.push(['id', order]);
+
         return MonthlyTransaction.findAll({
             where: whereConditions,
-            order: [
-                ['monthFrom', 'ASC'],
-                ['monthTo', 'ASC NULLS LAST'],
-                ['id', 'ASC']
-            ],
+            order: orderRules,
             limit: limit,
             offset: offset
         });
