@@ -12,15 +12,17 @@ const CategoryShopStore = useCategoryShopStore();
 
 const props = defineProps<{
     defaultFilterRules: TransactionFilterRules;
+    allowMinimizing: boolean;
 }>();
 
+const isExpanded = ref(true);
 const filterRules = ref(props.defaultFilterRules);
 
 const emit = defineEmits<{
     submit: [filterRules: TransactionFilterRules];
     reset: [filterRules: TransactionFilterRules];
 }>();
-
+true;
 function resetFilterRules() {
     filterRules.value = props.defaultFilterRules;
     emit('reset', filterRules.value);
@@ -28,79 +30,108 @@ function resetFilterRules() {
 </script>
 
 <template>
-    <header>
-        <h1 class="bg-header-bg p-2 text-xl text-main-dark">Filter</h1>
-    </header>
-    <form
-        class="mx-4"
-        @submit.prevent="emit('submit', filterRules)"
-        @reset.prevent="resetFilterRules"
+    <header
+        class="grid grid-cols-3"
+        :class="{ 'border-b-[1px] border-tertiary-bg': isExpanded || !allowMinimizing }"
     >
-        <section>
-            <label>
-                <input v-model="filterRules.isExpense" type="radio" :value="undefined" />
-                Alle Transaktionen
-            </label>
-            <label>
-                <input v-model="filterRules.isExpense" type="radio" :value="true" />
-                Geldausgänge
-            </label>
-            <label>
-                <input v-model="filterRules.isExpense" type="radio" :value="false" />
-                Geldeingänge
-            </label>
+        <span class="col-start-2 flex justify-center gap-1 p-2 font-semibold">
+            <span class="material-symbols-outlined place-self-center text-xl">filter_alt</span>
+            Filter
+        </span>
+        <button
+            v-if="props.allowMinimizing"
+            class="mx-1 grid aspect-square content-center self-center justify-self-end rounded-md transition-colors hover:bg-tertiary-bg"
+            @click.prevent="isExpanded = !isExpanded"
+        >
+            <span
+                class="material-symbols-outlined p-1 text-2xl transition-transform duration-200"
+                :class="{ 'rotate-180': isExpanded }"
+                >expand_more</span
+            >
+        </button>
+    </header>
+    <main
+        class="grid grid-rows-[0fr] overflow-hidden transition-grid-rows"
+        :class="{
+            'grid-rows-[1fr]': isExpanded || !allowMinimizing
+        }"
+    >
+        <form
+            class="mx-4"
+            @submit.prevent="emit('submit', filterRules)"
+            @reset.prevent="resetFilterRules"
+        >
+            <section>
+                <label>
+                    <input v-model="filterRules.isExpense" type="radio" :value="undefined" />
+                    Alle Transaktionen
+                </label>
+                <label>
+                    <input v-model="filterRules.isExpense" type="radio" :value="true" />
+                    Geldausgänge
+                </label>
+                <label>
+                    <input v-model="filterRules.isExpense" type="radio" :value="false" />
+                    Geldeingänge
+                </label>
 
-            <label class="mt-4">
-                <input v-model="filterRules.isMonthlyTransaction" type="checkbox" />
-                Monatliche Umsätze
-            </label>
-        </section>
+                <label class="mt-4">
+                    <input v-model="filterRules.isMonthlyTransaction" type="checkbox" />
+                    Monatliche Umsätze
+                </label>
+            </section>
 
-        <section v-if="!filterRules.isMonthlyTransaction" class="vertical-form">
-            <label>ab</label>
-            <TextInput v-model.lazy="filterRules.dateFrom" type="date" />
+            <section v-if="!filterRules.isMonthlyTransaction" class="vertical-form">
+                <label>ab</label>
+                <TextInput v-model.lazy="filterRules.dateFrom" type="date" />
 
-            <label>bis</label>
-            <TextInput v-model.lazy="filterRules.dateTo" type="date" />
-        </section>
+                <label>bis</label>
+                <TextInput v-model.lazy="filterRules.dateTo" type="date" />
+            </section>
 
-        <section v-else class="vertical-form">
-            <label>ab Monat</label>
-            <MonthInput v-model="filterRules.monthFrom" />
+            <section v-else class="vertical-form">
+                <label>ab Monat</label>
+                <MonthInput v-model="filterRules.monthFrom" />
 
-            <label>bis Monat</label>
-            <MonthInput v-model="filterRules.monthTo" />
-        </section>
+                <label>bis Monat</label>
+                <MonthInput v-model="filterRules.monthTo" />
+            </section>
 
-        <section class="vertical-form">
-            <label>Kategorie</label>
-            <AutoComplete
-                v-model="filterRules.Category"
-                :suggestions="CategoryShopStore.categories"
-            />
+            <section class="vertical-form">
+                <label>Kategorie</label>
+                <AutoComplete
+                    v-model="filterRules.Category"
+                    :suggestions="CategoryShopStore.categories"
+                />
 
-            <label>Händler</label>
-            <AutoComplete v-model="filterRules.Shop" :suggestions="CategoryShopStore.shops" />
-        </section>
+                <label>Händler</label>
+                <AutoComplete v-model="filterRules.Shop" :suggestions="CategoryShopStore.shops" />
+            </section>
 
-        <section class="vertical-form">
-            <label>ab Betrag</label>
-            <CurrencyInput v-model="filterRules.amountFrom" />
+            <section class="vertical-form">
+                <label>ab Betrag</label>
+                <CurrencyInput v-model="filterRules.amountFrom" />
 
-            <label>bis Betrag</label>
-            <CurrencyInput v-model="filterRules.amountTo" />
-        </section>
+                <label>bis Betrag</label>
+                <CurrencyInput v-model="filterRules.amountTo" />
+            </section>
 
-        <section>
-            <div class="flex justify-center gap-2">
-                <button class="btn btn-green" type="submit">Suchen</button>
-                <button class="btn" type="reset">Zurücksetzen</button>
-            </div>
-        </section>
-    </form>
+            <section>
+                <div class="flex justify-center gap-2">
+                    <button class="btn btn-green" type="submit">Suchen</button>
+                    <button class="btn" type="reset">Zurücksetzen</button>
+                </div>
+            </section>
+        </form>
+    </main>
 </template>
 
 <style scoped>
+form {
+    align-self: end;
+    min-height: 0;
+}
+
 label > :is(input[type='checkbox'], input[type='radio']) {
     @apply mr-2;
 }

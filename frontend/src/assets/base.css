@@ -63,7 +63,7 @@ body {
 }
 
 h1 {
-    @apply text-center text-4xl font-semibold;
+    @apply text-center text-2xl font-semibold;
 }
 
 :root {

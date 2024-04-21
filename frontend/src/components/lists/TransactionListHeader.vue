@@ -30,6 +30,6 @@ const filteredColumns = computed(() => {
 
 <style scoped>
 th {
-    @apply bg-header-bg p-2 text-center  font-semibold text-main-dark;
+    @apply border-b-[1px] border-tertiary-bg p-2 text-center font-semibold;
 }
 </style>
