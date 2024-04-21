@@ -19,7 +19,7 @@ const model = defineModel<string>();
 
 <template>
     <div
-        class="required-indicator relative rounded-lg border-[1px] border-input-bg bg-transparent shadow-sm hover:bg-input-bg hover:shadow-md"
+        class="required-indicator relative rounded-lg border-[1px] border-input-bg bg-transparent shadow-sm transition-colors hover:bg-input-bg hover:shadow-md"
         :class="[
             props.required && showRequiredIndicator ? 'after:!text-tertiary' : '',
             props.class
