@@ -56,14 +56,12 @@ async function fetch(
     user: User,
     limit: number,
     offset: number,
-    name?: string
+    name: string
 ): Promise<Category[] | Shop[]> {
     const whereClause: Record<string, any> = {
         UserId: user.id
     };
-    if (name) {
-        whereClause['name'] = name;
-    }
+    whereClause['name'] = name;
     return await model.findAll({
         where: whereClause,
         limit: limit,
