@@ -26,6 +26,10 @@ export type TransactionFilterRules = {
     dateTo?: string;
     monthFrom?: MonthType;
     monthTo?: MonthType;
+    order: {
+        key: 'Category' | 'Shop' | 'amount' | 'time';
+        order: 'ASC' | 'DESC';
+    };
 };
 
 export type TransactionType = 'oneoff' | 'monthly';
@@ -50,7 +54,11 @@ export const useTransactionStore = defineStore('Transaction', {
                     new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
                 ),
                 monthFrom: { year: currentDate.getFullYear(), month: 1 },
-                isMonthlyTransaction: false
+                isMonthlyTransaction: false,
+                order: {
+                    key: 'time',
+                    order: 'ASC'
+                }
             },
             transactions: []
         };
@@ -102,6 +110,11 @@ export const useTransactionStore = defineStore('Transaction', {
 
             if (filters.Shop !== undefined) {
                 payload['ShopId'] = String(filters.Shop.id);
+            }
+
+            if (filters.order) {
+                payload['orderKey'] = filters.order.key;
+                payload['order'] = filters.order.order;
             }
 
             if (!filters.isMonthlyTransaction) {
