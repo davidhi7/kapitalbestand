@@ -2,6 +2,7 @@
 import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
 import { breakpointsTailwind, useAsyncState, useBreakpoints } from '@vueuse/core';
 
+import { NotificationEvent, NotificationStyle, eventEmitter } from '@/components/Notification.vue';
 import TransactionFilterForm from '@/components/lists/TransactionFilterForm.vue';
 import TransactionList from '@/components/lists/TransactionList.vue';
 import {
@@ -53,7 +54,19 @@ let {
     execute: fetchTransactions,
     isLoading
 } = useAsyncState<(OneoffTransaction | MonthlyTransaction)[]>(
-    TransactionStore.fetch,
+    async () => {
+        try {
+            await TransactionStore.fetch();
+        } catch (err) {
+            eventEmitter.dispatchEvent(
+                new NotificationEvent(
+                    NotificationStyle.ERROR,
+                    'Fehler beim Laden der Transaktionen'
+                )
+            );
+        }
+        return TransactionStore.transactions;
+    },
     TransactionStore.transactions,
     { resetOnExecute: true }
 );
