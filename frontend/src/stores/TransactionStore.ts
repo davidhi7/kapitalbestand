@@ -81,8 +81,7 @@ export const useTransactionStore = defineStore('Transaction', {
                 throw new HttpError(response.status);
             }
 
-            // TODO add to currently stored transactions
-            // const body = await response.json();
+            this.fetch();
         },
         async fetch() {
             const payload: {
@@ -139,14 +138,8 @@ export const useTransactionStore = defineStore('Transaction', {
 
             const response = await fetch(endpoint + '?' + new URLSearchParams(payload));
 
-            // TODO debug not working
             if (!response.ok) {
-                eventEmitter.dispatchEvent(
-                    new NotificationEvent(
-                        NotificationStyle.ERROR,
-                        'Fehler beim Laden der Transaktionen'
-                    )
-                );
+                throw new HttpError(response.status);
             }
 
             this.transactions = (await response.json()).data;
@@ -170,11 +163,12 @@ export const useTransactionStore = defineStore('Transaction', {
                 throw new HttpError(response.status);
             }
 
-            // TODO add to currently stored transactions
-            // const body = await response.json();
-            // const transaction_type =
-            //     body.data.Transaction.isExpense === true ? 'expenses' : 'incomes';
-            // this.transactions[type][transaction_type][body.data.id] = body.data;
+            for (let i = 0; i < this.transactions.length; i++) {
+                if (this.transactions[i].id == id) {
+                    this.transactions[i] = (await response.json()).data;
+                    return;
+                }
+            }
         },
         async delete(type: TransactionType, id: number) {
             const endpoint = `/api/transactions/${type}/${id}`;
@@ -184,12 +178,13 @@ export const useTransactionStore = defineStore('Transaction', {
             if (!response.ok) {
                 throw new HttpError(response.status);
             }
-            // TODO Remove from currently stored transactions
-            // if (this.transactions[type]['expenses'][id]) {
-            //     delete this.transactions[type]['expenses'][id];
-            // } else if (this.transactions[type]['incomes'][id]) {
-            //     delete this.transactions[type]['incomes'][id];
-            // }
+
+            for (let i = 0; i < this.transactions.length; i++) {
+                if (this.transactions[i].id == id) {
+                    this.transactions.splice(i, 1);
+                    return;
+                }
+            }
         }
     }
 });
