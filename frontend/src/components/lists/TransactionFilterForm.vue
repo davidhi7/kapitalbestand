@@ -15,7 +15,7 @@ const props = defineProps<{
     allowMinimizing: boolean;
 }>();
 
-const isExpanded = ref(true);
+const isExpanded = ref(!props.allowMinimizing);
 const filterRules = ref(props.defaultFilterRules);
 
 const emit = defineEmits<{
@@ -57,7 +57,7 @@ function resetFilterRules() {
         }"
     >
         <form
-            class="mx-4"
+            class="mx-4 min-h-0 self-end"
             @submit.prevent="emit('submit', filterRules)"
             @reset.prevent="resetFilterRules"
         >
@@ -127,11 +127,6 @@ function resetFilterRules() {
 </template>
 
 <style scoped>
-form {
-    align-self: end;
-    min-height: 0;
-}
-
 label > :is(input[type='checkbox'], input[type='radio']) {
     @apply mr-2;
 }
