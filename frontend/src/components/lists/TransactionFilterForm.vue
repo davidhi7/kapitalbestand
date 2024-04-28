@@ -3,8 +3,10 @@ import { ref } from 'vue';
 
 import AutoComplete from '@/components/autocomplete/AutoComplete.vue';
 import CurrencyInput from '@/components/input/CurrencyInput.vue';
+import IconButton from '@/components/input/IconButton.vue';
 import MonthInput from '@/components/input/MonthInput.vue';
 import TextInput from '@/components/input/TextInput.vue';
+import VerticalSlidingTransition from '@/components/transitions/VerticalSlidingTransition.vue';
 import { useCategoryShopStore } from '@/stores/CategoryShopStore';
 import type { TransactionFilterRules } from '@/stores/TransactionStore';
 
@@ -30,31 +32,23 @@ function resetFilterRules() {
 </script>
 
 <template>
-    <header
-        class="grid grid-cols-3"
-        :class="{ 'border-b-[1px] border-tertiary-bg': isExpanded || !allowMinimizing }"
-    >
+    <header class="grid grid-cols-3">
         <span class="col-start-2 flex justify-center gap-1 p-2 font-semibold">
             <span class="material-symbols-outlined place-self-center text-xl">filter_alt</span>
             Filter
         </span>
-        <button
+        <IconButton
+            class="self-center justify-self-end child:transition-transform child:duration-200"
+            :class="{ 'child:rotate-180': isExpanded }"
+            icon-name="expand_more"
             v-if="props.allowMinimizing"
-            class="mx-1 grid aspect-square content-center self-center justify-self-end rounded-md transition-colors hover:bg-tertiary-bg"
             @click.prevent="isExpanded = !isExpanded"
-        >
-            <span
-                class="material-symbols-outlined p-1 text-2xl transition-transform duration-200"
-                :class="{ 'rotate-180': isExpanded }"
-                >expand_more</span
-            >
-        </button>
+        />
     </header>
-    <main
-        class="grid grid-rows-[0fr] overflow-hidden transition-grid-rows"
-        :class="{
-            'grid-rows-[1fr]': isExpanded || !allowMinimizing
-        }"
+    <VerticalSlidingTransition
+        duration-class="duration-200"
+        :render="isExpanded || !allowMinimizing"
+        class="border-t-[1px] border-tertiary-bg"
     >
         <form
             class="mx-4 min-h-0 self-end"
@@ -123,7 +117,7 @@ function resetFilterRules() {
                 </div>
             </section>
         </form>
-    </main>
+    </VerticalSlidingTransition>
 </template>
 
 <style scoped>
