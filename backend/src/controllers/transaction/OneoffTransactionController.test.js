@@ -412,13 +412,16 @@ describe('OneoffTransactionController', function () {
 
         it('should modify the body with the provided data', async function () {
             const user = await User.findOne();
-            const instance = await OneoffTransaction.findOne({ where: { UserId: user.id } });
+            const instance = await OneoffTransaction.findOne({
+                where: { UserId: user.id, '$Transaction.isExpense$': true }
+            });
             const updatedInstance = await oneoffTransactionController.update(user, instance.id, {
                 amount: 12345,
                 date: '2023-01-04',
                 CategoryId: (await Category.create({ name: 'update-test', UserId: user.id })).id,
                 ShopId: (await Shop.create({ name: 'update-test', UserId: user.id })).id,
-                description: 'testing update method ...'
+                description: 'testing update method ...',
+                isExpense: false
             });
             expect(new Date(updatedInstance.date)).to.be.deep.equal(new Date('2023-01-04'));
             expect(updatedInstance.Transaction.amount).to.be.equal(12345);
@@ -427,6 +430,7 @@ describe('OneoffTransactionController', function () {
             );
             expect(updatedInstance.Transaction.Category.name).to.be.equal('update-test');
             expect(updatedInstance.Transaction.Shop.name).to.be.equal('update-test');
+            expect(updatedInstance.Transaction.isExpense).to.be.false;
             expect(updatedInstance.updatedAt).to.be.above(instance.updatedAt);
             expect(new Date(updatedInstance.Transaction.updatedAt)).to.be.above(
                 new Date(instance.Transaction.updatedAt)

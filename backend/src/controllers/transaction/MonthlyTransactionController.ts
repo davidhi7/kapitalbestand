@@ -130,6 +130,7 @@ class MonthlyTransactionController extends AbstractTransactionController<Monthly
             setIfNotUndefined('CategoryId', instance.Transaction);
             setIfNotUndefined('ShopId', instance.Transaction);
             setIfNotUndefined('description', instance.Transaction);
+            setIfNotUndefined('isExpense', instance.Transaction);
             await instance.save();
             await instance.Transaction.save();
             instance = await this.getByUserAndId(user, instance.id);
