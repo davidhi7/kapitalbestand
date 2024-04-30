@@ -96,13 +96,15 @@ const monthlyTransactionRouter = new EndpointBuilder<
         [
             ...transactionCreateValidators,
             body('monthFrom').matches(monthPattern),
-            body('monthTo').matches(monthPattern).optional(),
-            body('monthTo').custom((monthTo, { req }) => {
-                return (
-                    new Date(monthTo) >=
-                    new Date((req.body as MonthlyTransactionCreateParameters).monthFrom)
-                );
-            })
+            body('monthTo')
+                .matches(monthPattern)
+                .custom((monthTo, { req }) => {
+                    return (
+                        new Date(monthTo) >=
+                        new Date((req.body as MonthlyTransactionCreateParameters).monthFrom)
+                    );
+                })
+                .optional()
         ],
         MonthlyTransactionController.create.bind(MonthlyTransactionController)
     )
