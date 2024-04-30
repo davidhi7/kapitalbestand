@@ -36,6 +36,8 @@ watch(
     (value) => {
         if (value != null) {
             rawInput.value = format_currency(value);
+        } else {
+            rawInput.value = '';
         }
     },
     { immediate: true }
