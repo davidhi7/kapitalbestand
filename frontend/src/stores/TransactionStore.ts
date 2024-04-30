@@ -81,7 +81,12 @@ export const useTransactionStore = defineStore('Transaction', {
                 throw new HttpError(response.status);
             }
 
-            this.fetch();
+            // Only fetch transactions if currently filtered transaction type is equal to type of just created transaction
+            const isMonthlyTransaction =
+                (payload as OneoffTransactionCreateParameters).date == undefined;
+            if (isMonthlyTransaction === this.transactionFilterRules.isMonthlyTransaction) {
+                this.fetch();
+            }
         },
         async fetch() {
             const payload: {
