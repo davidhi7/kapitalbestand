@@ -526,14 +526,17 @@ describe('MonthlyTransactionController', function () {
 
         it('should modify the body with the provided data', async function () {
             const user = await User.findOne();
-            const instance = await MonthlyTransaction.findOne({ where: { UserId: user.id } });
+            const instance = await MonthlyTransaction.findOne({
+                where: { UserId: user.id, '$Transaction.isExpense$': true }
+            });
             const updatedInstance = await monthlyTransactionController.update(user, instance.id, {
                 amount: 12345,
                 monthFrom: '2023-01',
                 monthTo: '2023-12',
                 CategoryId: (await Category.create({ name: 'update-test', UserId: user.id })).id,
                 ShopId: (await Shop.create({ name: 'update-test', UserId: user.id })).id,
-                description: 'testing update method ...'
+                description: 'testing update method ...',
+                isExpense: false
             });
             expect(new Date(updatedInstance.monthFrom)).to.be.deep.equal(new Date('2023-01'));
             expect(new Date(updatedInstance.monthTo)).to.be.deep.equal(new Date('2023-12'));
@@ -543,9 +546,11 @@ describe('MonthlyTransactionController', function () {
             );
             expect(updatedInstance.Transaction.Category.name).to.be.equal('update-test');
             expect(updatedInstance.Transaction.Shop.name).to.be.equal('update-test');
+            expect(updatedInstance.Transaction.isExpense).to.be.false;
             expect(updatedInstance.updatedAt).to.be.above(instance.updatedAt);
-            // this property does not exist?
-            //expect(new Date(updatedInstance.Transaction.updatedAt)).to.be.above(new Date(instance.Transaction.updatedAt));
+            expect(new Date(updatedInstance.Transaction.updatedAt)).to.be.above(
+                new Date(instance.Transaction.updatedAt)
+            );
         });
 
         it('should apply setting monthTo to null', async function () {
