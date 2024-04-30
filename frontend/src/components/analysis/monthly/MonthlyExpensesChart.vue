@@ -17,7 +17,7 @@ import { Line } from 'vue-chartjs';
 
 import type { MonthlySummary } from '@backend-types/AnalysisTypes';
 
-import { format_currency, format_year_month } from '@/common';
+import { formatCurrency, formatYearMonth } from '@/common';
 
 Chart.register(Title, Tooltip, Legend, LineElement, CategoryScale, LinearScale, PointElement);
 
@@ -25,7 +25,7 @@ const props = defineProps<{ year: number; report: MonthlySummary }>();
 const chartData = computed(() => {
     const labels = [];
     for (let month = 0; month < 12; month++) {
-        labels[month] = format_year_month({ date: new Date(props.year, month, 1), style: 'iso' });
+        labels[month] = formatYearMonth({ date: new Date(props.year, month, 1), style: 'iso' });
     }
     const datasets: ChartData<'line'>['datasets'] = [
         {
@@ -62,7 +62,7 @@ const options: ChartOptions<'line'> = {
         y: {
             beginAtZero: true,
             ticks: {
-                callback: format_currency
+                callback: formatCurrency
             }
         }
     },
@@ -81,7 +81,7 @@ const options: ChartOptions<'line'> = {
                         label += ': ';
                     }
                     if (context.parsed.y !== null) {
-                        label += format_currency(context.parsed.y);
+                        label += formatCurrency(context.parsed.y);
                     }
                     return label;
                 }

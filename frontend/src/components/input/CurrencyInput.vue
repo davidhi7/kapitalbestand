@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 
-import { format_currency } from '@/common';
+import { formatCurrency } from '@/common';
 import TextInput from '@/components/input/TextInput.vue';
 
 const rawInput = ref('');
@@ -35,7 +35,7 @@ watch(
     model,
     (value) => {
         if (value != null) {
-            rawInput.value = format_currency(value);
+            rawInput.value = formatCurrency(value);
         } else {
             rawInput.value = '';
         }

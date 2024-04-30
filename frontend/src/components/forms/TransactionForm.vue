@@ -5,7 +5,7 @@ import { Category, Shop } from '@backend-types/CategoryShopTypes';
 import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
 import { useDateFormat, useNow } from '@vueuse/core';
 
-import { dateToYearMonth, format_currency } from '@/common';
+import { dateToYearMonth, formatCurrency } from '@/common';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { NotificationEvent, NotificationStyle, eventEmitter } from '@/components/Notification.vue';
 import AutoComplete from '@/components/autocomplete/AutoComplete.vue';
@@ -22,7 +22,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-    (e: 'done'): void;
+    done: [];
 }>();
 
 const CategoryShopStore = useCategoryShopStore();
@@ -81,7 +81,7 @@ watch(
         transactionProperties.description = description;
         transactionProperties.Category = Category;
         transactionProperties.Shop = Shop;
-        rawAmountInput.value = format_currency(amount);
+        rawAmountInput.value = formatCurrency(amount);
 
         if (isOneoffTransaction(transaction)) {
             allowedTransactionType.value = 'oneoff';
