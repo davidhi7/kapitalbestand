@@ -4,7 +4,7 @@ import { RouterLink, useRoute } from 'vue-router';
 
 import { MonthlySummary } from '@backend-types/AnalysisTypes';
 
-import { format_year_month } from '@/common';
+import { formatYearMonth } from '@/common';
 import Card from '@/components/analysis/Card.vue';
 import MonthlyExpensesChart from '@/components/analysis/monthly/MonthlyExpensesChart.vue';
 import MonthlyExpensesStats from '@/components/analysis/monthly/MonthlyExpensesStats.vue';
@@ -60,7 +60,7 @@ const currentMonthSelected = computed(() => {
             >
                 <span class="material-symbols-outlined relative -bottom-0.5">navigate_before</span>
                 <span>{{
-                    format_year_month({
+                    formatYearMonth({
                         date: new Date(monthBefore.year, monthBefore.month, 1),
                         style: 'short'
                     })
@@ -68,7 +68,7 @@ const currentMonthSelected = computed(() => {
             </RouterLink>
 
             <h1 class="col-span-2">
-                {{ format_year_month({ date: new Date(year, month, 1), style: 'long' }) }}
+                {{ formatYearMonth({ date: new Date(year, month, 1), style: 'long' }) }}
             </h1>
 
             <div class="row-[2] flex justify-end">
@@ -88,7 +88,7 @@ const currentMonthSelected = computed(() => {
                     class="flex items-center gap-1 text-right"
                 >
                     <span>{{
-                        format_year_month({
+                        formatYearMonth({
                             date: new Date(monthAfter.year, monthAfter.month, 1),
                             style: 'short'
                         })
