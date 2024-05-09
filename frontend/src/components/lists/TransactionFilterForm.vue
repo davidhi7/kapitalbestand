@@ -33,12 +33,12 @@ function resetFilterRules() {
 
 <template>
     <header class="grid grid-cols-3">
-        <span class="col-start-2 flex justify-center gap-1 p-2 font-semibold">
+        <div class="col-start-2 flex justify-center gap-1 p-2 font-semibold">
             <span class="material-symbols-outlined place-self-center text-xl">filter_alt</span>
-            Filter
-        </span>
+            <span>Filter</span>
+        </div>
         <IconButton
-            class="self-center justify-self-end child:transition-transform child:duration-200"
+            class="m-1 self-center justify-self-end child:transition-transform child:duration-200"
             :class="{ 'child:rotate-180': isExpanded }"
             icon-name="expand_more"
             v-if="props.allowMinimizing"
