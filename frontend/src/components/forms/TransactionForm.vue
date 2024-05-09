@@ -6,11 +6,11 @@ import { MonthlyTransaction, OneoffTransaction } from '@backend-types/Transactio
 import { useDateFormat, useNow } from '@vueuse/core';
 
 import { dateToYearMonth, formatCurrency } from '@/common';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { NotificationEvent, NotificationStyle, eventEmitter } from '@/components/Notification.vue';
 import AutoComplete from '@/components/autocomplete/AutoComplete.vue';
 import GridForm from '@/components/forms/GridForm.vue';
 import CurrencyInput from '@/components/input/CurrencyInput.vue';
+import LoadingButton from '@/components/input/LoadingButton.vue';
 import MonthInput, { MonthType } from '@/components/input/MonthInput.vue';
 import TextInput from '@/components/input/TextInput.vue';
 import { useCategoryShopStore } from '@/stores/CategoryShopStore';
@@ -330,14 +330,14 @@ function submit() {
         </section>
 
         <div class="flex justify-center gap-2">
-            <button
+            <LoadingButton
+                class="btn-green"
                 type="submit"
-                class="btn btn-green grid child:col-start-1 child:col-end-2 child:row-start-1 child:row-end-2"
+                :loading="submitLocks.size > 0"
                 :disabled="submitLocks.size > 0"
             >
-                <LoadingSpinner v-show="submitLocks.size > 0" />
-                <span v-show="submitLocks.size === 0">Speichern</span>
-            </button>
+                Speichern
+            </LoadingButton>
             <button v-if="showCancelButton" type="button" class="btn" @click="emit('done')">
                 Verwerfen
             </button>

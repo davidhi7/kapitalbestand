@@ -4,9 +4,9 @@ import { computed, ref } from 'vue';
 import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
 
+import ExpandAction from '@/components/lists/ExpandAction.vue';
 import { ColumnSettings } from '@/components/lists/listConfig';
-
-import { Action, ActionContainer } from '.';
+import VerticalSlidingTransition from '@/components/transitions/VerticalSlidingTransition.vue';
 
 const props = defineProps<{
     transaction: T;
@@ -21,16 +21,12 @@ const filteredColumns = computed(() => {
     });
 });
 
-let enabledAction = ref<Action | null>(null);
+const isExpanded = ref(false);
 
-function toggle(action: Action | null) {
-    const newValue = enabledAction.value === action ? null : action;
-    enabledAction.value = null;
-    // by setting the enabled action later, the new action is displayed with a transition. Otherwise, there would be no transition.
-    requestAnimationFrame(() => {
-        enabledAction.value = newValue;
-    });
-}
+const emit = defineEmits<{
+    edit: [];
+    delete: [];
+}>();
 </script>
 
 <template>
@@ -39,48 +35,38 @@ function toggle(action: Action | null) {
             {{ column.extractor(props.transaction) }}
         </td>
         <td class="col-span-full flex justify-end !py-1 sm:col-span-1 sm:justify-center">
-            <!-- Disable animation on hiding to avoid unneccessary distractions -->
-            <!--<button :class="{ 'child:rotate-180 child:transition-transform child:duration-200': expandEnabled }" @click="toggle(actions.EXPAND)">-->
-            <button @click="toggle(Action.EXPAND)">
+            <button @click="isExpanded = !isExpanded">
                 <span
                     class="material-symbols-outlined transition-transform duration-200"
                     :class="{
-                        'rotate-180': enabledAction === Action.EXPAND
+                        'rotate-180': isExpanded
                     }"
                 >
                     expand_more
                 </span>
             </button>
-            <button @click="toggle(Action.EDIT)">
-                <span
-                    class="material-symbols-outlined"
-                    :class="{ 'material-symbols-filled': enabledAction === Action.EDIT }"
-                >
-                    edit
-                </span>
+            <button @click="emit('edit')">
+                <span class="material-symbols-outlined"> edit </span>
             </button>
-            <button @click="toggle(Action.DELETE)">
-                <span
-                    class="material-symbols-outlined"
-                    :class="{ 'material-symbols-filled': enabledAction === Action.DELETE }"
-                >
-                    delete
-                </span>
+            <button @click="emit('delete')">
+                <span class="material-symbols-outlined"> delete </span>
             </button>
         </td>
         <td class="col-span-full !p-0">
-            <ActionContainer
-                :action="enabledAction"
-                :transaction="props.transaction"
-                @done="toggle(null)"
-            />
+            <VerticalSlidingTransition
+                duration-class="duration-200"
+                :render="isExpanded"
+                class="mx-4 border-t-[1px] border-tertiary-bg child:my-2"
+            >
+                <ExpandAction :transaction="props.transaction"> </ExpandAction>
+            </VerticalSlidingTransition>
         </td>
     </tr>
 </template>
 
 <style scoped>
 td {
-    @apply overflow-hidden text-ellipsis whitespace-nowrap p-2 text-center;
+    @apply overflow-hidden text-ellipsis whitespace-nowrap px-1 py-2 text-center;
 }
 
 td > button {

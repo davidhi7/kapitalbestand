@@ -1,29 +1,17 @@
-<script>
+<script setup lang="ts">
+import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
+
 import TransactionForm from '@/components/forms/TransactionForm.vue';
 
-export default {
-    components: {
-        TransactionForm
-    },
-    inject: ['frequency'],
-    props: {
-        transaction: {
-            type: Object,
-            required: true
-        }
-    },
-    emits: ['done']
-};
+const props = defineProps<{
+    transaction: OneoffTransaction | MonthlyTransaction;
+}>();
+
+const emit = defineEmits<{
+    done: [];
+}>();
 </script>
 
 <template>
-    <TransactionForm :transaction="transaction" @done="(data) => $emit('done')" />
+    <TransactionForm :transaction="transaction" :show-cancel-button="true" @done="emit('done')" />
 </template>
-
-<style scoped>
-form {
-    display: grid;
-    grid-template-columns: 100%;
-    justify-items: center;
-}
-</style>
