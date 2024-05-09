@@ -1,44 +1,47 @@
-<script>
-export default {
-    inject: ['frequency'],
-    props: {
-        transaction: {
-            type: Object,
-            required: true
-        }
-    },
-    emits: ['done'],
-    computed: {
-        keyValuePairs() {
-            const { createdAt, updatedAt, id, Transaction } = this.transaction;
-            const { Category, Shop, isExpense } = Transaction;
-            const isMonthly = this.frequency === 'monthly';
-            let type;
-            if (isMonthly) {
-                if (isExpense) {
-                    type = 'monatliche Ausgabe';
-                } else {
-                    type = 'monatliches Einkommen';
-                }
-            } else {
-                if (isExpense) {
-                    type = 'einmalige Ausgabe';
-                } else {
-                    type = 'einmaliges Einkommen';
-                }
-            }
+<script setup lang="ts">
+import { computed } from 'vue';
 
-            return {
-                erstellt: new Date(createdAt).toLocaleString('de-DE'),
-                Kategorie: Category ? Category.name : '-',
-                aktualisiert: new Date(updatedAt).toLocaleString('de-DE'),
-                'Ort/Geschäft': Shop ? Shop.name : '-',
-                Identifikation: id,
-                Typ: type
-            };
+import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
+
+import { isOneoffTransaction } from '@/stores/TransactionStore';
+
+const props = defineProps<{
+    transaction: OneoffTransaction | MonthlyTransaction;
+}>();
+
+const emit = defineEmits<{
+    done: [];
+}>();
+
+const keyValuePairs = computed(() => {
+    const { createdAt, updatedAt, id, Transaction } = props.transaction;
+    const { Category, Shop, isExpense } = Transaction;
+    const isOneoff = isOneoffTransaction(props.transaction);
+    let type;
+    if (!isOneoff) {
+        if (isExpense) {
+            type = 'monatliche Ausgabe';
+        } else {
+            type = 'monatliches Einkommen';
+        }
+    } else {
+        if (isExpense) {
+            type = 'einmalige Ausgabe';
+        } else {
+            type = 'einmaliges Einkommen';
         }
     }
-};
+
+    // TODO compare transaction and oneoff/monthlytransaction date
+    return {
+        erstellt: new Date(createdAt).toLocaleString('de-DE'),
+        Kategorie: Category.name,
+        aktualisiert: new Date(updatedAt).toLocaleString('de-DE'),
+        Händler: Shop ? Shop.name : '-',
+        Identifikation: id,
+        Typ: type
+    };
+});
 </script>
 
 <template>

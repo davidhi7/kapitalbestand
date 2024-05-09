@@ -3,7 +3,10 @@ import { ref } from 'vue';
 
 import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
 
+import { formatCurrency } from '@/common';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import LoadingButton from '@/components/input/LoadingButton.vue';
+import { dateFormatter, monthSpanFormatter } from '@/components/lists/listConfig';
 import { isOneoffTransaction, useTransactionStore } from '@/stores/TransactionStore';
 
 const props = defineProps<{
@@ -29,14 +32,39 @@ async function del() {
 </script>
 
 <template>
-    Transaktion wirklich löschen?
-    <div class="flex justify-center gap-2">
-        <button class="btn btn-red" :disabled="requestPending" @click="del">
-            <span v-show="!requestPending">Löschen</span>
-            <LoadingSpinner v-show="requestPending"></LoadingSpinner>
-        </button>
-        <button class="btn" :disabled="requestPending" @click="emit('done')">Abbrechen</button>
+    <div class="flex flex-col gap-4">
+        Transaktion mit folgenden Details wirklich löschen?
+
+        <table>
+            <tr class="odd:bg-secondary-bg" v-if="isOneoffTransaction(props.transaction)">
+                <td class="p-1 text-center font-semibold">Datum</td>
+                <td class="p-1 text-center">{{ dateFormatter(props.transaction) }}</td>
+            </tr>
+            <tr class="odd:bg-secondary-bg" v-else>
+                <td class="p-1 text-center font-semibold">Zeitraum</td>
+                <td class="p-1 text-center">{{ monthSpanFormatter(props.transaction, 'long') }}</td>
+            </tr>
+            <tr class="odd:bg-secondary-bg">
+                <td class="p-1 text-center font-semibold">Betrag</td>
+                <td class="p-1 text-center">
+                    {{ formatCurrency(props.transaction.Transaction.amount) }}
+                </td>
+            </tr>
+            <tr class="odd:bg-secondary-bg">
+                <td class="p-1 text-center font-semibold">Kategorie</td>
+                <td class="p-1 text-center">{{ props.transaction.Transaction.Category.name }}</td>
+            </tr>
+        </table>
+
+        <div class="flex justify-center gap-2">
+            <LoadingButton
+                class="btn-red"
+                :disabled="requestPending"
+                :loading="requestPending"
+                @click="del"
+                >Löschen</LoadingButton
+            >
+            <button class="btn" :disabled="requestPending" @click="emit('done')">Abbrechen</button>
+        </div>
     </div>
 </template>
-
-<style scoped></style>
