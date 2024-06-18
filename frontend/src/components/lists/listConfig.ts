@@ -4,6 +4,7 @@ import { formatCurrency, formatYearMonth, shortDateFormat } from '@/common';
 
 export const breakpoints = ['', 'sm', 'md', 'lg', 'xl', '2xl'] as const;
 export type Breakpoint = (typeof breakpoints)[number];
+export type NotEmptyBreakpoint = Exclude<Breakpoint, ''>;
 
 export function dateFormatter(transaction: OneoffTransaction) {
     return shortDateFormat.format(new Date(transaction.date));

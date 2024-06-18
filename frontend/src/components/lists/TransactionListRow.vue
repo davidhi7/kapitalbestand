@@ -1,8 +1,7 @@
 <script setup lang="ts" generic="T extends OneoffTransaction | MonthlyTransaction">
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 
 import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
-import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
 
 import ExpandAction from '@/components/lists/ExpandAction.vue';
 import { ColumnSettings } from '@/components/lists/listConfig';
@@ -12,14 +11,6 @@ const props = defineProps<{
     transaction: T;
     columnSettings: ColumnSettings<T>[];
 }>();
-
-const breakpoints = useBreakpoints(breakpointsTailwind);
-
-const filteredColumns = computed(() => {
-    return props.columnSettings.filter((value) => {
-        return value.breakpoint === '' || breakpoints.greaterOrEqual(value.breakpoint).value;
-    });
-});
 
 const isExpanded = ref(false);
 
@@ -31,7 +22,7 @@ const emit = defineEmits<{
 
 <template>
     <tr class="contents child:odd:bg-secondary-bg child:even:bg-main-bg">
-        <td v-for="(column, index) in filteredColumns" :key="index">
+        <td v-for="(column, index) in props.columnSettings" :key="index">
             {{ column.extractor(props.transaction) }}
         </td>
         <td class="col-span-full flex justify-end !py-1 sm:col-span-1 sm:justify-center">
