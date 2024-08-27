@@ -1,11 +1,11 @@
-import chai, { expect } from 'chai';
+import { expect, use } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import createError from 'http-errors';
 
 import { Category, OneoffTransaction, Shop, Transaction, User } from '../../database/db.js';
 import oneoffTransactionController from './OneoffTransactionController.js';
 
-chai.use(chaiAsPromised);
+use(chaiAsPromised);
 describe('OneoffTransactionController', function () {
     describe('#create', function () {
         it('should successfully add a new one-off transaction to the database and return its instance', async function () {

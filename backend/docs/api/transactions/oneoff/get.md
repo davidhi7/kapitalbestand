@@ -108,15 +108,17 @@ The following parameters resulted in the provided response:
     "data": {
         "errors": [
             {
+                "type": "field",
                 "value": "not-a-date",
                 "msg": "Invalid value",
-                "param": "dateFrom",
+                "path": "dateFrom",
                 "location": "query"
             },
             {
+                "type": "field",
                 "value": "not-a-number",
                 "msg": "Invalid value",
-                "param": "amountTo",
+                "path": "amountTo",
                 "location": "query"
             }
         ]

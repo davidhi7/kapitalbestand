@@ -99,30 +99,32 @@ The following parameters resulted in the provided response:
 | Parameter    | Value           |
 | ------------ | --------------- |
 | `monthFrom`  | `invalid month` |
-| `CategoryId` | `invalid Id`    |
+| `CategoryId` | `invalid id`    |
 
 **Content**:
 
 ```json
 {
-    "status": "error",
-    "error": "Bad request on API endpoint GET /api/transactions/monthly",
-    "data": {
-        "errors": [
-            {
-                "value": "invalid month",
-                "msg": "Invalid value",
-                "param": "monthFrom",
-                "location": "query"
-            },
-            {
-                "value": "invalid Id",
-                "msg": "Invalid value",
-                "param": "CategoryId",
-                "location": "query"
-            }
-        ]
-    }
+	"status": "error",
+	"error": "Bad request on endpoint GET /api/transactions/monthly/",
+	"data": {
+		"errors": [
+			{
+				"type": "field",
+				"value": "invalid id",
+				"msg": "Invalid value",
+				"path": "CategoryId",
+				"location": "query"
+			},
+			{
+				"type": "field",
+				"value": "invalid month",
+				"msg": "Invalid value",
+				"path": "monthFrom",
+				"location": "query"
+			}
+		]
+	}
 }
 ```
 
