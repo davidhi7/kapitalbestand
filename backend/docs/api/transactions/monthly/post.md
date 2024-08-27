@@ -69,43 +69,36 @@ An empty request without any parameters resulted in the following response:
 
 ```json
 {
-    "status": "error",
-    "error": "Bad request on API endpoint POST /api/transactions/monthly",
-    "data": {
-        "errors": [
-            {
-                "msg": "Invalid value",
-                "param": "isExpense",
-                "location": "body"
-            },
-            {
-                "msg": "Invalid value",
-                "param": "monthFrom",
-                "location": "body"
-            },
-            {
-                "msg": "Invalid value",
-                "param": "amount",
-                "location": "body"
-            },
-            {
-                "msg": "Invalid value(s)",
-                "param": "_error",
-                "nestedErrors": [
-                    {
-                        "msg": "Invalid value",
-                        "param": "category",
-                        "location": "body"
-                    },
-                    {
-                        "msg": "Invalid value",
-                        "param": "CategoryId",
-                        "location": "body"
-                    }
-                ]
-            }
-        ]
-    }
+	"status": "error",
+	"error": "Bad request on endpoint POST /api/transactions/monthly/",
+	"data": {
+		"errors": [
+			{
+				"type": "field",
+				"msg": "Invalid value",
+				"path": "isExpense",
+				"location": "body"
+			},
+			{
+				"type": "field",
+				"msg": "Invalid value",
+				"path": "amount",
+				"location": "body"
+			},
+			{
+				"type": "field",
+				"msg": "Not Found",
+				"path": "CategoryId",
+				"location": "body"
+			},
+			{
+				"type": "field",
+				"msg": "Invalid value",
+				"path": "monthFrom",
+				"location": "body"
+			}
+		]
+	}
 }
 ```
 

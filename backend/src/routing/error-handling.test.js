@@ -65,7 +65,8 @@ describe('asyncEndpointWrapper', function () {
             {
                 value: undefined,
                 msg: 'Invalid value',
-                param: 'int',
+                path: 'int',
+                type: 'field',
                 location: 'body'
             }
         ]);
@@ -74,7 +75,7 @@ describe('asyncEndpointWrapper', function () {
     it('should throw a 500 InternalServerError after internally raised exception and pass it to the error handling middleware', async function () {
         await request(app).get('/throwError').expect(500);
 
-        // expect(errorHandlerSpy.calledOnce).to.be.true;
+        expect(errorHandlerSpy.calledOnce).to.be.true;
 
         const error = errorHandlerSpy.getCall(0).args[0];
         expect(httpError.isHttpError(error)).to.be.true;

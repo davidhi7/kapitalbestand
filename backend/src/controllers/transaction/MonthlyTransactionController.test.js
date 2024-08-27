@@ -1,11 +1,11 @@
-import chai, { expect } from 'chai';
+import { expect, use } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import createError from 'http-errors';
 
 import { Category, MonthlyTransaction, Shop, Transaction, User } from '../../database/db.js';
 import monthlyTransactionController from './MonthlyTransactionController.js';
 
-chai.use(chaiAsPromised);
+use(chaiAsPromised);
 describe('MonthlyTransactionController', function () {
     describe('#create', function () {
         it('should successfully add a new monthly transaction to the database and return its instance', async function () {

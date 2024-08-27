@@ -74,7 +74,8 @@ describe('authentication middlewares', function () {
                         {
                             value: '1234567',
                             msg: 'Invalid value',
-                            param: 'password',
+                            path: 'password',
+                            type: 'field',
                             location: 'body'
                         }
                     ]
