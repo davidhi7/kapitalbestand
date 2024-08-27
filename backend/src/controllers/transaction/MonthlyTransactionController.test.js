@@ -600,5 +600,17 @@ describe('MonthlyTransactionController', function () {
                 monthlyTransactionController.update(newUser, instance.id, {})
             ).to.be.rejectedWith(createError.NotFound);
         });
+        it('should update the `updatedAt` attributes of both OneoffTransaction and Transaction instances', async function () {
+            const user = await User.findOne();
+            const instance = await MonthlyTransaction.findOne();
+            const updatedInstance = await monthlyTransactionController.update(user, instance.id, {
+                amount: instance.Transaction.amount + 1
+            });
+
+            expect(updatedInstance.updatedAt).to.be.greaterThan(instance.updatedAt);
+            expect(updatedInstance.Transaction.updatedAt).to.be.greaterThan(
+                instance.Transaction.updatedAt
+            );
+        });
     });
 });

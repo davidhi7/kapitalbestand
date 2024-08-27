@@ -93,7 +93,7 @@ class OneoffTransactionController extends AbstractTransactionController<OneoffTr
         });
     }
 
-    async update(user: User, id: number, body: OneoffTransactionCreateParameters) {
+    async update(user: User, id: number, body: Partial<OneoffTransactionCreateParameters>) {
         let instance = await this.getByUserAndId(user, id);
 
         function setIfNotUndefined(
@@ -108,13 +108,15 @@ class OneoffTransactionController extends AbstractTransactionController<OneoffTr
         if (!instance) {
             throw createError.NotFound();
         }
-        if (body != null) {
+        if (body != null && Object.keys(body).length != 0) {
             setIfNotUndefined('date');
             setIfNotUndefined('amount', instance.Transaction);
             setIfNotUndefined('CategoryId', instance.Transaction);
             setIfNotUndefined('ShopId', instance.Transaction);
             setIfNotUndefined('description', instance.Transaction);
             setIfNotUndefined('isExpense', instance.Transaction);
+            instance.changed('updatedAt', true);
+            instance.Transaction.changed('updatedAt', true);
             await instance.save();
             await instance.Transaction.save();
             instance = await this.getByUserAndId(user, instance.id);
