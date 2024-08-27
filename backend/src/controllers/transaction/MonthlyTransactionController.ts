@@ -107,7 +107,7 @@ class MonthlyTransactionController extends AbstractTransactionController<Monthly
     async update(
         user: User,
         id: number,
-        body: MonthlyTransactionCreateParameters
+        body: Partial<MonthlyTransactionCreateParameters>
     ): Promise<MonthlyTransaction> {
         let instance = await this.getByUserAndId(user, id);
 
@@ -123,7 +123,7 @@ class MonthlyTransactionController extends AbstractTransactionController<Monthly
         if (!instance) {
             throw createError.NotFound();
         }
-        if (body != null) {
+        if (body != null && Object.keys(body).length != 0) {
             setIfNotUndefined('monthFrom');
             setIfNotUndefined('monthTo');
             setIfNotUndefined('amount', instance.Transaction);
@@ -131,6 +131,8 @@ class MonthlyTransactionController extends AbstractTransactionController<Monthly
             setIfNotUndefined('ShopId', instance.Transaction);
             setIfNotUndefined('description', instance.Transaction);
             setIfNotUndefined('isExpense', instance.Transaction);
+            instance.changed('updatedAt', true);
+            instance.Transaction.changed('updatedAt', true);
             await instance.save();
             await instance.Transaction.save();
             instance = await this.getByUserAndId(user, instance.id);

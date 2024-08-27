@@ -4,6 +4,7 @@ import createError from 'http-errors';
 
 import { Category, OneoffTransaction, Shop, Transaction, User } from '../../database/db.js';
 import oneoffTransactionController from './OneoffTransactionController.js';
+import OneoffTransactionController from './OneoffTransactionController.js';
 
 use(chaiAsPromised);
 describe('OneoffTransactionController', function () {
@@ -467,6 +468,18 @@ describe('OneoffTransactionController', function () {
             const instance = await OneoffTransaction.findOne({ where: { UserId: oldUser.id } });
             expect(oneoffTransactionController.update(newUser, instance.id, {})).to.be.rejectedWith(
                 createError.NotFound
+            );
+        });
+        it('should update the `updatedAt` attributes of both OneoffTransaction and Transaction instances', async function () {
+            const user = await User.findOne();
+            const instance = await OneoffTransaction.findOne();
+            const updatedInstance = await oneoffTransactionController.update(user, instance.id, {
+                amount: instance.Transaction.amount + 1
+            });
+
+            expect(updatedInstance.updatedAt).to.be.greaterThan(instance.updatedAt);
+            expect(updatedInstance.Transaction.updatedAt).to.be.greaterThan(
+                instance.Transaction.updatedAt
             );
         });
     });
