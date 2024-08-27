@@ -16,7 +16,6 @@ import User from './User.js';
 export default class Shop extends Model {
     declare id: number;
 
-    @Unique
     @AllowNull(false)
     @Column
     declare name: string;
