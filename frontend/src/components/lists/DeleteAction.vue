@@ -4,7 +4,7 @@ import { ref } from 'vue';
 import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
 
 import { formatCurrency } from '@/common';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import { NotificationEvent, NotificationStyle, eventEmitter } from '@/components/Notification.vue';
 import LoadingButton from '@/components/input/LoadingButton.vue';
 import { dateFormatter, monthSpanFormatter } from '@/components/lists/listConfig';
 import { isOneoffTransaction, useTransactionStore } from '@/stores/TransactionStore';
@@ -22,10 +22,19 @@ const requestPending = ref(false);
 
 async function del() {
     requestPending.value = true;
-    await TransactionStore.delete(
-        isOneoffTransaction(props.transaction) ? 'oneoff' : 'monthly',
-        props.transaction.id
-    );
+    try {
+        await TransactionStore.delete(
+            isOneoffTransaction(props.transaction) ? 'oneoff' : 'monthly',
+            props.transaction.id
+        );
+        eventEmitter.dispatchEvent(
+            new NotificationEvent(NotificationStyle.SUCCESS, 'Transaktion gelöscht')
+        );
+    } catch (e) {
+        eventEmitter.dispatchEvent(
+            new NotificationEvent(NotificationStyle.ERROR, 'Fehler bei Löschung')
+        );
+    }
     requestPending.value = false;
     emit('done');
 }
