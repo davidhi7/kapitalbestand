@@ -3,13 +3,28 @@ export const shortDateFormat = new Intl.DateTimeFormat('de-DE', {
     month: '2-digit',
     day: '2-digit'
 });
-
-const currencyFormat = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
-const longYearMonthFormat = new Intl.DateTimeFormat('de-DE', { year: 'numeric', month: 'long' });
-const shortYearMonthFormat = new Intl.DateTimeFormat('de-DE', {
+export const longDateFormat = new Intl.DateTimeFormat('de-DE', {
+    year: 'numeric',
+    month: 'long',
+    day: '2-digit'
+});
+export const shortDateTimeFormat = new Intl.DateTimeFormat('de-DE', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+});
+export const longYearMonthFormat = new Intl.DateTimeFormat('de-DE', {
+    year: 'numeric',
+    month: 'long'
+});
+export const shortYearMonthFormat = new Intl.DateTimeFormat('de-DE', {
     year: 'numeric',
     month: '2-digit'
 });
+
+const currencyFormat = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
 
 /**
  * Apply number format to amounts of money
@@ -18,30 +33,6 @@ const shortYearMonthFormat = new Intl.DateTimeFormat('de-DE', {
  */
 export function formatCurrency(value: number): string {
     return currencyFormat.format(Number(value) / 100);
-}
-
-/**
- * Return a date in one of the following formats:
- * if `style` is 'long': {long month} {year}
- * if `style` is 'short': {short month} {year}
- * if `style` is 'iso': {year}-{2-digit month}
- * @param {*} date
- * @param {*} style: either 'long', 'short' or 'iso'.
- * @returns
- */
-export function formatYearMonth(attributes: {
-    date: Date;
-    style: 'long' | 'short' | 'iso';
-}): string {
-    if (attributes.style === 'long') {
-        return longYearMonthFormat.format(attributes.date);
-    } else if (attributes.style === 'short') {
-        return shortYearMonthFormat.format(attributes.date);
-    } else if (attributes.style === 'iso') {
-        return `${attributes.date.getFullYear()}-${String(attributes.date.getMonth() + 1).padStart(2, '0')}`;
-    } else {
-        throw Error('Invalid value for attribute `style`: ' + String(attributes.style));
-    }
 }
 
 /**

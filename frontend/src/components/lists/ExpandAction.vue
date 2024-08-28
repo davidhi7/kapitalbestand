@@ -3,6 +3,7 @@ import { computed } from 'vue';
 
 import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
 
+import { shortDateTimeFormat } from '@/common';
 import { isOneoffTransaction } from '@/stores/TransactionStore';
 
 const props = defineProps<{
@@ -13,7 +14,7 @@ const emit = defineEmits<{
     done: [];
 }>();
 
-const keyValuePairs = computed(() => {
+const keyValuePairs = computed<Record<string, string>>(() => {
     const { createdAt, updatedAt, id, Transaction } = props.transaction;
     const { Category, Shop, isExpense } = Transaction;
     const isOneoff = isOneoffTransaction(props.transaction);
@@ -32,13 +33,12 @@ const keyValuePairs = computed(() => {
         }
     }
 
-    // TODO compare transaction and oneoff/monthlytransaction date
     return {
-        erstellt: new Date(createdAt).toLocaleString('de-DE'),
+        erstellt: shortDateTimeFormat.format(new Date(createdAt)),
         Kategorie: Category.name,
-        aktualisiert: new Date(updatedAt).toLocaleString('de-DE'),
+        aktualisiert: shortDateTimeFormat.format(new Date(updatedAt)),
         Händler: Shop ? Shop.name : '-',
-        Identifikation: id,
+        Identifikation: id.toString(),
         Typ: type
     };
 });

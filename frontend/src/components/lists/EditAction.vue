@@ -13,5 +13,9 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <TransactionForm :transaction="transaction" :show-cancel-button="true" @done="emit('done')" />
+    <TransactionForm
+        :transaction="props.transaction"
+        :show-cancel-button="true"
+        @done="emit('done')"
+    />
 </template>

@@ -22,8 +22,12 @@ const emit = defineEmits<{
 
 <template>
     <tr class="contents child:odd:bg-secondary-bg child:even:bg-main-bg">
-        <td v-for="(column, index) in props.columnSettings" :key="index">
-            {{ column.extractor(props.transaction) }}
+        <td
+            v-for="(column, index) in props.columnSettings"
+            :key="index"
+            :class="column.style_function ? column.style_function(props.transaction) : ''"
+        >
+            {{ column.text_function(props.transaction, 'short') }}
         </td>
         <td class="col-span-full flex justify-end !py-1 sm:col-span-1 sm:justify-center">
             <button @click="isExpanded = !isExpanded">

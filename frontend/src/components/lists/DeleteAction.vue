@@ -1,16 +1,16 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="T extends OneoffTransaction | MonthlyTransaction">
 import { ref } from 'vue';
 
 import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
 
-import { formatCurrency } from '@/common';
 import { NotificationEvent, NotificationStyle, eventEmitter } from '@/components/Notification.vue';
 import LoadingButton from '@/components/input/LoadingButton.vue';
-import { dateFormatter, monthSpanFormatter } from '@/components/lists/listConfig';
+import { ColumnSettings } from '@/components/lists/listConfig';
 import { isOneoffTransaction, useTransactionStore } from '@/stores/TransactionStore';
 
 const props = defineProps<{
-    transaction: OneoffTransaction | MonthlyTransaction;
+    transaction: T;
+    columnSettings: ColumnSettings<T>[];
 }>();
 
 const emit = defineEmits<{
@@ -42,26 +42,26 @@ async function del() {
 
 <template>
     <div class="flex flex-col gap-4">
-        Transaktion mit folgenden Details wirklich löschen?
-
+        Folgende Transaktion wirklich löschen?
         <table>
-            <tr class="odd:bg-secondary-bg" v-if="isOneoffTransaction(props.transaction)">
-                <td class="p-1 text-center font-semibold">Datum</td>
-                <td class="p-1 text-center">{{ dateFormatter(props.transaction) }}</td>
-            </tr>
-            <tr class="odd:bg-secondary-bg" v-else>
-                <td class="p-1 text-center font-semibold">Zeitraum</td>
-                <td class="p-1 text-center">{{ monthSpanFormatter(props.transaction, 'long') }}</td>
-            </tr>
-            <tr class="odd:bg-secondary-bg">
-                <td class="p-1 text-center font-semibold">Betrag</td>
-                <td class="p-1 text-center">
-                    {{ formatCurrency(props.transaction.Transaction.amount) }}
-                </td>
-            </tr>
-            <tr class="odd:bg-secondary-bg">
-                <td class="p-1 text-center font-semibold">Kategorie</td>
-                <td class="p-1 text-center">{{ props.transaction.Transaction.Category.name }}</td>
+            <tr
+                class="odd:bg-secondary-bg"
+                v-for="(column, index) in props.columnSettings"
+                :key="index"
+            >
+                <div v-if="column.text_function(props.transaction, 'long')" class="contents">
+                    <td class="p-1 text-center font-semibold">
+                        {{ column.title }}
+                    </td>
+                    <td
+                        class="p-1 text-center"
+                        :class="
+                            column.style_function ? column.style_function(props.transaction) : ''
+                        "
+                    >
+                        {{ column.text_function(props.transaction, 'long') }}
+                    </td>
+                </div>
             </tr>
         </table>
 

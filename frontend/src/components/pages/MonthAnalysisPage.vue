@@ -4,7 +4,7 @@ import { RouterLink, useRoute } from 'vue-router';
 
 import { MonthlySummary } from '@backend-types/AnalysisTypes';
 
-import { formatYearMonth } from '@/common';
+import { longYearMonthFormat, shortYearMonthFormat } from '@/common';
 import Card from '@/components/analysis/Card.vue';
 import MonthlyExpensesChart from '@/components/analysis/monthly/MonthlyExpensesChart.vue';
 import MonthlyExpensesStats from '@/components/analysis/monthly/MonthlyExpensesStats.vue';
@@ -31,7 +31,7 @@ watch(
     }
 );
 
-function incrementMonth(value: number = 1): { year: number; month: number } {
+function moveMonth(value: number): { year: number; month: number } {
     let newMonth = month.value + value;
     let newYear = year.value;
     if (newMonth < 0) {
@@ -44,8 +44,8 @@ function incrementMonth(value: number = 1): { year: number; month: number } {
     return { year: newYear, month: newMonth };
 }
 
-const monthBefore = computed(() => incrementMonth(-1));
-const monthAfter = computed(() => incrementMonth());
+const monthBefore = computed(() => moveMonth(-1));
+const monthAfter = computed(() => moveMonth(1));
 const currentMonthSelected = computed(() => {
     return year.value === currentDate.getFullYear() && month.value === currentDate.getMonth();
 });
@@ -60,15 +60,12 @@ const currentMonthSelected = computed(() => {
             >
                 <span class="material-symbols-outlined relative -bottom-0.5">navigate_before</span>
                 <span>{{
-                    formatYearMonth({
-                        date: new Date(monthBefore.year, monthBefore.month, 1),
-                        style: 'short'
-                    })
+                    shortYearMonthFormat.format(new Date(monthBefore.year, monthBefore.month))
                 }}</span>
             </RouterLink>
 
             <h1 class="col-span-2">
-                {{ formatYearMonth({ date: new Date(year, month, 1), style: 'long' }) }}
+                {{ longYearMonthFormat.format(new Date(monthBefore.year, monthBefore.month)) }}
             </h1>
 
             <div class="row-[2] flex justify-end">
@@ -87,12 +84,13 @@ const currentMonthSelected = computed(() => {
                     :to="`/analysis/${monthAfter.year}/${String(monthAfter.month + 1).padStart(2, '0')}`"
                     class="flex items-center gap-1 text-right"
                 >
-                    <span>{{
-                        formatYearMonth({
-                            date: new Date(monthAfter.year, monthAfter.month, 1),
-                            style: 'short'
-                        })
-                    }}</span>
+                    <span>
+                        {{
+                            shortYearMonthFormat.format(
+                                new Date(new Date(monthAfter.year, monthAfter.month))
+                            )
+                        }}
+                    </span>
                     <span class="material-symbols-outlined relative -bottom-0.5">
                         navigate_next
                     </span>
