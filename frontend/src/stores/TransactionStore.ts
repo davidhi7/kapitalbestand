@@ -12,7 +12,6 @@ import {
 
 import HttpError from '@/HttpError';
 import { dateToIsoDate } from '@/common';
-import { NotificationEvent, NotificationStyle, eventEmitter } from '@/components/Notification.vue';
 import { MonthType } from '@/components/input/MonthInput.vue';
 
 export type TransactionFilterRules = {
