@@ -1,7 +1,9 @@
 import { readFileSync } from 'fs';
+import { ModelStatic } from 'sequelize';
 import sinon from 'sinon';
 
 import {
+    Category,
     MonthlyTransaction,
     OneoffTransaction,
     Shop,
@@ -9,10 +11,10 @@ import {
     User,
     connectToDatabase
 } from '../src/database/db.js';
-import { Category } from '../src/database/db.js';
+import { prepareMigrations } from '../src/database/migrations.js';
 
 const sequelize = await connectToDatabase();
-await sequelize.sync();
+await prepareMigrations(sequelize).up();
 
 type OneoffTransactionParameters = {
     isExpense: boolean;
@@ -39,7 +41,16 @@ const monthlySample = sampleData.monthlyTransactions;
 
 export const mochaHooks = {
     async beforeEach() {
-        await sequelize.truncate({ restartIdentity: true, cascade: true });
+        for (let model of [
+            User,
+            Category,
+            Shop,
+            Transaction,
+            OneoffTransaction,
+            MonthlyTransaction
+        ] as ModelStatic<any>[]) {
+            await model.truncate({ cascade: true, restartIdentity: true });
+        }
         const defaultUser = await User.create({
             username: 'testuser',
             hash: 'pw_hash'
