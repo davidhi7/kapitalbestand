@@ -39,6 +39,7 @@
         "@types/node": "^22.5.0",
         "@types/sequelize": "^4.28.20",
         "@types/sinon": "^17.0.3",
+        "@types/supertest": "^6.0.2",
         "@types/tmp": "^0.2.6",
         "@types/validator": "^13.12.1",
         "c8": "^10.1.2",

@@ -2,18 +2,25 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "args": [
-                "npm",
-                "run",
-                "test"
-            ],
+            "args": ["npm", "run", "test:debug"],
             "internalConsoleOptions": "openOnSessionStart",
             "name": "Backend tests",
             "program": "/usr/bin/npx",
             "request": "launch",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
+            "skipFiles": ["<node_internals>/**"],
+            "env": {
+                "NODE_ENV": "test"
+            },
+            "cwd": "${workspaceFolder}/backend/",
+            "type": "node"
+        },
+        {
+            "args": ["npm", "run", "dev"],
+            "internalConsoleOptions": "openOnSessionStart",
+            "name": "Backend dev",
+            "program": "/usr/bin/npx",
+            "request": "launch",
+            "skipFiles": ["<node_internals>/**"],
             "env": {
                 "NODE_ENV": "test"
             },
