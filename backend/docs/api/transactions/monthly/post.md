@@ -10,15 +10,15 @@ Create a new monthly transaction for the user.
 
 **Attributes**:
 
-| Attribute     | Format             | Required | Description                                                                                                                         |
-| ------------- | ------------------ | :------: | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `isExpense`   | `boolean`          |    x     | Whether the type of the transaction is an expense or not. `true` if the money is spent, `false` if the money is earned.             |
-| `monthFrom`   | `YYYY-MM`          |    x     | Month in which the monthly transaction first occured.                                                                               |
-| `monthTo`     | `YYYY-MM`          |          | Month in which the monthly transaction last occured. If not provided, a monthly transaction without currently known end is assumed. |
-| `amount`      | `int` (cent value) |    x     | Amount of money of the transaction in cents.                                                                                        |
-| `CategoryId`  | `int`              |    x     | Id of the category.                                                                                                                 |
-| `ShopId`      | `int`              |          | Id of the shop.                                                                                                                     |
-| `description` | `string`           |          | Description of the transaction. Optional.                                                                                           |
+| Attribute     | Format             | Required | Description                                                                                                                                                                 |
+| ------------- | ------------------ | :------: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `isExpense`   | `boolean`          |    x     | Whether the type of the transaction is an expense or not. `true` if the money is spent, `false` if the money is earned.                                                     |
+| `monthFrom`   | `YYYY-MM`          |    x     | Month in which the monthly transaction first occured.                                                                                                                       |
+| `monthTo`     | `YYYY-MM`          |          | Month in which the monthly transaction last occured. If not provided, a monthly transaction without currently known end is assumed. Must be greater or equal to `monthFrom` |
+| `amount`      | `int` (cent value) |    x     | Amount of money of the transaction in cents.                                                                                                                                |
+| `CategoryId`  | `int`              |    x     | Id of the category.                                                                                                                                                         |
+| `ShopId`      | `int`              |          | Id of the shop.                                                                                                                                                             |
+| `description` | `string`           |          | Description of the transaction. Optional.                                                                                                                                   |
 
 ## Success response
 
