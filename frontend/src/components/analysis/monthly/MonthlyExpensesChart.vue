@@ -17,7 +17,7 @@ import { Line } from 'vue-chartjs';
 
 import type { MonthlySummary } from '@backend-types/AnalysisTypes';
 
-import { formatCurrency, formatYearMonth } from '@/common';
+import { formatCurrency, shortYearMonthFormat } from '@/common';
 
 Chart.register(Title, Tooltip, Legend, LineElement, CategoryScale, LinearScale, PointElement);
 
@@ -25,7 +25,7 @@ const props = defineProps<{ year: number; report: MonthlySummary }>();
 const chartData = computed(() => {
     const labels = [];
     for (let month = 0; month < 12; month++) {
-        labels[month] = formatYearMonth({ date: new Date(props.year, month, 1), style: 'iso' });
+        labels[month] = shortYearMonthFormat.format(new Date(props.year, month));
     }
     const datasets: ChartData<'line'>['datasets'] = [
         {

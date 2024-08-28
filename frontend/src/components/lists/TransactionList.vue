@@ -123,6 +123,7 @@ watch(
     >
         <component
             :is="enabledAction"
+            :column-settings="$props.columnSettings"
             :transaction="dialogTransaction"
             @done="quickActionModal!.close()"
         />
