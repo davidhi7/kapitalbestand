@@ -15,9 +15,11 @@ export function prepareMigrations(sequelize: Sequelize): Umzug<QueryInterface> {
             resolve: (params) => {
                 const { context, name, path } = params;
                 if (!path?.endsWith('.sql')) {
-                    const return_value = Umzug.defaultResolver(params);
-                    return_value.name = return_value.name.replace(/(\.ts|\.js)$/, '');
-                    return return_value;
+                    return {
+                        name: params.name,
+                        up: async (params) => (await import(path!)).up(params),
+                        down: async (params) => (await import(path!)).down(params)
+                    };
                 }
                 return {
                     name: name.replace('.up.sql', ''),
