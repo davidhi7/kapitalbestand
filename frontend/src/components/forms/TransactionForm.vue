@@ -59,8 +59,8 @@ const transactionProperties: {
     description: ''
 });
 
-const allowedTransactionType = ref<'any' | 'oneoff' | 'monthly'>('any');
 const isMonthlyTransaction = ref(false);
+const isEditDialog = ref(false);
 
 const rawAmountInput = ref<string>('');
 type Lock = 'submit' | 'createCategory' | 'createShop';
@@ -71,9 +71,10 @@ watch(
     (value: { transaction: OneoffTransaction | MonthlyTransaction | undefined }) => {
         const transaction = value.transaction;
         if (transaction == undefined) {
-            allowedTransactionType.value = 'any';
+            isEditDialog.value = false;
             return;
         }
+        isEditDialog.value = true;
 
         const { isExpense, amount, Category, Shop, description } = transaction.Transaction;
         transactionProperties.isExpense = isExpense;
@@ -84,7 +85,6 @@ watch(
         rawAmountInput.value = formatCurrency(amount);
 
         if (isOneoffTransaction(transaction)) {
-            allowedTransactionType.value = 'oneoff';
             var now = new Date();
             var today = new Date(
                 Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
@@ -95,10 +95,9 @@ watch(
             } else {
                 transactionProperties.oneoffTransactionProperties.today = false;
                 transactionProperties.oneoffTransactionProperties.customDate = transaction.date;
-                isMonthlyTransaction.value = false;
             }
+            isMonthlyTransaction.value = false;
         } else {
-            allowedTransactionType.value = 'monthly';
             const [fromYear, fromMonth] = transaction.monthFrom.split('-');
             transactionProperties.monthlyTransactionProperties.monthFrom = {
                 year: Number(fromYear),
@@ -243,7 +242,7 @@ function submit() {
                     <input v-model="transactionProperties.isExpense" type="radio" :value="false" />
                     Geldeingang
                 </label>
-                <label v-if="allowedTransactionType === 'any'" class="mt-4">
+                <label v-if="!isEditDialog" class="mt-4">
                     <input v-model="isMonthlyTransaction" type="checkbox" />
                     Monatlicher Umsatz
                 </label>
@@ -316,7 +315,7 @@ function submit() {
                     @request-create="(name) => createCategoryShop('Category', name)"
                 />
 
-                <label for="shop">Ort/Geschäft</label>
+                <label for="shop">Händler</label>
                 <AutoComplete
                     v-model="transactionProperties.Shop"
                     :suggestions="CategoryShopStore.shops"
@@ -339,7 +338,7 @@ function submit() {
                 Speichern
             </LoadingButton>
             <button v-if="showCancelButton" type="button" class="btn" @click="emit('done')">
-                Verwerfen
+                {{ props.transaction ? 'Abbrechen' : 'Verwerfen' }}
             </button>
         </div>
     </form>
