@@ -45,7 +45,7 @@ const keyValuePairs = computed<Record<string, string>>(() => {
 </script>
 
 <template>
-    <section v-if="transaction.Transaction.description" class="overflow-hidden text-ellipsis">
+    <section v-if="transaction.Transaction.description">
         {{ transaction.Transaction.description }}
     </section>
     <section class="grid grid-cols-2">
