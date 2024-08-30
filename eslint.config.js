@@ -18,7 +18,7 @@ export default tseslint.config(
     eslintConfigPrettier,
     {
         rules: {
-            indent: ['warn', 4],
+            indent: ['warn', 4, { SwitchCase: 1 }],
             'vue/html-indent': ['warn', 4],
             'space-before-function-paren': 'off'
         },
@@ -47,6 +47,7 @@ export default tseslint.config(
     },
     {
         files: ['frontend/src/**/*'],
+        qignores: ['frontend/dist/*'],
         languageOptions: {
             globals: {
                 ...globals.browser

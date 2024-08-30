@@ -31,12 +31,12 @@ export default class MonthlyTransaction extends Model {
     @AllowNull(false)
     @Column(DataType.DATEONLY)
     get monthFrom() {
-        let [year, month] = this.getDataValue('monthFrom').split('-');
+        const [year, month] = this.getDataValue('monthFrom').split('-');
         return `${year}-${month}`;
     }
 
     set monthFrom(value: string) {
-        let [year, month] = value.split('-');
+        const [year, month] = value.split('-');
 
         this.setDataValue('monthFrom', `${year}-${month}`);
     }
@@ -44,18 +44,18 @@ export default class MonthlyTransaction extends Model {
     @AllowNull(true)
     @Column(DataType.DATEONLY)
     get monthTo() {
-        let value = this.getDataValue('monthTo');
+        const value = this.getDataValue('monthTo');
         if (value === null) {
             return null;
         }
-        let [year, month] = value.split('-');
+        const [year, month] = value.split('-');
         return `${year}-${month}`;
     }
 
     set monthTo(value: string | null) {
         let new_value = null;
         if (value) {
-            let [year, month] = value.split('-');
+            const [year, month] = value.split('-');
             new_value = `${year}-${month}`;
         }
 

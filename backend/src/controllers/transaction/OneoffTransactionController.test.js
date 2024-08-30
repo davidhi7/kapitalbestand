@@ -4,7 +4,6 @@ import createError from 'http-errors';
 
 import { Category, OneoffTransaction, Shop, Transaction, User } from '../../database/db.js';
 import oneoffTransactionController from './OneoffTransactionController.js';
-import OneoffTransactionController from './OneoffTransactionController.js';
 
 use(chaiAsPromised);
 describe('OneoffTransactionController', function () {
@@ -470,6 +469,7 @@ describe('OneoffTransactionController', function () {
                 createError.NotFound
             );
         });
+
         it('should update the `updatedAt` attributes of both OneoffTransaction and Transaction instances', async function () {
             const user = await User.findOne();
             const instance = await OneoffTransaction.findOne();

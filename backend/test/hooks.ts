@@ -41,13 +41,14 @@ const monthlySample = sampleData.monthlyTransactions;
 
 export const mochaHooks = {
     async beforeEach() {
-        for (let model of [
+        for (const model of [
             User,
             Category,
             Shop,
             Transaction,
             OneoffTransaction,
             MonthlyTransaction
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ] as ModelStatic<any>[]) {
             await model.truncate({ cascade: true, restartIdentity: true });
         }

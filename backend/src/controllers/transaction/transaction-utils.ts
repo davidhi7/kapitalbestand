@@ -21,7 +21,7 @@ export const buildWhereConditions = (
         keyof BaseFetchParameters
     >
 ) => {
-    let {
+    const {
         dateFrom,
         dateTo,
         monthFrom,
@@ -32,7 +32,7 @@ export const buildWhereConditions = (
         ShopId,
         isExpense
     } = attributes;
-    const whereConditions: Record<string, string | number | boolean | Record<symbol, any>> = {};
+    const whereConditions: Record<string, string | number | boolean | Record<symbol, unknown>> = {};
 
     whereConditions['UserId'] = user.id;
 

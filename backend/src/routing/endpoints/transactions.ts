@@ -1,5 +1,5 @@
 import express from 'express';
-import { body, query } from 'express-validator';
+import { Meta, body, query } from 'express-validator';
 
 import CategoryShopController, {
     CategoryOrShop
@@ -27,11 +27,10 @@ function monthValidator(value: string) {
 }
 
 function getCategoryShopValidator(model: CategoryOrShop) {
-    // Typing { req } with { req: express.Request } doesn't stop Typescript from complaining
-    return async (value: number, { req }: { req: any }) =>
+    return async (value: number, meta: Meta) =>
         (await CategoryShopController.getById(
             model,
-            (req as AuthenticatedRequest).session.user,
+            (meta.req as AuthenticatedRequest).session.user,
             value
         )) != null;
 }

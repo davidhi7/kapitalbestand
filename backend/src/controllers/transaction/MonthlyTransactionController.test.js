@@ -189,7 +189,7 @@ describe('MonthlyTransactionController', function () {
             expect(query).to.be.empty;
         });
 
-        it('should apply monthFrom and monthTo correctly, fetching all transactions that occur in this timeframe', async () => {
+        it('should apply monthFrom and monthTo correctly, fetching all transactions that occur in this timeframe', async function () {
             const query = await monthlyTransactionController.fetch(await User.findOne(), 100, 0, {
                 monthFrom: '2021-01',
                 monthTo: '2022-01'
@@ -556,6 +556,7 @@ describe('MonthlyTransactionController', function () {
                 monthlyTransactionController.update(newUser, instance.id, {})
             ).to.be.rejectedWith(createError.NotFound);
         });
+
         it('should update the `updatedAt` attributes of both OneoffTransaction and Transaction instances', async function () {
             const user = await User.findOne();
             const instance = await MonthlyTransaction.findOne();
