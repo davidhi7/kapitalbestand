@@ -26,6 +26,7 @@ const emit = defineEmits<{
             v-for="(column, index) in props.columnSettings"
             :key="index"
             :class="column.style_function ? column.style_function(props.transaction) : ''"
+            class="overflow-hidden text-ellipsis whitespace-nowrap px-1 py-2 text-center"
         >
             {{ column.text_function(props.transaction, 'short') }}
         </td>
@@ -60,10 +61,6 @@ const emit = defineEmits<{
 </template>
 
 <style scoped>
-td {
-    @apply overflow-hidden text-ellipsis whitespace-nowrap px-1 py-2 text-center;
-}
-
 td > button {
     @apply grid aspect-square content-center border-r-[1px] border-input-bg;
 
