@@ -58,7 +58,7 @@ async function fetch(
     offset: number,
     name?: string
 ): Promise<Category[] | Shop[]> {
-    const whereClause: Record<string, any> = {
+    const whereClause: Record<string, string | number> = {
         UserId: user.id
     };
     if (name) {

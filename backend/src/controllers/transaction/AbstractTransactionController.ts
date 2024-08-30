@@ -1,12 +1,9 @@
 import createError from 'http-errors';
 import { ModelStatic } from 'sequelize';
-import { Model } from 'sequelize-typescript';
 
-import { Transaction, User } from '../../database/db.js';
+import { MonthlyTransaction, OneoffTransaction, User } from '../../database/db.js';
 
-interface GenericTransaction extends Model {
-    Transaction: Transaction;
-}
+type GenericTransaction = OneoffTransaction | MonthlyTransaction;
 
 export type TransactionCreateParameters = {
     isExpense: boolean;
@@ -28,9 +25,9 @@ export type TransactionQueryParameters = Partial<{
 }>;
 
 export default class AbstractTransactionController<Type extends GenericTransaction> {
-    model: ModelStatic<any>;
+    model: ModelStatic<Type>;
 
-    constructor(model: ModelStatic<any>) {
+    constructor(model: ModelStatic<Type>) {
         this.model = model;
     }
 
@@ -51,6 +48,6 @@ export default class AbstractTransactionController<Type extends GenericTransacti
         if (!instance) {
             throw createError[404]();
         }
-        return instance;
+        return instance as Type;
     }
 }
