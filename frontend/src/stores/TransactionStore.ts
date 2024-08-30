@@ -12,7 +12,6 @@ import {
 
 import HttpError from '@/HttpError';
 import { dateToIsoDate } from '@/common';
-import { MonthType } from '@/components/input/MonthInput.vue';
 
 export type TransactionFilterRules = {
     Category?: Category;
@@ -23,8 +22,8 @@ export type TransactionFilterRules = {
     amountTo?: number;
     dateFrom?: string;
     dateTo?: string;
-    monthFrom?: MonthType;
-    monthTo?: MonthType;
+    monthFrom?: string;
+    monthTo?: string;
     order: {
         key: 'Category' | 'Shop' | 'amount' | 'time';
         order: 'ASC' | 'DESC';
@@ -52,7 +51,7 @@ export const useTransactionStore = defineStore('Transaction', {
                 dateFrom: dateToIsoDate(
                     new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
                 ),
-                monthFrom: { year: currentDate.getFullYear(), month: 1 },
+                monthFrom: `${currentDate.getFullYear()}-01`,
                 isMonthlyTransaction: false,
                 order: {
                     key: 'time',
@@ -132,11 +131,11 @@ export const useTransactionStore = defineStore('Transaction', {
             } else {
                 endpoint = '/api/transactions/monthly';
                 if (filters.monthFrom !== undefined) {
-                    payload['monthFrom'] = `${filters.monthFrom.year}-${filters.monthFrom.month}`;
+                    payload['monthFrom'] = filters.monthFrom;
                 }
 
                 if (filters.monthTo !== undefined) {
-                    payload['monthTo'] = `${filters.monthTo.year}-${filters.monthTo.month}`;
+                    payload['monthTo'] = filters.monthTo;
                 }
             }
 

@@ -5,13 +5,13 @@ import { Category, Shop } from '@backend-types/CategoryShopTypes';
 import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
 import { useDateFormat, useNow } from '@vueuse/core';
 
-import { dateToYearMonth, formatCurrency } from '@/common';
+import { formatCurrency } from '@/common';
 import { NotificationEvent, NotificationStyle, eventEmitter } from '@/components/Notification.vue';
 import AutoComplete from '@/components/autocomplete/AutoComplete.vue';
 import GridForm from '@/components/forms/GridForm.vue';
 import CurrencyInput from '@/components/input/CurrencyInput.vue';
 import LoadingButton from '@/components/input/LoadingButton.vue';
-import MonthInput, { MonthType } from '@/components/input/MonthInput.vue';
+import MonthInput from '@/components/input/MonthInput.vue';
 import TextInput from '@/components/input/TextInput.vue';
 import { useCategoryShopStore } from '@/stores/CategoryShopStore';
 import { isOneoffTransaction, useTransactionStore } from '@/stores/TransactionStore';
@@ -31,8 +31,8 @@ const TransactionStore = useTransactionStore();
 const formattedDate = useDateFormat(useNow(), 'dddd, DD.MM.YYYY');
 const transactionProperties: {
     monthlyTransactionProperties: {
-        monthFrom: MonthType | undefined;
-        monthTo: MonthType | undefined;
+        monthFrom: string | undefined;
+        monthTo: string | undefined;
     };
     oneoffTransactionProperties: {
         today: boolean;
@@ -98,17 +98,9 @@ watch(
             }
             isMonthlyTransaction.value = false;
         } else {
-            const [fromYear, fromMonth] = transaction.monthFrom.split('-');
-            transactionProperties.monthlyTransactionProperties.monthFrom = {
-                year: Number(fromYear),
-                month: Number(fromMonth)
-            };
+            transactionProperties.monthlyTransactionProperties.monthFrom = transaction.monthFrom;
             if (transaction.monthTo) {
-                const [toYear, toMonth] = transaction.monthTo.split('-');
-                transactionProperties.monthlyTransactionProperties.monthTo = {
-                    year: Number(toYear),
-                    month: Number(toMonth)
-                };
+                transactionProperties.monthlyTransactionProperties.monthTo = transaction.monthTo;
             }
             isMonthlyTransaction.value = true;
         }
@@ -151,20 +143,14 @@ function submit() {
                 throw Error('`monthFrom` is empty');
             }
 
-            if (
-                monthTo &&
-                new Date(monthTo.year, monthTo.month - 1) <=
-                    new Date(monthFrom.year, monthFrom.month - 1)
-            ) {
+            if (monthTo && new Date(monthTo) <= new Date(monthFrom)) {
                 throw Error('`monthTo` is before than `monthFrom`');
             }
 
             payload = {
                 ...basePayload,
-                monthFrom: dateToYearMonth(new Date(monthFrom.year, monthFrom.month - 1)),
+                monthFrom: monthFrom,
                 monthTo: monthTo
-                    ? dateToYearMonth(new Date(monthTo.year, monthTo.month - 1))
-                    : undefined
             };
         } else {
             let date: Date;
