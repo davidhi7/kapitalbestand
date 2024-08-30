@@ -1,8 +1,10 @@
-import { InferAttributes } from 'sequelize';
+import type { Timestamps } from './commonTypes.js';
 
-import { Category as CategoryClass, Shop as ShopClass } from '../database/db.js';
+type CategoryShop = {
+    id: number;
+    name: string;
+    UserId: number;
+} & Timestamps;
 
-type Category = Omit<InferAttributes<CategoryClass>, 'Transactions' | 'User'>;
-type Shop = Omit<InferAttributes<ShopClass>, 'Transactions' | 'User'>;
-
-export { Category, Shop };
+export type Category = CategoryShop;
+export type Shop = CategoryShop;
