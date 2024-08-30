@@ -1,20 +1,15 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 
-import { dateToIsoDate, dateToYearMonth } from '@/common';
+import { dateToIsoDate } from '@/common';
 import TextInput from '@/components/input/TextInput.vue';
-
-export interface MonthType {
-    year: number;
-    month: number;
-}
 
 defineOptions({
     inheritAttrs: false
 });
 
 const rawInput = ref('');
-const model = defineModel<MonthType>();
+const model = defineModel<string>();
 
 // Firefox desktop does not support input[type='month'] tags on desktop and falls back to a simple text input.
 const testElement = document.createElement('input');
@@ -27,10 +22,10 @@ function handleInput() {
         model.value = undefined;
         return;
     }
-    const [year, month, day] = value.split('-').map(Number);
-    model.value = { year, month };
-    if (!browserSupport && day !== 1) {
-        rawInput.value = dateToIsoDate(new Date(year, month));
+    const [year, month, day] = value.split('-');
+    model.value = `${year}-${month.padStart(2, '0')}`;
+    if (!browserSupport && Number(day) !== 1) {
+        rawInput.value = dateToIsoDate(new Date(model.value));
     }
 }
 
@@ -43,9 +38,9 @@ watch(
         }
 
         if (browserSupport) {
-            rawInput.value = dateToYearMonth(new Date(value.year, value.month));
+            rawInput.value = value;
         } else {
-            rawInput.value = dateToIsoDate(new Date(value.year, value.month - 1));
+            rawInput.value = `${value}-01`;
         }
     },
     { immediate: true }
