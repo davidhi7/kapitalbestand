@@ -11,15 +11,15 @@ import AbstractTransactionController, {
 import { buildWhereConditions } from './transaction-utils.js';
 
 export interface MonthlyTransactionCreateParameters extends TransactionCreateParameters {
-    monthFrom: Date;
-    monthTo?: Date;
+    monthFrom: string;
+    monthTo?: string;
 }
 
 export interface MonthlyTransactionQueryParameters
     extends TransactionQueryParameters,
         BaseFetchParameters {
-    monthFrom?: Date;
-    monthTo?: Date;
+    monthFrom?: string;
+    monthTo?: string | null;
 }
 
 class MonthlyTransactionController extends AbstractTransactionController<MonthlyTransaction> {
@@ -35,10 +35,8 @@ class MonthlyTransactionController extends AbstractTransactionController<Monthly
         const instance = await MonthlyTransaction.create(
             {
                 UserId: user.id,
-                // TODO what was I thinking?
-                // even though monthFrom should be a valid 'YYYY-MM' value, in case it is not this still leads to an SQL Error
-                monthFrom: monthFrom ? new Date(monthFrom) : null,
-                monthTo: monthTo ? new Date(monthTo) : null,
+                monthFrom,
+                monthTo,
                 Transaction: {
                     isExpense: isExpense,
                     amount: amount,
@@ -61,15 +59,21 @@ class MonthlyTransactionController extends AbstractTransactionController<Monthly
         offset: number,
         body: MonthlyTransactionQueryParameters
     ): Promise<MonthlyTransaction[]> {
-        let whereConditions = {};
         const { isExpense, monthFrom, monthTo, amountFrom, amountTo, CategoryId, ShopId } = body;
-        whereConditions = buildWhereConditions(user, {
-            monthLimit: [monthFrom, monthTo],
-            amountLimit: [amountFrom, amountTo],
-            CategoryId: CategoryId,
-            ShopId: ShopId,
-            isExpense: isExpense
-        });
+        let whereConditions = {};
+        try {
+            whereConditions = buildWhereConditions(user, {
+                monthFrom,
+                monthTo,
+                amountFrom,
+                amountTo,
+                CategoryId: CategoryId,
+                ShopId: ShopId,
+                isExpense: isExpense
+            });
+        } catch (error) {
+            return [];
+        }
 
         const orderRules: Order = [];
         const order = body.order ?? 'ASC';

@@ -25,8 +25,8 @@ Fetch the monthly transaction with the corresponding id.
     "status": "success",
     "data": {
         "id": 1,
-        "monthFrom": "2022-01-01",
-        "monthTo": "2023-12-01",
+        "monthFrom": "2022-01",
+        "monthTo": "2023-12",
         "createdAt": "2022-12-06T16:56:30.790Z",
         "updatedAt": "2022-12-06T16:56:30.790Z",
         "TransactionId": 1,

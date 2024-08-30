@@ -2,11 +2,13 @@ import {
     AllowNull,
     BelongsTo,
     Column,
+    CreatedAt,
     DataType,
     DefaultScope,
     ForeignKey,
     Model,
-    Table
+    Table,
+    UpdatedAt
 } from 'sequelize-typescript';
 
 import Category from './Category.js';
@@ -28,20 +30,26 @@ export default class OneoffTransaction extends Model {
 
     @AllowNull(false)
     @Column(DataType.DATEONLY)
-    declare date: Date;
+    declare date: string;
 
     @ForeignKey(() => User)
     @AllowNull(false)
     @Column
     declare UserId: number;
 
-    @BelongsTo(() => Transaction)
-    declare Transaction: ReturnType<() => Transaction>;
+    @BelongsTo(() => User)
+    declare User: ReturnType<() => User>;
 
     @ForeignKey(() => Transaction)
     @Column
     declare TransactionId: number;
 
-    @BelongsTo(() => User)
-    declare User: ReturnType<() => User>;
+    @BelongsTo(() => Transaction)
+    declare Transaction: ReturnType<() => Transaction>;
+
+    @CreatedAt
+    declare createdAt: Date;
+
+    @UpdatedAt
+    declare updatedAt: Date;
 }

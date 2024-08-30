@@ -16,16 +16,16 @@ export type TransactionCreateParameters = {
     description?: string;
 };
 
-export type TransactionQueryParameters = {
-    isExpense?: boolean;
-    amountFrom?: number;
-    amountTo?: number;
-    description?: string;
-    CategoryId?: number;
-    ShopId?: number;
-    orderKey?: 'time' | 'amount' | 'Category' | 'Shop';
-    order?: 'ASC' | 'DESC';
-};
+export type TransactionQueryParameters = Partial<{
+    isExpense: boolean;
+    amountFrom: number;
+    amountTo: number;
+    description: string;
+    CategoryId: number;
+    ShopId: number;
+    orderKey: 'time' | 'amount' | 'Category' | 'Shop';
+    order: 'ASC' | 'DESC';
+}>;
 
 export default class AbstractTransactionController<Type extends GenericTransaction> {
     model: ModelStatic<any>;

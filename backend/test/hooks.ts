@@ -96,10 +96,8 @@ export const mochaHooks = {
             await MonthlyTransaction.create(
                 {
                     UserId: defaultUser.id,
-                    monthFrom: new Date(monthlyTransaction.monthFrom),
-                    monthTo: monthlyTransaction.monthTo
-                        ? new Date(monthlyTransaction.monthTo)
-                        : null,
+                    monthFrom: monthlyTransaction.monthFrom,
+                    monthTo: monthlyTransaction.monthTo,
                     Transaction: {
                         isExpense: monthlyTransaction.isExpense,
                         amount: monthlyTransaction.amount,

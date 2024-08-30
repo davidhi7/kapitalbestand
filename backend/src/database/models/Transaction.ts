@@ -2,17 +2,16 @@ import {
     AllowNull,
     BelongsTo,
     Column,
+    CreatedAt,
     DataType,
     DefaultScope,
     ForeignKey,
-    HasOne,
     Model,
-    Table
+    Table,
+    UpdatedAt
 } from 'sequelize-typescript';
 
 import Category from './Category.js';
-import MonthlyTransaction from './MonthlyTransaction.js';
-import OneoffTransaction from './OneoffTransaction.js';
 import Shop from './Shop.js';
 
 @DefaultScope(() => ({
@@ -28,9 +27,7 @@ export default class Transaction extends Model {
 
     @AllowNull(false)
     @Column
-    get amount(): number {
-        return Number(this.getDataValue('amount'));
-    }
+    declare amount: number;
 
     @AllowNull(true)
     @Column(DataType.TEXT)
@@ -52,9 +49,9 @@ export default class Transaction extends Model {
     @BelongsTo(() => Shop)
     declare Shop: ReturnType<() => Shop>;
 
-    @HasOne(() => OneoffTransaction)
-    declare OneoffTransaction: OneoffTransaction;
+    @CreatedAt
+    declare createdAt: Date;
 
-    @HasOne(() => MonthlyTransaction)
-    declare MonthlyTransaction: MonthlyTransaction;
+    @UpdatedAt
+    declare updatedAt: Date;
 }

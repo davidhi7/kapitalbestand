@@ -1,18 +1,14 @@
 import {
     AllowNull,
     Column,
+    CreatedAt,
     DefaultScope,
-    HasMany,
     Model,
     Scopes,
     Table,
-    Unique
+    Unique,
+    UpdatedAt
 } from 'sequelize-typescript';
-
-import Category from './Category.js';
-import MonthlyTransaction from './MonthlyTransaction.js';
-import OneoffTransaction from './OneoffTransaction.js';
-import Shop from './Shop.js';
 
 @DefaultScope(() => ({
     attributes: {
@@ -39,15 +35,9 @@ export default class User extends Model {
     @Column
     declare hash: string;
 
-    @HasMany(() => Category)
-    declare Categories: Category[];
+    @CreatedAt
+    declare createdAt: Date;
 
-    @HasMany(() => Shop)
-    declare Shops: Shop[];
-
-    @HasMany(() => OneoffTransaction)
-    declare OneoffTransactions: OneoffTransaction[];
-
-    @HasMany(() => MonthlyTransaction)
-    declare MonthlyTransactions: MonthlyTransaction[];
+    @UpdatedAt
+    declare updatedAt: Date;
 }

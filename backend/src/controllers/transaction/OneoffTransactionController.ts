@@ -12,14 +12,14 @@ import AbstractTransactionController, {
 import { buildWhereConditions } from './transaction-utils.js';
 
 export interface OneoffTransactionCreateParameters extends TransactionCreateParameters {
-    date: Date;
+    date: string;
 }
 
 export interface OneoffTransactionQueryParameters
     extends TransactionQueryParameters,
         BaseFetchParameters {
-    dateFrom?: Date;
-    dateTo?: Date;
+    dateFrom?: string;
+    dateTo?: string;
 }
 
 class OneoffTransactionController extends AbstractTransactionController<OneoffTransaction> {
@@ -50,16 +50,23 @@ class OneoffTransactionController extends AbstractTransactionController<OneoffTr
     }
 
     async fetch(user: User, limit: number, offset: number, body: OneoffTransactionQueryParameters) {
-        let whereConditions = {};
         const { isExpense, dateFrom, dateTo, amountFrom, amountTo, CategoryId, ShopId } = body;
-        whereConditions = buildWhereConditions(user, {
-            dateLimit: [dateFrom, dateTo],
-            amountLimit: [amountFrom, amountTo],
-            CategoryId: CategoryId,
-            ShopId: ShopId,
-            isExpense: isExpense
-        });
-
+        let whereConditions = {};
+        try {
+            whereConditions = buildWhereConditions(user, {
+                dateFrom,
+                dateTo,
+                amountFrom,
+                amountTo,
+                CategoryId: CategoryId,
+                ShopId: ShopId,
+                isExpense: isExpense
+            });
+    
+        } catch (error) {
+            return [];
+        }
+        
         const orderRules: Order = [];
         const order = body.order ?? 'ASC';
         const orderKey = body.orderKey ?? 'time';

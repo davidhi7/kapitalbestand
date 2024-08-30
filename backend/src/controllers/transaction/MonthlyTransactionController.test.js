@@ -12,7 +12,7 @@ describe('MonthlyTransactionController', function () {
             const user = await User.findOne();
             const attributes = {
                 isExpense: true,
-                monthFrom: new Date('2022-01'),
+                monthFrom: '2022-01',
                 monthTo: '2022-12',
                 description: 'test-transaction',
                 amount: 1,
@@ -37,7 +37,7 @@ describe('MonthlyTransactionController', function () {
             const user = await User.findOne();
             const attributes = {
                 isExpense: true,
-                monthFrom: new Date('2022-01'),
+                monthFrom: '2022-01',
                 monthTo: null,
                 description: 'test-transaction',
                 amount: 1,
@@ -117,7 +117,7 @@ describe('MonthlyTransactionController', function () {
         });
 
         describe('{ monthFrom }', function () {
-            it('should apply monthFrom (string) attribute correctly', async function () {
+            it('should apply monthFrom attribute correctly, fetch all transactions that do not end before the specified monthFrom', async function () {
                 const query = await monthlyTransactionController.fetch(
                     await User.findOne(),
                     100,
@@ -126,87 +126,45 @@ describe('MonthlyTransactionController', function () {
                         monthFrom: '2022-01'
                     }
                 );
-                expect(query).to.have.lengthOf(2);
+                expect(query).to.have.lengthOf(4);
                 query.forEach((t) => {
-                    expect(new Date(t.monthFrom)).to.be.at.least(new Date('2022-01'));
-                });
-            });
-
-            it('should apply monthFrom (date) attribute correctly', async function () {
-                const query = await monthlyTransactionController.fetch(
-                    await User.findOne(),
-                    100,
-                    0,
-                    {
-                        monthFrom: new Date('2022-01')
-                    }
-                );
-                expect(query).to.have.lengthOf(2);
-                query.forEach((t) => {
-                    expect(new Date(t.monthFrom)).to.be.at.least(new Date('2022-01'));
+                    expect(t.monthTo).to.satisfy((value) => {
+                        // null is an accepted value
+                        if (!value) return true;
+                        return new Date(value) >= new Date('2022-01');
+                    });
                 });
             });
         });
 
         describe('{ monthTo }', function () {
-            it('should apply monthTo (string) attribute correctly, get only mly transactions with monthTo higher or equal', async function () {
-                const query = await monthlyTransactionController.fetch(
-                    await User.findOne(),
-                    100,
-                    0,
-                    {
-                        monthTo: '2018-05'
+            it('should apply monthTo attribute correctly, fetch all mly transactions which do not start after the specified monthTo', async function () {
+                for (let monthToConstraint of ['2018-05', '2050-12']) {
+                    const query = await monthlyTransactionController.fetch(
+                        await User.findOne(),
+                        100,
+                        0,
+                        {
+                            monthTo: monthToConstraint
+                        }
+                    );
+                    switch (monthToConstraint) {
+                        case '2018-05':
+                            expect(query).to.have.lengthOf(1);
+                            break;
+                        case '2050-12':
+                            expect(query).to.have.lengthOf(5);
+                            break;
+                        default:
+                            throw new Error();
                     }
-                );
-                expect(query).to.have.lengthOf(1);
-                query.forEach((t) => {
-                    expect(new Date(t.monthTo)).to.be.at.least(new Date('2018-05'));
-                });
-            });
 
-            it('should apply monthTo (date) attribute correctly, get only mly transactions with monthTo higher or equal', async function () {
-                const query = await monthlyTransactionController.fetch(
-                    await User.findOne(),
-                    100,
-                    0,
-                    {
-                        monthTo: new Date('2018-05')
-                    }
-                );
-                expect(query).to.have.lengthOf(1);
-                query.forEach((t) => {
-                    expect(new Date(t.monthTo)).to.be.at.least(new Date('2018-05'));
-                });
-            });
-
-            it('should apply monthTo (string) attribute correctly, get only mly transactions with monthTo being null', async function () {
-                const query = await monthlyTransactionController.fetch(
-                    await User.findOne(),
-                    100,
-                    0,
-                    {
-                        monthTo: '2050-12'
-                    }
-                );
-                expect(query).to.have.lengthOf(2);
-                query.forEach((t) => {
-                    expect(t.monthTo).to.be.null;
-                });
-            });
-
-            it('should apply monthTo (date) attribute correctly, get only mly transactions with monthTo being null', async function () {
-                const query = await monthlyTransactionController.fetch(
-                    await User.findOne(),
-                    100,
-                    0,
-                    {
-                        monthTo: new Date('2050-12')
-                    }
-                );
-                expect(query).to.have.lengthOf(2);
-                query.forEach((t) => {
-                    expect(t.monthTo).to.be.null;
-                });
+                    query.forEach((t) => {
+                        expect(new Date(t.monthFrom)).to.be.lessThanOrEqual(
+                            new Date(monthToConstraint)
+                        );
+                    });
+                }
             });
 
             it('should apply monthTo == null attribute correctly, get only mly transactions with monthTo being null', async function () {
@@ -221,31 +179,29 @@ describe('MonthlyTransactionController', function () {
                     expect(t.monthTo).to.be.null;
                 });
             });
+        });
 
-            it('should return nothing if monthFrom > monthTo (using strings)', async function () {
-                const query = await monthlyTransactionController.fetch(
-                    await User.findOne(),
-                    100,
-                    0,
-                    {
-                        monthFrom: '2020-01',
-                        monthTo: '2019-12'
-                    }
-                );
-                expect(query).to.be.empty;
+        it('should return nothing if monthFrom > monthTo', async function () {
+            const query = await monthlyTransactionController.fetch(await User.findOne(), 100, 0, {
+                monthFrom: '2020-01',
+                monthTo: '2019-12'
             });
+            expect(query).to.be.empty;
+        });
 
-            it('should return nothing if monthFrom > monthTo (using dates)', async function () {
-                const query = await monthlyTransactionController.fetch(
-                    await User.findOne(),
-                    100,
-                    0,
-                    {
-                        monthFrom: new Date('2020-01'),
-                        monthTo: new Date('2019-12')
-                    }
-                );
-                expect(query).to.be.empty;
+        it('should apply monthFrom and monthTo correctly, fetching all transactions that occur in this timeframe', async () => {
+            const query = await monthlyTransactionController.fetch(await User.findOne(), 100, 0, {
+                monthFrom: '2021-01',
+                monthTo: '2022-01'
+            });
+            expect(query).to.be.length(2);
+            query.forEach((t) => {
+                expect(new Date(t.monthFrom)).to.be.lessThanOrEqual(new Date('2022-01'));
+                expect(t.monthTo).to.satisfy((value) => {
+                    // null is an expected value
+                    if (!value) return true;
+                    return new Date(t.monthTo) >= new Date(new Date('2021-01'));
+                });
             });
         });
 
@@ -326,7 +282,7 @@ describe('MonthlyTransactionController', function () {
             const user = await User.findOne();
             const test_data = {
                 isExpense: true,
-                monthFrom: new Date('2018-06'),
+                monthFrom: '2018-06',
                 description: 'test-transaction',
                 amount: '1',
                 CategoryId: (await Category.create({ name: 'test-category', UserId: user.id })).id,
