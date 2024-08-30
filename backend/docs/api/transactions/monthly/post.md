@@ -31,8 +31,8 @@ Create a new monthly transaction for the user.
     "status": "success",
     "data": {
         "id": 1,
-        "monthFrom": "2022-12-01",
-        "monthTo": "2023-01-01",
+        "monthFrom": "2022-12",
+        "monthTo": "2023-01",
         "createdAt": "2022-12-06T16:46:51.550Z",
         "updatedAt": "2022-12-06T16:46:51.550Z",
         "TransactionId": 1,

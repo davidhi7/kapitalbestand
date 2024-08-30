@@ -70,7 +70,7 @@
             "amount": 160000,
             "category": "income",
             "shop": "work",
-            "monthFrom": "2014-5",
+            "monthFrom": "2014-05",
             "monthTo": "2020-03"
         },
         {
@@ -92,7 +92,7 @@
             "amount": 999,
             "category": "music",
             "shop": "music streaming",
-            "monthFrom": "2022-1",
+            "monthFrom": "2022-10",
             "monthTo": "2022-10"
         },
         {
@@ -100,7 +100,7 @@
             "amount": 300000,
             "category": "income",
             "shop": "work",
-            "monthFrom": "2022-9"
+            "monthFrom": "2022-09"
         }
     ]
 }

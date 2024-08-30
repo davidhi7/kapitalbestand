@@ -16,7 +16,15 @@ import { Category, Shop } from '../../database/db.js';
 import { AuthenticatedRequest } from '../authenticatedSession.js';
 import { EndpointBuilder } from './EndpointBuilder.js';
 
-const monthPattern = /\d{4}-\d{1,2}/;
+function dateValidator(value: string) {
+    if (value.split('-').length !== 3) return false;
+    return !isNaN(new Date(value).getTime());
+}
+
+function monthValidator(value: string) {
+    if (value.split('-').length !== 2) return false;
+    return !isNaN(new Date(value).getTime());
+}
 
 function getCategoryShopValidator(model: CategoryOrShop) {
     // Typing { req } with { req: express.Request } doesn't stop Typescript from complaining
@@ -59,21 +67,18 @@ const oneoffTransactionRouter = new EndpointBuilder<
     .get(
         [
             ...transactionQueryValidators,
-            query('dateFrom').isISO8601().toDate().optional(),
-            query('dateTo').isISO8601().toDate().optional()
+            query('dateFrom').custom(dateValidator).optional(),
+            query('dateTo').custom(dateValidator).optional()
         ],
         OneoffTransactionController.fetch.bind(OneoffTransactionController)
     )
     .getId(OneoffTransactionController.getByUserAndId.bind(OneoffTransactionController))
     .post(
-        [...transactionCreateValidators, body('date').isISO8601({ strict: true }).toDate()],
+        [...transactionCreateValidators, body('date').custom(dateValidator)],
         OneoffTransactionController.create.bind(OneoffTransactionController)
     )
     .patch(
-        [
-            ...transactionUpdateValidators,
-            body('date').isISO8601({ strict: true }).toDate().optional()
-        ],
+        [...transactionUpdateValidators, body('date').custom(dateValidator).optional()],
         OneoffTransactionController.update.bind(OneoffTransactionController)
     )
     .delete(OneoffTransactionController.delete.bind(OneoffTransactionController))
@@ -86,8 +91,16 @@ const monthlyTransactionRouter = new EndpointBuilder<
     .get(
         [
             ...transactionQueryValidators,
-            query('monthFrom').matches(monthPattern).toDate().optional(),
-            query('monthTo').matches(monthPattern).toDate().optional()
+            query('monthFrom').custom(monthValidator).optional(),
+            query('monthTo')
+                .custom((monthTo: string) => {
+                    return monthTo === 'null' || monthValidator(monthTo);
+                })
+                .customSanitizer((monthTo: string) => {
+                    if (monthTo === 'null') return null;
+                    return monthTo;
+                })
+                .optional()
         ],
         MonthlyTransactionController.fetch.bind(MonthlyTransactionController)
     )
@@ -95,9 +108,9 @@ const monthlyTransactionRouter = new EndpointBuilder<
     .post(
         [
             ...transactionCreateValidators,
-            body('monthFrom').matches(monthPattern),
+            body('monthFrom').custom(monthValidator),
             body('monthTo')
-                .matches(monthPattern)
+                .custom(monthValidator)
                 .custom((monthTo, { req }) => {
                     return (
                         new Date(monthTo) >=
@@ -111,8 +124,8 @@ const monthlyTransactionRouter = new EndpointBuilder<
     .patch(
         [
             ...transactionUpdateValidators,
-            body('monthFrom').matches(monthPattern).optional(),
-            body('monthTo').matches(monthPattern).optional()
+            body('monthFrom').custom(monthValidator).optional(),
+            body('monthTo').custom(monthValidator).optional()
         ],
         MonthlyTransactionController.update.bind(MonthlyTransactionController)
     )

@@ -38,8 +38,8 @@ Note that the `isExpense` attribute cannot be modified.
     "status": "success",
     "data": {
         "id": 1,
-        "monthFrom": "2022-12-01",
-        "monthTo": "2023-01-01",
+        "monthFrom": "2022-12",
+        "monthTo": "2023-01",
         "createdAt": "2022-12-06T16:46:51.550Z",
         "updatedAt": "2022-12-06T16:47:00.000Z",
         "TransactionId": 1,

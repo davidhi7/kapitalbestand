@@ -2,11 +2,11 @@ import {
     AllowNull,
     BelongsTo,
     Column,
+    CreatedAt,
     ForeignKey,
-    HasMany,
     Model,
     Table,
-    Unique
+    UpdatedAt
 } from 'sequelize-typescript';
 
 import Transaction from './Transaction.js';
@@ -25,9 +25,12 @@ export default class Shop extends Model {
     @Column
     declare UserId: number;
 
-    @HasMany(() => Transaction)
-    declare Transactions: Transaction[];
-
     @BelongsTo(() => User)
     declare User: ReturnType<() => User>;
+
+    @CreatedAt
+    declare createdAt: Date;
+
+    @UpdatedAt
+    declare updatedAt: Date;
 }
