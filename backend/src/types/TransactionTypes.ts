@@ -1,60 +1,52 @@
-import { InferAttributes } from 'sequelize';
-
 import type {
-    MonthlyTransactionCreateParameters as FullMonthlyTransactionCreateParameters,
-    MonthlyTransactionQueryParameters as FullMonthlyTransactionQueryParameters
+    MonthlyTransactionCreateParameters,
+    MonthlyTransactionQueryParameters as MonthlyTransactionQueryParameters_
 } from '../controllers/transaction/MonthlyTransactionController.js';
 import type {
-    OneoffTransactionCreateParameters as FullOneoffTransactionCreateParameters,
-    OneoffTransactionQueryParameters as FullOneoffTransactionQueryParameters
+    OneoffTransactionCreateParameters,
+    OneoffTransactionQueryParameters as OneoffTransactionQueryParameters_
 } from '../controllers/transaction/OneoffTransactionController.js';
 import { BaseFetchParameters } from '../controllers/types.js';
-import {
-    MonthlyTransaction as MonthlyTransactionClass,
-    OneoffTransaction as OneoffTransactionClass,
-    Transaction as TransactionClass
-} from '../database/db.js';
+import type { Category, Shop } from './CategoryShopTypes.js';
+import type { Timestamps } from './commonTypes.js';
 
-type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+export { OneoffTransactionCreateParameters, MonthlyTransactionCreateParameters };
 
-type Transaction = Omit<InferAttributes<TransactionClass>, 'User'>;
-type OneoffTransaction = Omit<
-    InferAttributes<OneoffTransactionClass>,
-    'User' | 'Transaction' | 'date'
-> & {
+export type OneoffTransactionQueryParameters = Omit<
+    OneoffTransactionQueryParameters_,
+    keyof BaseFetchParameters
+> &
+    Partial<BaseFetchParameters>;
+export type MonthlyTransactionQueryParameters = Omit<
+    MonthlyTransactionQueryParameters_,
+    keyof BaseFetchParameters
+> &
+    Partial<BaseFetchParameters>;
+
+export type Transaction = {
+    id: number;
+    isExpense: boolean;
+    amount: number;
+    description: string;
+    CategoryId: number;
+    Category: Category;
+    ShopId?: number;
+    Shop?: Shop;
+} & Timestamps;
+
+export type OneoffTransaction = {
+    id: number;
+    date: string;
+    TransactionId: number;
     Transaction: Transaction;
-    date: string;
-};
-type MonthlyTransaction = Omit<
-    InferAttributes<MonthlyTransactionClass>,
-    'User' | 'Transaction' | 'monthFrom' | 'monthTo'
-> & { Transaction: Transaction; monthFrom: string; monthTo?: string };
+    UserId: number;
+} & Timestamps;
 
-type OneoffTransactionQueryParameters = Omit<
-    PartialBy<FullOneoffTransactionQueryParameters, keyof BaseFetchParameters>,
-    'dateFrom' | 'dateTo'
-> & { dateFrom?: string; dateTo?: string };
-
-type MonthlyTransactionQueryParameters = Omit<
-    PartialBy<FullMonthlyTransactionQueryParameters, keyof BaseFetchParameters>,
-    'monthFrom' | 'monthTo'
-> & { monthFrom?: string; monthTo?: string };
-
-type OneoffTransactionCreateParameters = Omit<FullOneoffTransactionCreateParameters, 'date'> & {
-    date: string;
-};
-
-type MonthlyTransactionCreateParameters = Omit<
-    FullMonthlyTransactionCreateParameters,
-    'monthFrom' | 'monthTo'
-> & { monthFrom: string; monthTo?: string };
-
-export {
-    MonthlyTransaction,
-    OneoffTransaction,
-    Transaction,
-    OneoffTransactionCreateParameters,
-    MonthlyTransactionCreateParameters,
-    MonthlyTransactionQueryParameters,
-    OneoffTransactionQueryParameters
-};
+export type MonthlyTransaction = {
+    id: number;
+    monthFrom: string;
+    monthTo: string | null;
+    TransactionId: number;
+    Transaction: Transaction;
+    UserId: number;
+} & Timestamps;
