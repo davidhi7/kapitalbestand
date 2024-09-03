@@ -4,6 +4,7 @@ interface State {
     authenticated: boolean;
     username: string | null;
     sessionTimeout: number | null;
+    refreshTimeoutId: number | null;
 }
 
 export enum AuthResponse {
@@ -18,12 +19,14 @@ export const useAuthStateStore = defineStore('AuthState', {
         return {
             authenticated: false,
             username: null,
-            sessionTimeout: null
+            sessionTimeout: null,
+            refreshTimeoutId: null
         };
     },
     actions: {
         async requestWhoAmI() {
             const authResponse = await this.parseAuthResponse(await fetch('/api/auth/whoami'));
+            this.setRefreshTimeout();
             this.dispatchAuthenticationEvents(authResponse);
             return authResponse;
         },
@@ -40,6 +43,7 @@ export const useAuthStateStore = defineStore('AuthState', {
                 }
             });
             const authResponse = await this.parseAuthResponse(response);
+            this.setRefreshTimeout();
             this.dispatchAuthenticationEvents(authResponse);
             return authResponse;
         },
@@ -72,7 +76,25 @@ export const useAuthStateStore = defineStore('AuthState', {
         },
 
         async refresh() {
-            // TODO implement
+            // TODO don't do any other requests when refresh is pending
+            const response = await fetch('/api/auth/refresh', {
+                method: 'GET'
+            });
+            await this.parseAuthResponse(response);
+            this.setRefreshTimeout();
+        },
+
+        setRefreshTimeout() {
+            if (this.refreshTimeoutId !== null) {
+                clearTimeout(this.refreshTimeoutId);
+            }
+            if (this.sessionTimeout) {
+                // Run one minute before session timeout
+                this.refreshTimeoutId = setTimeout(
+                    this.refresh,
+                    Math.max(0, this.sessionTimeout - Date.now() - 60 * 1000)
+                );
+            }
         }
     }
 });
