@@ -33,8 +33,8 @@ interface State {
     notificationStyle: NotificationStyle;
     notificationContent: string;
     currentAnimationStage: AnimationStage | null;
-    currentAnimation: any; // TODO
-    concurrentAnimation: any;
+    currentAnimation: Animation | null;
+    concurrentAnimation: Animation | null;
 }
 
 export default {
@@ -61,12 +61,12 @@ export default {
         mouseEnter() {
             // Pause the ongoing animation only if the current animation is timeout
             if (this.currentAnimationStage === AnimationStage.TIMEOUT) {
-                this.currentAnimation.pause();
+                this.currentAnimation!.pause();
             }
         },
         mouseLeave() {
             if (this.currentAnimationStage === AnimationStage.TIMEOUT) {
-                this.currentAnimation.play();
+                this.currentAnimation!.play();
             }
         },
         /**

@@ -110,8 +110,12 @@ watch(
 
 async function createCategoryShop(type: 'Category' | 'Shop', name: string) {
     submitLocks.value.add(`create${type}`);
-    transactionProperties[type] = await CategoryShopStore.create(type, name);
-    submitLocks.value.delete(`create${type}`);
+    try {
+        transactionProperties[type] = await CategoryShopStore.create(type, name);
+    } catch (e) {
+        console.log(e);
+        submitLocks.value.delete(`create${type}`);
+    }
 }
 
 function submit() {

@@ -88,8 +88,8 @@ function applyRules(filterRules: TransactionFilterRules) {
             <h1 class="flex-grow text-left">Liste</h1>
             <span class="material-symbols-outlined text-xl">sort</span>
             <select
-                class="rounded-md border-[1px] border-input-bg bg-main-bg p-2 transition-colors hover:bg-input-bg"
                 v-model="TransactionStore.transactionFilterRules.order"
+                class="rounded-md border-[1px] border-input-bg bg-main-bg p-2 transition-colors hover:bg-input-bg"
                 @change="fetchTransactions()"
             >
                 <option v-for="option in orderOptions" :value="option.value">
@@ -101,9 +101,9 @@ function applyRules(filterRules: TransactionFilterRules) {
         <aside class="row-start-2">
             <TransactionFilterForm
                 :default-filter-rules="Object.assign({}, TransactionStore.transactionFilterRules)"
+                :allow-minimizing="breakpoints.smaller('md').value"
                 @submit="applyRules"
                 @reset="applyRules"
-                :allow-minimizing="breakpoints.smaller('md').value"
             />
         </aside>
         <main class="row-start-2">
