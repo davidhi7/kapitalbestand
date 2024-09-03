@@ -7,6 +7,7 @@ import App from '@/components/App.vue';
 import router from '@/router';
 import { authEventTarget, useAuthStateStore } from '@/stores/AuthStateStore';
 import { useCategoryShopStore } from '@/stores/CategoryShopStore';
+import { useTransactionStore } from '@/stores/TransactionStore';
 
 const app = createApp(App);
 const pinia = createPinia();
@@ -16,9 +17,15 @@ app.use(pinia);
 
 const AuthStateStore = useAuthStateStore();
 const CategoryShopStore = useCategoryShopStore();
+const TransactionStore = useTransactionStore();
 
 authEventTarget.addEventListener('authentication', () => {
     CategoryShopStore.fetch();
+});
+
+authEventTarget.addEventListener('logout', () => {
+    CategoryShopStore.$reset();
+    TransactionStore.$reset();
 });
 
 AuthStateStore.requestWhoAmI().then(() => {
