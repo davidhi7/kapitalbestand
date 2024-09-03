@@ -15,11 +15,11 @@ import ResponseBuilder from './response-builder.js';
  */
 const setAuthenticated = (req, res, next) => {
     if (!res.locals.user) {
-        throw createError['500']();
+        throw createError[500]();
     }
     req.session.regenerate(function (err) {
         if (err) {
-            throw createError['500']();
+            throw createError[500]();
         }
         req.session.authenticated = true;
         req.session.user = res.locals.user;
@@ -136,7 +136,7 @@ router.get(
         res.locals.user = req.session.user;
         req.session.regenerate(function (err) {
             if (err) {
-                throw createError['500']();
+                return next(createError[500]());
             }
             next();
         });
@@ -145,10 +145,10 @@ router.get(
     sendSessionData
 );
 
-router.get('/auth/logout', (req, res) => {
+router.get('/auth/logout', (req, res, next) => {
     req.session.destroy(function (err) {
         if (err) {
-            throw createError['500']();
+            return next(createError[500]());
         }
         res.status(200).json(ResponseBuilder({ status: 'success' }));
     });
