@@ -81,7 +81,8 @@ h1 {
     --header-bg: hsl(0, 0%, 10%);
     --header-bg-hover: hsl(0, 0%, 18%);
 
-    --positive: hsl(130, 90%, 30%);
+    /* tailwind green-600 */
+    --positive: #16a34a;
     --negative: rgb(207, 34, 46);
 
     --gradient-0: #155799;
@@ -105,7 +106,8 @@ h1 {
         --header-bg: hsl(0, 0%, 5%);
         --header-bg-hover: hsl(0, 0%, 13%);
 
-        --positive: hsl(140, 50%, 40%);
+        /* tailwind emerald-500 */
+        --positive: #10b981;
         --negative: rgb(248, 81, 73);
 
         --gradient-0: #1f7fdf;

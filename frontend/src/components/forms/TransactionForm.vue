@@ -114,6 +114,12 @@ async function createCategoryShop(type: 'Category' | 'Shop', name: string) {
         transactionProperties[type] = await CategoryShopStore.create(type, name);
     } catch (e) {
         console.log(e);
+        eventEmitter.dispatchEvent(
+            new NotificationEvent(
+                NotificationStyle.ERROR,
+                `${type === 'Category' ? 'Kategorie' : 'Händler'} kann nicht erstellt werden`
+            )
+        );
         submitLocks.value.delete(`create${type}`);
     }
 }
