@@ -6,16 +6,18 @@ export async function up({ context }: { context: QueryInterface }) {
     await context.addIndex('Categories', {
         fields: ['name', 'UserId'],
         unique: true,
-        name: 'Categories_name__user_id'
+        name: 'Categories_name_UserId_idx'
     });
     await context.addIndex('Shops', {
         fields: ['name', 'UserId'],
         unique: true,
-        name: 'Shops_name__user_id'
+        name: 'Shops_name_UserId_idx'
     });
 }
 
 export async function down({ context }: { context: QueryInterface }) {
+    await context.removeIndex('Categories', 'Categories_name_UserId_idx');
+    await context.removeIndex('Shops', 'Shops_name_UserId_idx');
     await context.addConstraint('Categories', {
         type: 'unique',
         fields: ['name'],
@@ -26,6 +28,4 @@ export async function down({ context }: { context: QueryInterface }) {
         fields: ['name'],
         name: 'Shops_name_key'
     });
-    await context.removeIndex('Categories', 'Categories_name__user_id');
-    await context.removeIndex('Shops', 'Shops_name__user_id');
 }
