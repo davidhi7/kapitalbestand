@@ -3,3 +3,4 @@ dist/
 coverage/
 .*.env
 .idea/
+backend-v2/target/
