@@ -1,7 +1,8 @@
 use axum::{
     Json,
     extract::{
-        FromRequest, FromRequestParts, OptionalFromRequest, Request, rejection::JsonRejection,
+        FromRequest, FromRequestParts, OptionalFromRequest, Query, Request,
+        rejection::{JsonRejection, QueryRejection},
     },
     http::{StatusCode, request::Parts},
 };
@@ -85,5 +86,24 @@ where
             }
             Err(err) => Err(err),
         }
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct ValidQuery<T>(pub T);
+
+impl<T, S> FromRequestParts<S> for ValidQuery<T>
+where
+    T: DeserializeOwned + Validate,
+    S: Send + Sync,
+    Query<T>: FromRequestParts<S, Rejection = QueryRejection>,
+{
+    type Rejection = ServerError;
+
+    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+        let Query(value) =
+            <Query<T> as FromRequestParts<S>>::from_request_parts(parts, state).await?;
+        value.validate()?;
+        Ok(ValidQuery(value))
     }
 }

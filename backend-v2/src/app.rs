@@ -1,15 +1,23 @@
 use axum::Router;
 use axum_login::{
-    AuthManagerLayerBuilder,
+    AuthManagerLayerBuilder, login_required,
     tower_sessions::{Expiry, MemoryStore, SessionManagerLayer},
 };
 use sqlx::{Pool, Postgres, postgres::PgPoolOptions};
 use tokio::net::TcpListener;
 
 use crate::users::Backend;
+mod api;
 mod auth;
+mod categories_shops;
+mod transactions;
 
 pub struct App {
+    state: AppState,
+}
+
+#[derive(Clone)]
+struct AppState {
     database: Pool<Postgres>,
 }
 
@@ -22,12 +30,16 @@ impl App {
 
         sqlx::migrate!("./migrations").run(&pool).await?;
 
-        Ok(Self { database: pool })
+        Ok(Self {
+            state: AppState { database: pool },
+        })
     }
 
     #[cfg(test)]
     fn from_pool(database: Pool<Postgres>) -> Self {
-        App { database }
+        Self {
+            state: AppState { database },
+        }
     }
 
     fn router(&self) -> Router {
@@ -39,10 +51,19 @@ impl App {
             .with_expiry(Expiry::OnInactivity(auth::SESSION_MAX_AGE));
 
         let auth_layer =
-            AuthManagerLayerBuilder::new(Backend::new(self.database.clone()), session_layer)
+            AuthManagerLayerBuilder::new(Backend::new(self.state.database.clone()), session_layer)
                 .build();
 
         Router::new()
+            .nest(
+                "/api",
+                Router::new()
+                    .nest("/categories", categories_shops::categories_router())
+                    .nest("/shops", categories_shops::shops_router()),
+            )
+            .with_state(self.state.clone())
+            .route_layer(login_required!(Backend))
+            // The login_required macro above doesn't affect the auth routes, this module manually manages their routes
             .nest("/api/auth", auth::router())
             .route_layer(auth_layer)
     }
