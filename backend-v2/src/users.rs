@@ -4,12 +4,9 @@ use argon2::{
 };
 use async_trait::async_trait;
 use axum_login::{AuthUser, AuthnBackend, UserId};
+use chrono::{DateTime, Utc};
 use serde::Deserialize;
-use sqlx::{
-    Pool, Postgres,
-    prelude::FromRow,
-    types::chrono::{self},
-};
+use sqlx::{Pool, Postgres, prelude::FromRow};
 use tokio::task;
 use validator::Validate;
 
@@ -35,8 +32,8 @@ pub struct User {
     pub id: i32,
     pub username: String,
     pub hash: String,
-    pub created_at: chrono::DateTime<chrono::Utc>,
-    pub updated_at: chrono::DateTime<chrono::Utc>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 // Do not reveal password hash

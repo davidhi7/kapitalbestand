@@ -1,47 +1,31 @@
 use axum::{
     Json, Router,
-    extract::{FromRequest, Request, rejection::JsonRejection},
     http::StatusCode,
     response::IntoResponse,
     routing::{get, post},
 };
 use axum_login::{
-    AuthSession, login_required,
+    login_required,
     tower_sessions::{Session, cookie::time::Duration},
 };
-use serde::de::DeserializeOwned;
 use serde_json::json;
-use validator::Validate;
 
 use crate::{
+    app::api::ValidJson,
     errors::ServerError,
     users::{Backend, LoginCredentials, RegisterCredentials},
 };
 
-pub const SESSION_MAX_AGE: Duration = Duration::minutes(1);
+pub type AuthSession = axum_login::AuthSession<Backend>;
 
-#[derive(Debug, Clone, Copy, Default)]
-pub struct ValidJson<T>(pub T);
-
-impl<T, S> FromRequest<S> for ValidJson<T>
-where
-    T: DeserializeOwned + Validate,
-    S: Send + Sync,
-    Json<T>: FromRequest<S, Rejection = JsonRejection>,
-{
-    type Rejection = ServerError;
-
-    async fn from_request(req: Request, state: &S) -> Result<Self, Self::Rejection> {
-        let Json(value) = Json::<T>::from_request(req, state).await?;
-        value.validate()?;
-        Ok(ValidJson(value))
-    }
-}
+pub const SESSION_MAX_AGE: Duration = Duration::minutes(2);
 
 pub fn router() -> Router {
     Router::new()
         .route("/logout", get(logout))
         .route("/whoami", get(whoami))
+        // '/refresh' does the same as '/whoami', but is still there for backwards compatibility
+        .route("/refresh", get(whoami))
         .route_layer(login_required!(Backend))
         .route("/login", post(login))
         .route("/register", post(register))
@@ -61,7 +45,7 @@ fn collect_session_info<'a>(username: String, session: &'a Session) -> impl Into
 }
 
 pub async fn login(
-    mut auth_session: AuthSession<Backend>,
+    mut auth_session: AuthSession,
     session: Session,
     ValidJson(credentials): ValidJson<LoginCredentials>,
 ) -> Result<impl IntoResponse, ServerError> {
@@ -80,7 +64,7 @@ pub async fn login(
 }
 
 pub async fn register(
-    mut auth_session: AuthSession<Backend>,
+    mut auth_session: AuthSession,
     session: Session,
     ValidJson(credentials): ValidJson<RegisterCredentials>,
 ) -> Result<impl IntoResponse, ServerError> {
@@ -98,16 +82,14 @@ pub async fn register(
     ))
 }
 
-pub async fn logout(
-    mut auth_session: AuthSession<Backend>,
-) -> Result<impl IntoResponse, ServerError> {
+pub async fn logout(mut auth_session: AuthSession) -> Result<impl IntoResponse, ServerError> {
     auth_session.logout().await?;
 
     Ok(Json(json!({"status": "success"})))
 }
 
 pub async fn whoami(
-    auth_session: AuthSession<Backend>,
+    auth_session: AuthSession,
     session: Session,
 ) -> Result<impl IntoResponse, ServerError> {
     let Some(user) = auth_session.user else {

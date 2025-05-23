@@ -16,6 +16,8 @@ pub enum ServerError {
     #[error(transparent)]
     AxumJsonRejection(#[from] JsonRejection),
 
+    // axum-login errors can be of two types: (1) errors from crate::users::Error and (2) errors from tower-sessions
+    // Unfortunately we can't directly include these two error classes in this enum, as axum-login AuthnBackend functions return this error type instead
     #[error(transparent)]
     AxumAuthError(#[from] axum_login::Error<Backend>),
 
