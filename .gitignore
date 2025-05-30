@@ -1,7 +1,8 @@
+.vscode/
+.idea/
 node_modules/
 dist/
 coverage/
 .*.env
-.idea/
 backend-v2/target/
 backend-v2/scripts/private

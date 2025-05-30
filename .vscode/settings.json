@@ -1,7 +1,0 @@
-{
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "css.customData": [".vscode/tailwind.json"],
-    "[rust]": {
-        "editor.defaultFormatter": "rust-lang.rust-analyzer"
-    }
-}
