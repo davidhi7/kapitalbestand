@@ -84,12 +84,13 @@ impl Resource for Category {
         user: User,
         params: Self::CreateParams,
     ) -> Result<Option<Self>, Self::Error> {
-        // macro query_as! doesn't work here?
-        sqlx::query_as(
-            "INSERT INTO categories (user_id, name) VALUES ($1, $2) ON CONFLICT DO NOTHING RETURNING *",
-        ).bind(user.id).bind(params.name)
+        let result = sqlx::query_as!(
+            Category,
+            "INSERT INTO categories (user_id, name) VALUES ($1, $2) ON CONFLICT DO NOTHING RETURNING *", user.id, params.name)
         .fetch_optional(database)
-        .await
+        .await;
+
+        result
     }
 
     async fn fetch(
@@ -120,9 +121,12 @@ impl Resource for Category {
         user: User,
         id: i32,
     ) -> Result<Option<Self>, Self::Error> {
-        sqlx::query_as("SELECT * FROM categories WHERE user_id = $1 AND id = $2")
-            .bind(user.id)
-            .bind(id)
+        sqlx::query_as!(
+            Category,
+            "SELECT * FROM categories WHERE user_id = $1 AND id = $2",
+            user.id,
+            id
+        )
             .fetch_optional(database)
             .await
     }
@@ -133,10 +137,13 @@ impl Resource for Category {
         id: i32,
         params: Self::CreateParams,
     ) -> Result<Option<Self>, Self::Error> {
-        sqlx::query_as("UPDATE categories SET name = $3 WHERE user_id = $1 AND id = $2 RETURNING *")
-            .bind(user.id)
-            .bind(id)
-            .bind(params.name)
+        sqlx::query_as!(
+            Category,
+            "UPDATE categories SET name = $3 WHERE user_id = $1 AND id = $2 RETURNING *",
+            user.id,
+            id,
+            params.name
+        )
             .fetch_optional(database)
             .await
     }
@@ -174,11 +181,12 @@ impl Resource for Shop {
         user: User,
         params: Self::CreateParams,
     ) -> Result<Option<Self>, Self::Error> {
-        sqlx::query_as(
+        sqlx::query_as!(
+            Shop,
             "INSERT INTO shops (user_id, name) VALUES ($1, $2) ON CONFLICT DO NOTHING RETURNING *",
+            user.id,
+            params.name
         )
-        .bind(user.id)
-        .bind(params.name)
         .fetch_optional(database)
         .await
     }
@@ -211,9 +219,12 @@ impl Resource for Shop {
         user: User,
         id: i32,
     ) -> Result<Option<Self>, Self::Error> {
-        sqlx::query_as("SELECT * FROM shops WHERE user_id = $1 AND id = $2")
-            .bind(user.id)
-            .bind(id)
+        sqlx::query_as!(
+            Shop,
+            "SELECT * FROM shops WHERE user_id = $1 AND id = $2",
+            user.id,
+            id
+        )
             .fetch_optional(database)
             .await
     }
@@ -224,10 +235,13 @@ impl Resource for Shop {
         id: i32,
         params: Self::CreateParams,
     ) -> Result<Option<Self>, Self::Error> {
-        sqlx::query_as("UPDATE shops SET name = $3 WHERE user_id = $1 AND id = $2 RETURNING *")
-            .bind(user.id)
-            .bind(id)
-            .bind(params.name)
+        sqlx::query_as!(
+            Shop,
+            "UPDATE shops SET name = $3 WHERE user_id = $1 AND id = $2 RETURNING *",
+            user.id,
+            id,
+            params.name
+        )
             .fetch_optional(database)
             .await
     }
