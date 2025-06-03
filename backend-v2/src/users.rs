@@ -6,7 +6,7 @@ use async_trait::async_trait;
 use axum_login::{AuthUser, AuthnBackend, UserId};
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
-use sqlx::{Pool, Postgres, prelude::FromRow};
+use sqlx::{Pool, Postgres};
 use tokio::task;
 use validator::Validate;
 
@@ -27,7 +27,7 @@ pub struct LoginCredentials {
     pub password: String,
 }
 
-#[derive(Clone, FromRow)]
+#[derive(Clone)]
 pub struct User {
     pub id: i32,
     pub username: String,
@@ -143,8 +143,7 @@ impl AuthnBackend for Backend {
     }
 
     async fn get_user(&self, user_id: &UserId<Self>) -> Result<Option<Self::User>, Self::Error> {
-        let user = sqlx::query_as("SELECT * FROM users WHERE id = $1")
-            .bind(user_id)
+        let user = sqlx::query_as!(User, "SELECT * FROM users WHERE id = $1", user_id)
             .fetch_optional(&self.database)
             .await?;
 

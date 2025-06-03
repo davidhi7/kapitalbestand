@@ -11,16 +11,33 @@ use validator::Validate;
 
 use crate::{app::auth::AuthSession, errors::ServerError, users::User};
 
-fn default_limit() -> u32 {
-    1000
+pub mod json_field;
+
+#[derive(Clone, Copy, Debug, Deserialize)]
+#[serde(transparent)]
+pub struct Limit(pub u32);
+
+#[derive(Clone, Copy, Debug, Deserialize)]
+#[serde(transparent)]
+pub struct Offset(pub u32);
+
+impl Default for Limit {
+    fn default() -> Self {
+        Limit(1000)
+    }
 }
 
+impl Default for Offset {
+    fn default() -> Self {
+        Offset(0)
+    }
+}
 #[derive(Clone, Copy, Debug, Deserialize, Validate)]
 pub struct Pagination {
-    #[serde(default = "default_limit")]
-    pub limit: u32,
     #[serde(default)]
-    pub offset: u32,
+    pub limit: Limit,
+    #[serde(default)]
+    pub offset: Offset,
 }
 
 pub struct AuthUser(pub User);

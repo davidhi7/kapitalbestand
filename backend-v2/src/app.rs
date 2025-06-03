@@ -6,10 +6,15 @@ use axum_login::{
 use sqlx::{Pool, Postgres, postgres::PgPoolOptions};
 use tokio::net::TcpListener;
 
-use crate::users::Backend;
+use crate::{
+    app::categories_shops::{Category, Shop},
+    build_routes,
+    users::Backend,
+};
 mod api;
 mod auth;
 mod categories_shops;
+mod resource;
 mod transactions;
 
 pub struct App {
@@ -58,8 +63,8 @@ impl App {
             .nest(
                 "/api",
                 Router::new()
-                    .nest("/categories", categories_shops::categories_router())
-                    .nest("/shops", categories_shops::shops_router()),
+                    .nest("/categories", build_routes!(Category))
+                    .nest("/shops", build_routes!(Shop)),
             )
             .with_state(self.state.clone())
             .route_layer(login_required!(Backend))
