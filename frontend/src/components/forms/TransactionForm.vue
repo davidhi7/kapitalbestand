@@ -120,8 +120,8 @@ async function createCategoryShop(type: 'Category' | 'Shop', name: string) {
                 `${type === 'Category' ? 'Kategorie' : 'Händler'} kann nicht erstellt werden`
             )
         );
-        submitLocks.value.delete(`create${type}`);
     }
+    submitLocks.value.delete(`create${type}`);
 }
 
 function submit() {
