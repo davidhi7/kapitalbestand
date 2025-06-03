@@ -17,7 +17,7 @@ pub mod json_field;
 #[serde(transparent)]
 pub struct Limit(pub u32);
 
-#[derive(Clone, Copy, Debug, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, Deserialize)]
 #[serde(transparent)]
 pub struct Offset(pub u32);
 
@@ -27,11 +27,6 @@ impl Default for Limit {
     }
 }
 
-impl Default for Offset {
-    fn default() -> Self {
-        Offset(0)
-    }
-}
 #[derive(Clone, Copy, Debug, Deserialize, Validate)]
 pub struct Pagination {
     #[serde(default)]

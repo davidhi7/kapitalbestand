@@ -151,23 +151,23 @@ macro_rules! build_routes {
         Router::new()
             .route(
                 "/",
-                axum::routing::post(crate::app::resource::create::<$type>),
+                axum::routing::post($crate::app::resource::create::<$type>),
             )
             .route(
                 "/",
-                axum::routing::get(crate::app::resource::fetch::<$type>),
+                axum::routing::get($crate::app::resource::fetch::<$type>),
             )
             .route(
                 "/{id}",
-                axum::routing::get(crate::app::resource::get_by_id::<$type>),
+                axum::routing::get($crate::app::resource::get_by_id::<$type>),
             )
             .route(
                 "/{id}",
-                axum::routing::patch(crate::app::resource::update::<$type>),
+                axum::routing::patch($crate::app::resource::update::<$type>),
             )
             .route(
                 "/{id}",
-                axum::routing::delete(crate::app::resource::remove::<$type>),
+                axum::routing::delete($crate::app::resource::remove::<$type>),
             )
     }};
 }

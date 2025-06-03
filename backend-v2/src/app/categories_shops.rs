@@ -42,13 +42,14 @@ impl Resource for Category {
         user: &User,
         params: Self::CreateParams,
     ) -> Result<Option<Self::ReturnType>, Self::Error> {
-        let result = sqlx::query_as!(
+        sqlx::query_as!(
             Category,
-            "INSERT INTO categories (user_id, name) VALUES ($1, $2) ON CONFLICT DO NOTHING RETURNING *", user.id, params.name)
+            "INSERT INTO categories (user_id, name) VALUES ($1, $2) ON CONFLICT DO NOTHING RETURNING *", 
+            user.id,
+            params.name
+        )
         .fetch_optional(database)
-        .await;
-
-        result
+        .await
     }
 
     async fn fetch(

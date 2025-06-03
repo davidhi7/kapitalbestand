@@ -31,7 +31,7 @@ pub fn router() -> Router {
         .route("/register", post(register))
 }
 
-fn collect_session_info<'a>(username: String, session: &'a Session) -> impl IntoResponse + use<> {
+fn collect_session_info(username: &str, session: &Session) -> impl IntoResponse + use<> {
     let timeout = session.expiry_date().to_utc().unix_timestamp();
     Json(json!(
         {
@@ -59,7 +59,7 @@ pub async fn login(
     auth_session.login(&user).await?;
     Ok((
         StatusCode::OK,
-        collect_session_info(user.username, &session),
+        collect_session_info(&user.username, &session),
     ))
 }
 
@@ -78,7 +78,7 @@ pub async fn register(
     auth_session.login(&user).await?;
     Ok((
         StatusCode::CREATED,
-        collect_session_info(user.username, &session),
+        collect_session_info(&user.username, &session),
     ))
 }
 
@@ -99,7 +99,7 @@ pub async fn whoami(
     session.set_expiry(Some(axum_login::tower_sessions::Expiry::OnInactivity(
         SESSION_MAX_AGE,
     )));
-    Ok(collect_session_info(user.username, &session))
+    Ok(collect_session_info(&user.username, &session))
 }
 
 #[cfg(test)]
