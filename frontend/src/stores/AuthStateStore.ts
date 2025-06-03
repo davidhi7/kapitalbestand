@@ -1,9 +1,13 @@
 import { defineStore } from 'pinia';
 
 interface State {
+    /** True if logged in, otherwise false */
     authenticated: boolean;
+    /** username of currently logged in user, otherwise null */
     username: string | null;
+    /** session timeout timestamp in seconds, null if not authenticated */
     sessionTimeout: number | null;
+    /** setTimeout timer id, if currently active */
     refreshTimeoutId: number | null;
 }
 
@@ -37,7 +41,7 @@ export const useAuthStateStore = defineStore('AuthState', {
             }
             const response = await fetch(register ? '/api/auth/register' : '/api/auth/login', {
                 method: 'POST',
-                body: JSON.stringify({ username: username, password: password }),
+                body: JSON.stringify({ username, password }),
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -70,12 +74,15 @@ export const useAuthStateStore = defineStore('AuthState', {
         },
 
         async logout() {
+            // TODO handle return code
             fetch('/api/auth/logout');
             authEventTarget.dispatchEvent(new Event('logout'));
             this.$reset();
         },
 
         async refresh() {
+            this.refreshTimeoutId = null;
+
             // TODO don't do any other requests when refresh is pending
             const response = await fetch('/api/auth/refresh', {
                 method: 'GET'
@@ -92,7 +99,7 @@ export const useAuthStateStore = defineStore('AuthState', {
                 // Run one minute before session timeout
                 this.refreshTimeoutId = setTimeout(
                     this.refresh,
-                    Math.max(0, this.sessionTimeout - Date.now() - 60 * 1000)
+                    Math.max(0, this.sessionTimeout * 1000 - Date.now() - 60 * 1000)
                 );
             }
         }
