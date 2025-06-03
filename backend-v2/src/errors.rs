@@ -28,7 +28,7 @@ pub enum ServerError {
     SqlxError(#[from] sqlx::Error),
 
     #[error("{:?}", .0.canonical_reason())]
-    Generic(StatusCode),
+    Generic(StatusCode, Option<String>),
 }
 
 impl IntoResponse for ServerError {
@@ -46,7 +46,8 @@ impl IntoResponse for ServerError {
                 eprintln!("{self:?}");
                 (StatusCode::INTERNAL_SERVER_ERROR).into_response()
             }
-            ServerError::Generic(status) => status.into_response(),
+            ServerError::Generic(status, Some(message)) => (status, message).into_response(),
+            ServerError::Generic(status, None) => status.into_response(),
         }
     }
 }
@@ -67,6 +68,6 @@ impl From<session::Error> for ServerError {
 
 impl From<StatusCode> for ServerError {
     fn from(value: StatusCode) -> Self {
-        ServerError::Generic(value)
+        ServerError::Generic(value, None)
     }
 }

@@ -52,15 +52,16 @@ where
         let session = match AuthSession::from_request_parts(parts, state).await {
             Ok(session) => session,
             // Probably an internal server error for when AuthSession can't be created
+            // Don't pass message to response so we don't accidently leak any data
             Err(err) => {
                 eprintln!("{}", err.1);
-                return Err(ServerError::Generic(err.0));
+                return Err(ServerError::Generic(err.0, None));
             }
         };
 
         // If session.user is None, no user is logged in
         let Some(user) = session.user else {
-            return Err(ServerError::Generic(StatusCode::UNAUTHORIZED));
+            return Err(ServerError::Generic(StatusCode::UNAUTHORIZED, None));
         };
 
         Ok(AuthUser(user))

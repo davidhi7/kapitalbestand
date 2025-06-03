@@ -66,7 +66,7 @@ where
     let result = T::create(&state.database, user, params).await?;
 
     let Some(instance) = result else {
-        return Err(ServerError::Generic(StatusCode::BAD_REQUEST));
+        return Err(ServerError::Generic(StatusCode::BAD_REQUEST, None));
     };
 
     Ok((
@@ -102,7 +102,7 @@ where
     let result = T::get_by_id(&state.database, user, id as i32).await?;
 
     let Some(instance) = result else {
-        return Err(ServerError::Generic(StatusCode::NOT_FOUND));
+        return Err(ServerError::Generic(StatusCode::NOT_FOUND, None));
     };
 
     Ok(Json(json!({ "status": "success", "data": instance })))
@@ -121,7 +121,7 @@ where
     let result = T::update(&state.database, user, id as i32, params).await?;
 
     let Some(instance) = result else {
-        return Err(ServerError::Generic(StatusCode::NOT_FOUND));
+        return Err(ServerError::Generic(StatusCode::NOT_FOUND, None));
     };
 
     Ok((Json(json!( { "status": "success", "data": instance } )),))
@@ -141,6 +141,7 @@ where
     match result {
         0 => Err(ServerError::Generic(StatusCode::NOT_FOUND)),
         1 => Ok(Json(json!( { "status": "success" } ))),
+        0 => Err(ServerError::Generic(StatusCode::NOT_FOUND, None)),
         _ => panic!("More than 1 rows deleted in single request"),
     }
 }
