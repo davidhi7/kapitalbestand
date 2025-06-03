@@ -27,31 +27,31 @@ pub trait Resource {
 
     async fn create(
         database: &PgPool,
-        user: User,
+        user: &User,
         params: Self::CreateParams,
     ) -> Result<Option<Self::ReturnType>, Self::Error>;
 
     async fn fetch(
         database: &PgPool,
-        user: User,
+        user: &User,
         params: Self::FetchParams,
         pagination: Pagination,
     ) -> Result<Self::VecReturnType, Self::Error>;
 
     async fn get_by_id(
         database: &PgPool,
-        user: User,
+        user: &User,
         id: i32,
     ) -> Result<Option<Self::ReturnType>, Self::Error>;
 
     async fn update(
         database: &PgPool,
-        user: User,
+        user: &User,
         id: i32,
         params: Self::UpdateParams,
     ) -> Result<Option<Self::ReturnType>, Self::Error>;
 
-    async fn remove(database: &PgPool, user: User, id: i32) -> Result<u64, Self::Error>;
+    async fn remove(database: &PgPool, user: &User, id: i32) -> Result<u64, Self::Error>;
 }
 
 pub async fn create<T: Resource>(
@@ -63,7 +63,7 @@ where
     ServerError: From<T::Error>,
     T::ReturnType: Serialize,
 {
-    let result = T::create(&state.database, user, params).await?;
+    let result = T::create(&state.database, &user, params).await?;
 
     let Some(instance) = result else {
         return Err(ServerError::Generic(StatusCode::BAD_REQUEST, None));
@@ -85,7 +85,7 @@ where
     ServerError: From<T::Error>,
     T::VecReturnType: Serialize,
 {
-    let result = T::fetch(&state.database, user, params, pagination).await?;
+    let result = T::fetch(&state.database, &user, params, pagination).await?;
 
     Ok(Json(json!({ "status": "success", "data": result })))
 }
@@ -99,7 +99,7 @@ where
     ServerError: From<T::Error>,
     T::ReturnType: Serialize,
 {
-    let result = T::get_by_id(&state.database, user, id as i32).await?;
+    let result = T::get_by_id(&state.database, &user, id as i32).await?;
 
     let Some(instance) = result else {
         return Err(ServerError::Generic(StatusCode::NOT_FOUND, None));
@@ -118,7 +118,7 @@ where
     ServerError: From<T::Error>,
     T::ReturnType: Serialize,
 {
-    let result = T::update(&state.database, user, id as i32, params).await?;
+    let result = T::update(&state.database, &user, id as i32, params).await?;
 
     let Some(instance) = result else {
         return Err(ServerError::Generic(StatusCode::NOT_FOUND, None));
@@ -136,10 +136,9 @@ where
     ServerError: From<T::Error>,
     T::ReturnType: Serialize,
 {
-    let result = T::remove(&state.database, user, id as i32).await?;
+    let result = T::remove(&state.database, &user, id as i32).await?;
 
     match result {
-        0 => Err(ServerError::Generic(StatusCode::NOT_FOUND)),
         1 => Ok(Json(json!( { "status": "success" } ))),
         0 => Err(ServerError::Generic(StatusCode::NOT_FOUND, None)),
         _ => panic!("More than 1 rows deleted in single request"),

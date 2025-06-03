@@ -39,7 +39,7 @@ impl Resource for Category {
 
     async fn create(
         database: &PgPool,
-        user: User,
+        user: &User,
         params: Self::CreateParams,
     ) -> Result<Option<Self::ReturnType>, Self::Error> {
         let result = sqlx::query_as!(
@@ -53,7 +53,7 @@ impl Resource for Category {
 
     async fn fetch(
         database: &PgPool,
-        user: User,
+        user: &User,
         params: Self::FetchParams,
         Pagination { limit, offset }: Pagination,
     ) -> Result<Self::VecReturnType, Self::Error> {
@@ -79,7 +79,7 @@ impl Resource for Category {
 
     async fn get_by_id(
         database: &sqlx::PgPool,
-        user: User,
+        user: &User,
         id: i32,
     ) -> Result<Option<Self::ReturnType>, Self::Error> {
         sqlx::query_as!(
@@ -94,7 +94,7 @@ impl Resource for Category {
 
     async fn update(
         database: &sqlx::PgPool,
-        user: User,
+        user: &User,
         id: i32,
         params: Self::CreateParams,
     ) -> Result<Option<Self::ReturnType>, Self::Error> {
@@ -109,7 +109,7 @@ impl Resource for Category {
         .await
     }
 
-    async fn remove(database: &sqlx::PgPool, user: User, id: i32) -> Result<u64, Self::Error> {
+    async fn remove(database: &sqlx::PgPool, user: &User, id: i32) -> Result<u64, Self::Error> {
         sqlx::query_as!(
             Category,
             "DELETE FROM categories WHERE user_id = $1 AND id = $2",
@@ -141,7 +141,7 @@ impl Resource for Shop {
 
     async fn create(
         database: &PgPool,
-        user: User,
+        user: &User,
         params: Self::CreateParams,
     ) -> Result<Option<Self::ReturnType>, Self::Error> {
         sqlx::query_as!(
@@ -156,7 +156,7 @@ impl Resource for Shop {
 
     async fn fetch(
         database: &PgPool,
-        user: User,
+        user: &User,
         params: Self::FetchParams,
         Pagination { limit, offset }: Pagination,
     ) -> Result<Self::VecReturnType, Self::Error> {
@@ -179,7 +179,7 @@ impl Resource for Shop {
 
     async fn get_by_id(
         database: &sqlx::PgPool,
-        user: User,
+        user: &User,
         id: i32,
     ) -> Result<Option<Self::ReturnType>, Self::Error> {
         sqlx::query_as!(
@@ -194,7 +194,7 @@ impl Resource for Shop {
 
     async fn update(
         database: &sqlx::PgPool,
-        user: User,
+        user: &User,
         id: i32,
         params: Self::CreateParams,
     ) -> Result<Option<Self::ReturnType>, Self::Error> {
@@ -209,7 +209,7 @@ impl Resource for Shop {
         .await
     }
 
-    async fn remove(database: &sqlx::PgPool, user: User, id: i32) -> Result<u64, Self::Error> {
+    async fn remove(database: &sqlx::PgPool, user: &User, id: i32) -> Result<u64, Self::Error> {
         sqlx::query_as!(
             Shop,
             "DELETE FROM shops WHERE user_id = $1 AND id = $2",
