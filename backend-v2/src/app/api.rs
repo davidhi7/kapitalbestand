@@ -27,12 +27,19 @@ impl Default for Limit {
     }
 }
 
-#[derive(Clone, Copy, Debug, Deserialize, Validate)]
+#[derive(Clone, Copy, Debug, Default, Deserialize, Validate)]
 pub struct Pagination {
     #[serde(default)]
     pub limit: Limit,
     #[serde(default)]
     pub offset: Offset,
+}
+
+impl Pagination {
+    #[cfg(test)]
+    pub fn new(limit: Limit, offset: Offset) -> Self {
+        Pagination { limit, offset }
+    }
 }
 
 pub struct AuthUser(pub User);
