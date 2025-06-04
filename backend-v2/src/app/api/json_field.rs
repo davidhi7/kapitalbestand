@@ -1,7 +1,8 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
+use validator::ValidateLength;
 
 // https://github.com/serde-rs/serde/issues/1042#issuecomment-1656337230
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Serialize, PartialEq, Eq, Default)]
 pub enum JsonField<T> {
     /// key-value pair doesn't exist in the json source
     #[default]
@@ -20,9 +21,20 @@ impl<'de, T: Deserialize<'de>> Deserialize<'de> for JsonField<T> {
     }
 }
 
+impl ValidateLength<usize> for JsonField<String> {
+    fn length(&self) -> Option<usize> {
+        match self {
+            JsonField::Undefined => None,
+            JsonField::Defined(None) => None,
+            JsonField::Defined(Some(val)) => Some(val.len()),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use serde::Deserialize;
+    use validator::ValidateLength;
 
     use crate::app::api::json_field::JsonField;
 
@@ -48,5 +60,15 @@ mod tests {
     fn test_some() {
         let result: Result<TestStruct, _> = serde_json::from_str("{\"field\": 314}");
         assert!(result.is_ok_and(|v| matches!(v.field, JsonField::Defined(Some(314)))));
+    }
+
+    #[test]
+    fn test_validate_length() {
+        assert_eq!(JsonField::Undefined.length(), None);
+        assert_eq!(JsonField::Defined(None).length(), None);
+        assert_eq!(
+            JsonField::Defined(Some("hello world".to_owned())).length(),
+            Some(11)
+        );
     }
 }

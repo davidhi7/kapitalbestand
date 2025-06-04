@@ -5,6 +5,7 @@ use sqlx::{PgPool, Postgres, QueryBuilder};
 use validator::Validate;
 
 use crate::app::api::json_field::JsonField;
+use crate::app::api::pagination::Pagination;
 use crate::app::categories_shops::{Category, Shop};
 use crate::app::resource::Resource;
 use crate::errors::ServerError;
@@ -59,6 +60,7 @@ impl UnvalidatedShopId {
 }
 
 #[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct OneoffTransaction {
     id: i32,
     date: NaiveDate,
@@ -73,21 +75,27 @@ pub struct OneoffTransaction {
 }
 
 #[derive(Clone, Debug, Deserialize, Validate)]
+#[serde(rename_all = "camelCase")]
 pub struct OneoffTransactionCreateParams {
     date: NaiveDate,
     is_expense: bool,
-    amount: u32,
+    #[validate(range(min = 1))]
+    amount: i32,
+    #[validate(length(min = 1))]
     description: Option<String>,
     category_id: UnvalidatedCategoryId,
     shop_id: Option<UnvalidatedShopId>,
 }
 
 #[derive(Clone, Debug, Deserialize, Validate)]
+#[serde(rename_all = "camelCase")]
 pub struct OneoffTransactionQueryParams {
     is_expense: Option<bool>,
     date_from: Option<NaiveDate>,
     date_to: Option<NaiveDate>,
+    #[validate(range(min = 1))]
     amount_from: Option<i32>,
+    #[validate(range(min = 1))]
     amount_to: Option<i32>,
     category_id: Option<UnvalidatedCategoryId>,
     shop_id: Option<UnvalidatedShopId>,
@@ -98,10 +106,13 @@ pub struct OneoffTransactionQueryParams {
 }
 
 #[derive(Debug, Clone, Deserialize, Validate)]
+#[serde(rename_all = "camelCase")]
 pub struct OneoffTransactionUpdateParams {
     date: Option<NaiveDate>,
     is_expense: Option<bool>,
-    amount: Option<u32>,
+    #[validate(range(min = 1))]
+    amount: Option<i32>,
+    #[validate(length(min = 1))]
     description: JsonField<String>,
     category_id: Option<UnvalidatedCategoryId>,
     shop_id: JsonField<UnvalidatedShopId>,
@@ -120,15 +131,16 @@ impl Resource for OneoffTransaction {
         user: &User,
         params: Self::CreateParams,
     ) -> Result<Option<Self::ReturnType>, Self::Error> {
-        let result = sqlx::query_as!(OneoffTransaction, r#"
+        let result_id = sqlx::query_scalar!(
+            r#"
             INSERT INTO oneoff_transactions (date, user_id, is_expense, amount, description, category_id, shop_id) 
             VALUES ($1, $2, $3, $4, $5, $6, $7) 
-            RETURNING *
-        "#,
+            RETURNING id
+            "#,
             params.date,
             user.id,
             params.is_expense,
-            params.amount as i32,
+            params.amount,
             params.description,
             params.category_id.validate(&user, database).await?,
             match params.shop_id {
@@ -138,30 +150,30 @@ impl Resource for OneoffTransaction {
         .fetch_optional(database)
         .await?;
 
-        let Some(instance) = result else {
+        let Some(id) = result_id else {
             return Ok(None);
         };
 
-        Self::get_by_id(database, user, instance.id).await
+        Self::get_by_id(database, user, id).await
     }
 
     async fn fetch(
         database: &sqlx::PgPool,
         user: &User,
         params: Self::FetchParams,
-        pagination: super::api::Pagination,
+        pagination: Pagination,
     ) -> Result<Self::VecReturnType, Self::Error> {
         let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(
-            r#"
+            r"
                 WITH data AS (
                     SELECT ot.*,
-                        row_to_json(c.*) as category,
-                        row_to_json(s.*) as shop
+                        json_build_object('id', c.id, 'name', c.name) as category,
+                        json_build_object('id', s.id, 'name', s.name) as shop
                     FROM oneoff_transactions ot
                     INNER JOIN categories c ON ot.category_id = c.id
                     LEFT JOIN shops s ON ot.shop_id = s.id
                     WHERE ot.user_id = 
-        "#,
+        ",
         );
         query_builder.push_bind(user.id);
 
@@ -226,7 +238,20 @@ impl Resource for OneoffTransaction {
         query_builder.push(
             r#"
             )
-            SELECT COALESCE(json_agg(row_to_json(data.*)), '[]'::json)
+            SELECT COALESCE(json_agg(json_build_object(
+                'id', data.id,
+                'date', data.date,
+                'createdAt', data.created_at,
+                'updatedAt', data.updated_at,
+                'userId', data.user_id,
+                'isExpense', data.is_expense,
+                'amount', data.amount,
+                'description', data.description,
+                'categoryId', data.category_id,
+                'shopId', data.shop_id,
+                'category', data.category,
+                'shop', data.shop
+            )), '[]'::json)
             FROM data
             "#,
         );
@@ -245,26 +270,39 @@ impl Resource for OneoffTransaction {
         id: i32,
     ) -> Result<Option<Self::ReturnType>, Self::Error> {
         let result = sqlx::query_scalar!(
-            r#"
+            r"
             WITH data AS (
                 SELECT ot.*,
-                    row_to_json(c.*) as category,
-                    row_to_json(s.*) as shop
+                    json_build_object('id', c.id, 'name', c.name) as category,
+                    json_build_object('id', s.id, 'name', s.name) as shop
                 FROM oneoff_transactions ot
                 INNER JOIN categories c ON ot.category_id = c.id
                 LEFT JOIN shops s ON ot.shop_id = s.id
                 WHERE ot.user_id = $1 AND ot.id = $2
             )
-            SELECT row_to_json(data.*)
+            SELECT json_build_object(
+                'id', data.id,
+                'date', data.date,
+                'createdAt', data.created_at,
+                'updatedAt', data.updated_at,
+                'userId', data.user_id,
+                'isExpense', data.is_expense,
+                'amount', data.amount,
+                'description', data.description,
+                'categoryId', data.category_id,
+                'shopId', data.shop_id,
+                'category', data.category,
+                'shop', data.shop
+            )
             FROM data
-            "#,
+            ",
             user.id,
             id,
         )
         .fetch_optional(database)
         .await?;
 
-        Ok(result.map(|optional_json| optional_json.expect("json_build_object returned NULL")))
+        Ok(result.map(|optional_json| optional_json.expect("row_to_json returned NULL")))
     }
 
     async fn update(
@@ -335,7 +373,7 @@ impl Resource for OneoffTransaction {
         }
 
         if let Some(amount) = params.amount {
-            query = query.bind(amount as i32);
+            query = query.bind(amount);
         }
 
         if let JsonField::Defined(field) = params.description {
