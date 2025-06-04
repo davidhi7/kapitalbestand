@@ -6,41 +6,13 @@ use axum::{
     },
     http::{StatusCode, request::Parts},
 };
-use serde::{Deserialize, de::DeserializeOwned};
+use serde::de::DeserializeOwned;
 use validator::Validate;
 
 use crate::{app::auth::AuthSession, errors::ServerError, users::User};
 
 pub mod json_field;
-
-#[derive(Clone, Copy, Debug, Deserialize)]
-#[serde(transparent)]
-pub struct Limit(pub u32);
-
-#[derive(Clone, Copy, Debug, Default, Deserialize)]
-#[serde(transparent)]
-pub struct Offset(pub u32);
-
-impl Default for Limit {
-    fn default() -> Self {
-        Limit(1000)
-    }
-}
-
-#[derive(Clone, Copy, Debug, Default, Deserialize, Validate)]
-pub struct Pagination {
-    #[serde(default)]
-    pub limit: Limit,
-    #[serde(default)]
-    pub offset: Offset,
-}
-
-impl Pagination {
-    #[cfg(test)]
-    pub fn new(limit: Limit, offset: Offset) -> Self {
-        Pagination { limit, offset }
-    }
-}
+pub mod pagination;
 
 pub struct AuthUser(pub User);
 

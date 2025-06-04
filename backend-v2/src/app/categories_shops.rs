@@ -4,7 +4,7 @@ use sqlx::{PgPool, Postgres, QueryBuilder, prelude::FromRow};
 use validator::Validate;
 
 use crate::{
-    app::{api::Pagination, resource::Resource},
+    app::{api::pagination::Pagination, resource::Resource},
     users::User,
 };
 
@@ -68,9 +68,9 @@ impl Resource for Category {
 
         builder
             .push(" LIMIT ")
-            .push_bind(limit.0 as i32)
+            .push_bind(limit.0)
             .push(" OFFSET ")
-            .push_bind(offset.0 as i32);
+            .push_bind(offset.0);
 
         builder
             .build_query_as::<Category>()
@@ -171,9 +171,9 @@ impl Resource for Shop {
 
         builder
             .push(" LIMIT ")
-            .push_bind(limit.0 as i32)
+            .push_bind(limit.0)
             .push(" OFFSET ")
-            .push_bind(offset.0 as i32);
+            .push_bind(offset.0);
 
         builder.build_query_as::<Shop>().fetch_all(database).await
     }
@@ -226,7 +226,7 @@ impl Resource for Shop {
 #[cfg(test)]
 mod category_tests {
     use super::*;
-    use crate::app::api::{Limit, Offset, Pagination};
+    use crate::app::api::pagination::{Limit, Offset, Pagination};
     use crate::users::User;
     use sqlx::PgPool;
 
@@ -737,7 +737,7 @@ mod category_tests {
 #[cfg(test)]
 mod shop_tests {
     use super::*;
-    use crate::app::api::{Limit, Offset, Pagination};
+    use crate::app::api::pagination::{Limit, Offset, Pagination};
     use crate::users::User;
     use sqlx::PgPool;
 

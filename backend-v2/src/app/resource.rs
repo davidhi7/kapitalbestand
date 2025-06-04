@@ -1,6 +1,6 @@
 use axum::{
     Json,
-    extract::{Path, Query, State},
+    extract::{Path, State},
     http::StatusCode,
     response::IntoResponse,
 };
@@ -11,7 +11,7 @@ use sqlx::PgPool;
 use crate::{
     app::{
         AppState,
-        api::{AuthUser, Pagination, ValidJson, ValidQuery},
+        api::{AuthUser, ValidJson, ValidQuery, pagination::Pagination},
     },
     errors::ServerError,
     users::User,
@@ -78,7 +78,7 @@ where
 pub async fn fetch<T: Resource>(
     State(state): State<AppState>,
     AuthUser(user): AuthUser,
-    Query(pagination): Query<Pagination>,
+    ValidQuery(pagination): ValidQuery<Pagination>,
     ValidQuery(params): ValidQuery<T::FetchParams>,
 ) -> Result<impl IntoResponse, ServerError>
 where

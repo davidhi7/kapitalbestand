@@ -216,12 +216,10 @@ impl Resource for OneoffTransaction {
             Ordering::Desc => query_builder.push(" DESC, id DESC"),
         };
 
-        query_builder
-            .push(" LIMIT ")
-            .push_bind(pagination.limit.0 as i32);
+        query_builder.push(" LIMIT ").push_bind(pagination.limit.0);
         query_builder
             .push(" OFFSET ")
-            .push_bind(pagination.offset.0 as i32);
+            .push_bind(pagination.offset.0);
 
         // Close the CTE and add the main SELECT
         // `json_agg` returns null when applied to an empty set of rows, so use COALESCE
