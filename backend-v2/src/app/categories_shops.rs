@@ -9,12 +9,14 @@ use crate::{
 };
 
 #[derive(Debug, Clone, Deserialize, Validate)]
+#[serde(deny_unknown_fields)]
 pub struct CategoryShopCreate {
     #[validate(length(min = 1))]
     name: String,
 }
 
 #[derive(Debug, Clone, Deserialize, Validate)]
+#[serde(deny_unknown_fields)]
 pub struct CategoryShopFetch {
     #[validate(length(min = 1))]
     name: Option<String>,
