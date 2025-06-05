@@ -148,26 +148,14 @@ where
 #[macro_export]
 macro_rules! build_routes {
     ($type:ty) => {{
+        use axum::routing::{delete, get, patch, post};
+        use $crate::app::resource::{create, fetch, get_by_id, remove, update};
+
         Router::new()
-            .route(
-                "/",
-                axum::routing::post($crate::app::resource::create::<$type>),
-            )
-            .route(
-                "/",
-                axum::routing::get($crate::app::resource::fetch::<$type>),
-            )
-            .route(
-                "/{id}",
-                axum::routing::get($crate::app::resource::get_by_id::<$type>),
-            )
-            .route(
-                "/{id}",
-                axum::routing::patch($crate::app::resource::update::<$type>),
-            )
-            .route(
-                "/{id}",
-                axum::routing::delete($crate::app::resource::remove::<$type>),
-            )
+            .route("/", post(create::<$type>))
+            .route("/", get(fetch::<$type>))
+            .route("/{id}", get(get_by_id::<$type>))
+            .route("/{id}", patch(update::<$type>))
+            .route("/{id}", delete(remove::<$type>))
     }};
 }
