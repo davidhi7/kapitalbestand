@@ -1,5 +1,20 @@
 use serde::{Deserialize, Serialize};
-use validator::{Validate, ValidateRange};
+use validator::Validate;
+
+#[macro_export]
+macro_rules! validate_newtype_range {
+    ($type:ty, $numeric_type:ty) => {
+        impl validator::ValidateRange<$numeric_type> for $type {
+            fn greater_than(&self, max: $numeric_type) -> Option<bool> {
+                Some(self.0 > max)
+            }
+
+            fn less_than(&self, min: $numeric_type) -> Option<bool> {
+                Some(self.0 < min)
+            }
+        }
+    };
+}
 
 #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 #[serde(transparent)]
@@ -11,29 +26,12 @@ impl Default for Limit {
     }
 }
 
-impl ValidateRange<i32> for Limit {
-    fn greater_than(&self, max: i32) -> Option<bool> {
-        Some(self.0 > max)
-    }
-
-    fn less_than(&self, min: i32) -> Option<bool> {
-        Some(self.0 < min)
-    }
-}
-
 #[derive(Clone, Copy, Debug, Default, Deserialize, Serialize)]
 #[serde(transparent)]
 pub struct Offset(pub i32);
 
-impl ValidateRange<i32> for Offset {
-    fn greater_than(&self, max: i32) -> Option<bool> {
-        Some(self.0 > max)
-    }
-
-    fn less_than(&self, min: i32) -> Option<bool> {
-        Some(self.0 < min)
-    }
-}
+validate_newtype_range!(Limit, i32);
+validate_newtype_range!(Offset, i32);
 
 #[derive(Clone, Copy, Debug, Default, Deserialize, Validate)]
 pub struct Pagination {
