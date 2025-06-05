@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use validator::ValidateLength;
+use validator::{ValidateLength, ValidateRange};
 
 // https://github.com/serde-rs/serde/issues/1042#issuecomment-1656337230
 #[derive(Debug, Clone, Serialize, PartialEq, Eq, Default)]
@@ -21,12 +21,30 @@ impl<'de, T: Deserialize<'de>> Deserialize<'de> for JsonField<T> {
     }
 }
 
-impl ValidateLength<usize> for JsonField<String> {
-    fn length(&self) -> Option<usize> {
+impl<V: PartialOrd, T: ValidateLength<V>> ValidateLength<V> for JsonField<T> {
+    fn length(&self) -> Option<V> {
         match self {
             JsonField::Undefined => None,
             JsonField::Defined(None) => None,
-            JsonField::Defined(Some(val)) => Some(val.len()),
+            JsonField::Defined(Some(val)) => val.length(),
+        }
+    }
+}
+
+impl<V, T: ValidateRange<V>> ValidateRange<V> for JsonField<T> {
+    fn greater_than(&self, max: V) -> Option<bool> {
+        match self {
+            JsonField::Undefined => None,
+            JsonField::Defined(None) => None,
+            JsonField::Defined(Some(val)) => val.greater_than(max),
+        }
+    }
+
+    fn less_than(&self, min: V) -> Option<bool> {
+        match self {
+            JsonField::Undefined => None,
+            JsonField::Defined(None) => None,
+            JsonField::Defined(Some(val)) => val.less_than(min),
         }
     }
 }
@@ -34,7 +52,7 @@ impl ValidateLength<usize> for JsonField<String> {
 #[cfg(test)]
 mod tests {
     use serde::Deserialize;
-    use validator::ValidateLength;
+    use validator::{ValidateLength, ValidateRange};
 
     use crate::app::api::json_field::JsonField;
 
@@ -64,11 +82,29 @@ mod tests {
 
     #[test]
     fn test_validate_length() {
-        assert_eq!(JsonField::Undefined.length(), None);
-        assert_eq!(JsonField::Defined(None).length(), None);
+        assert_eq!(JsonField::Undefined::<String>.length(), None);
+        assert_eq!(JsonField::Defined::<String>(None).length(), None);
         assert_eq!(
             JsonField::Defined(Some("hello world".to_owned())).length(),
             Some(11)
+        );
+    }
+
+    #[test]
+    fn test_validate_range() {
+        assert_eq!(JsonField::Undefined::<i32>.greater_than(i32::MAX), None);
+        assert_eq!(JsonField::Undefined::<i32>.less_than(i32::MIN), None);
+
+        assert_eq!(JsonField::Defined::<i32>(None).greater_than(i32::MAX), None);
+        assert_eq!(JsonField::Defined::<i32>(None).less_than(i32::MIN), None);
+
+        assert_eq!(
+            JsonField::Defined::<i32>(Some(100)).greater_than(0),
+            Some(true)
+        );
+        assert_eq!(
+            JsonField::Defined::<i32>(Some(100)).less_than(0),
+            Some(false)
         );
     }
 }
