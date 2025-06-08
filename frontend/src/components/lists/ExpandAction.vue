@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
-
 import { shortDateTimeFormat } from '@/common';
+import { MonthlyTransaction, OneoffTransaction } from '@/stores/TransactionStore';
 import { isOneoffTransaction } from '@/stores/TransactionStore';
 
 const props = defineProps<{
@@ -15,8 +14,7 @@ const emit = defineEmits<{
 }>();
 
 const keyValuePairs = computed<Record<string, string>>(() => {
-    const { createdAt, updatedAt, id, Transaction } = props.transaction;
-    const { Category, Shop, isExpense } = Transaction;
+    const { isExpense, category, shop, createdAt, updatedAt, id } = props.transaction;
     const isOneoff = isOneoffTransaction(props.transaction);
     let type;
     if (!isOneoff) {
@@ -35,9 +33,9 @@ const keyValuePairs = computed<Record<string, string>>(() => {
 
     return {
         erstellt: shortDateTimeFormat.format(new Date(createdAt)),
-        Kategorie: Category.name,
+        Kategorie: category,
         aktualisiert: shortDateTimeFormat.format(new Date(updatedAt)),
-        Händler: Shop ? Shop.name : '-',
+        Händler: shop ? shop : '-',
         Identifikation: id.toString(),
         Typ: type
     };
@@ -45,8 +43,8 @@ const keyValuePairs = computed<Record<string, string>>(() => {
 </script>
 
 <template>
-    <section v-if="transaction.Transaction.description">
-        {{ transaction.Transaction.description }}
+    <section v-if="transaction.description">
+        {{ transaction.description }}
     </section>
     <section class="grid grid-cols-2">
         <div

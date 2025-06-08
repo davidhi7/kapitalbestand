@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
 import { breakpointsTailwind, useAsyncState, useBreakpoints } from '@vueuse/core';
 
 import { NotificationEvent, NotificationStyle, eventEmitter } from '@/components/Notification.vue';
@@ -9,43 +8,50 @@ import {
     monthlyTransactionColumnSettings,
     oneoffTransactionColumnSettings
 } from '@/components/lists/listConfig';
-import { TransactionFilterRules, useTransactionStore } from '@/stores/TransactionStore';
+import { MonthlyTransaction, OneoffTransaction } from '@/stores/TransactionStore';
+import {
+    OrderKey,
+    OrderSettings,
+    Ordering,
+    TransactionFilterRules,
+    useTransactionStore
+} from '@/stores/TransactionStore';
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const TransactionStore = useTransactionStore();
 
-const orderOptions: { text: string; value: TransactionFilterRules['order'] }[] = [
+const orderOptions: { text: string; value: OrderSettings }[] = [
     {
         text: 'Älteste zuerst',
-        value: { key: 'time', order: 'ASC' }
+        value: { orderKey: OrderKey.Time, ordering: Ordering.Asc }
     },
     {
         text: 'Neueste zuerst',
-        value: { key: 'time', order: 'DESC' }
+        value: { orderKey: OrderKey.Time, ordering: Ordering.Desc }
     },
     {
         text: 'Betrag, aufsteigend',
-        value: { key: 'amount', order: 'ASC' }
+        value: { orderKey: OrderKey.Amount, ordering: Ordering.Asc }
     },
     {
         text: 'Betrag, absteigend',
-        value: { key: 'amount', order: 'DESC' }
+        value: { orderKey: OrderKey.Amount, ordering: Ordering.Desc }
     },
     {
         text: 'Kategorie, aufsteigend',
-        value: { key: 'Category', order: 'ASC' }
+        value: { orderKey: OrderKey.Category, ordering: Ordering.Asc }
     },
     {
         text: 'Kategorie, absteigend',
-        value: { key: 'Category', order: 'DESC' }
+        value: { orderKey: OrderKey.Category, ordering: Ordering.Desc }
     },
     {
         text: 'Händler, aufsteigend',
-        value: { key: 'Shop', order: 'ASC' }
+        value: { orderKey: OrderKey.Shop, ordering: Ordering.Asc }
     },
     {
         text: 'Händler, absteigend',
-        value: { key: 'Shop', order: 'DESC' }
+        value: { orderKey: OrderKey.Shop, ordering: Ordering.Desc }
     }
 ];
 

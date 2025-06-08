@@ -1,11 +1,10 @@
 <script setup lang="ts" generic="T extends OneoffTransaction | MonthlyTransaction">
 import { ref } from 'vue';
 
-import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
-
 import ExpandAction from '@/components/lists/ExpandAction.vue';
 import { ColumnSettings } from '@/components/lists/listConfig';
 import VerticalSlidingTransition from '@/components/transitions/VerticalSlidingTransition.vue';
+import { MonthlyTransaction, OneoffTransaction } from '@/stores/TransactionStore';
 
 const props = defineProps<{
     transaction: T;

@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue';
 
-import { Category, Shop } from '@backend-types/CategoryShopTypes';
-import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
 import { useDateFormat, useNow } from '@vueuse/core';
 
-import { formatCurrency } from '@/common';
+import { dateToIsoDate, formatCurrency } from '@/common';
 import { NotificationEvent, NotificationStyle, eventEmitter } from '@/components/Notification.vue';
 import AutoComplete from '@/components/autocomplete/AutoComplete.vue';
 import GridForm from '@/components/forms/GridForm.vue';
@@ -13,8 +11,18 @@ import CurrencyInput from '@/components/input/CurrencyInput.vue';
 import LoadingButton from '@/components/input/LoadingButton.vue';
 import MonthInput from '@/components/input/MonthInput.vue';
 import TextInput from '@/components/input/TextInput.vue';
-import { useCategoryShopStore } from '@/stores/CategoryShopStore';
-import { isOneoffTransaction, useTransactionStore } from '@/stores/TransactionStore';
+import {
+    CategoryWithoutMeta,
+    ShopWithoutMeta,
+    useCategoryShopStore
+} from '@/stores/CategoryShopStore';
+import {
+    CreateParams,
+    MonthlyTransaction,
+    OneoffTransaction,
+    isOneoffTransaction,
+    useTransactionStore
+} from '@/stores/TransactionStore';
 
 const props = defineProps<{
     transaction?: OneoffTransaction | MonthlyTransaction;
@@ -28,34 +36,32 @@ const emit = defineEmits<{
 const CategoryShopStore = useCategoryShopStore();
 const TransactionStore = useTransactionStore();
 
+// TODO use global format
 const formattedDate = useDateFormat(useNow(), 'dddd, DD.MM.YYYY');
+
 const transactionProperties: {
-    monthlyTransactionProperties: {
-        monthFrom: string | undefined;
-        monthTo: string | undefined;
-    };
-    oneoffTransactionProperties: {
+    monthFrom: string | undefined;
+    monthTo: string | undefined;
+    date: {
         today: boolean;
         customDate: string;
     };
     isExpense: boolean;
     amount: number | undefined;
-    Category: Category | undefined;
-    Shop: Shop | undefined;
+    category: CategoryWithoutMeta | undefined;
+    shop: ShopWithoutMeta | undefined;
     description: string;
 } = reactive({
-    monthlyTransactionProperties: {
-        monthFrom: undefined,
-        monthTo: undefined
-    },
-    oneoffTransactionProperties: {
+    monthFrom: undefined,
+    monthTo: undefined,
+    date: {
         today: true,
         customDate: ''
     },
     isExpense: true,
     amount: undefined,
-    Category: undefined,
-    Shop: undefined,
+    category: undefined,
+    shop: undefined,
     description: ''
 });
 
@@ -63,7 +69,7 @@ const isMonthlyTransaction = ref(false);
 const isEditDialog = ref(false);
 
 const rawAmountInput = ref<string>('');
-type Lock = 'submit' | 'createCategory' | 'createShop';
+type Lock = 'submit' | 'create_category' | 'create_shop';
 const submitLocks = ref<Set<Lock>>(new Set());
 
 watch(
@@ -76,104 +82,95 @@ watch(
         }
         isEditDialog.value = true;
 
-        const { isExpense, amount, Category, Shop, description } = transaction.Transaction;
+        const { isExpense, amount, categoryId, category, shopId, shop, description } = transaction;
         transactionProperties.isExpense = isExpense;
         transactionProperties.amount = amount;
-        transactionProperties.description = description;
-        transactionProperties.Category = Category;
-        transactionProperties.Shop = Shop;
+        transactionProperties.description = description ?? '';
+        transactionProperties.category = { id: categoryId, name: category };
+        transactionProperties.shop =
+            shopId != undefined && shop != undefined ? { id: shopId, name: shop } : undefined;
         rawAmountInput.value = formatCurrency(amount);
 
         if (isOneoffTransaction(transaction)) {
-            var now = new Date();
-            var today = new Date(
-                Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
-            );
-
-            if (today.getTime() === new Date(transaction.date).getTime()) {
-                transactionProperties.oneoffTransactionProperties.today = true;
+            if (transaction.date == dateToIsoDate(new Date())) {
+                transactionProperties.date.today = true;
             } else {
-                transactionProperties.oneoffTransactionProperties.today = false;
-                transactionProperties.oneoffTransactionProperties.customDate = transaction.date;
+                transactionProperties.date.today = false;
+                transactionProperties.date.customDate = transaction.date;
             }
             isMonthlyTransaction.value = false;
         } else {
-            transactionProperties.monthlyTransactionProperties.monthFrom = transaction.monthFrom;
-            if (transaction.monthTo) {
-                transactionProperties.monthlyTransactionProperties.monthTo = transaction.monthTo;
-            }
+            transactionProperties.monthFrom = transaction.monthFrom;
+            transactionProperties.monthTo = transaction.monthTo;
             isMonthlyTransaction.value = true;
         }
     },
     { immediate: true }
 );
 
-async function createCategoryShop(type: 'Category' | 'Shop', name: string) {
-    submitLocks.value.add(`create${type}`);
+async function createCategoryShop(type: 'category' | 'shop', name: string) {
+    submitLocks.value.add(`create_${type}`);
     try {
-        transactionProperties[type] = await CategoryShopStore.create(type, name);
+        transactionProperties[`${type}`] = await CategoryShopStore.create(type, name);
     } catch (e) {
         console.log(e);
         eventEmitter.dispatchEvent(
             new NotificationEvent(
                 NotificationStyle.ERROR,
-                `${type === 'Category' ? 'Kategorie' : 'Händler'} kann nicht erstellt werden`
+                `${type === 'category' ? 'Kategorie' : 'Händler'} kann nicht erstellt werden`
             )
         );
     }
-    submitLocks.value.delete(`create${type}`);
+    submitLocks.value.delete(`create_${type}`);
 }
 
 function submit() {
     submitLocks.value.add('submit');
 
     try {
-        const { isExpense, amount, Category, Shop, description } = transactionProperties;
+        const { isExpense, amount, category, shop, description } = transactionProperties;
 
-        if (!Category) {
+        if (category == undefined) {
             throw Error('`Category` is undefined');
         }
 
-        if (!amount) {
+        if (amount == undefined) {
             throw Error('`amount` is undefined');
         }
 
-        let payload;
         let basePayload = {
             isExpense,
             amount,
-            CategoryId: Category.id,
-            ShopId: Shop?.id,
+            categoryId: category.id,
+            shopId: shop?.id,
             description: description || undefined
         };
 
+        let payload;
         if (isMonthlyTransaction.value) {
-            const { monthFrom, monthTo } = transactionProperties.monthlyTransactionProperties;
+            const { monthFrom, monthTo } = transactionProperties;
             if (!monthFrom) {
                 throw Error('`monthFrom` is empty');
             }
 
             if (monthTo && new Date(monthTo) <= new Date(monthFrom)) {
-                throw Error('`monthTo` is before than `monthFrom`');
+                throw Error('`monthTo` is before `monthFrom`');
             }
 
-            payload = {
-                ...basePayload,
-                monthFrom: monthFrom,
-                monthTo: monthTo
+            let mt_payload: CreateParams<'monthly'> = {
+                monthFrom,
+                monthTo,
+                ...basePayload
             };
+            payload = mt_payload;
         } else {
-            let date: Date;
-            const { today, customDate } = transactionProperties.oneoffTransactionProperties;
-            if (today) {
-                date = new Date();
-            } else {
-                date = new Date(customDate);
-            }
-            payload = {
+            const { today, customDate } = transactionProperties.date;
+            let date = today ? new Date() : new Date(customDate);
+            let ot_payload: CreateParams<'oneoff'> = {
                 ...basePayload,
-                date: date.toISOString().split('T')[0]
+                date: dateToIsoDate(date)
             };
+            payload = ot_payload;
         }
 
         if (props.transaction) {
@@ -251,7 +248,7 @@ function submit() {
                 <label for="current-date-radio">
                     <input
                         id="current-date-radio"
-                        v-model="transactionProperties.oneoffTransactionProperties.today"
+                        v-model="transactionProperties.date.today"
                         type="radio"
                         :value="true"
                     />
@@ -262,18 +259,18 @@ function submit() {
                 <label for="manual-date-radio">
                     <input
                         id="manual-date-radio"
-                        v-model="transactionProperties.oneoffTransactionProperties.today"
+                        v-model="transactionProperties.date.today"
                         type="radio"
                         :value="false"
                     />
                     am
                     <TextInput
                         id="manual-date-input"
-                        v-model="transactionProperties.oneoffTransactionProperties.customDate"
+                        v-model="transactionProperties.date.customDate"
                         class="ml-1 inline-block"
                         type="date"
-                        :required="!transactionProperties.oneoffTransactionProperties.today"
-                        @click="transactionProperties.oneoffTransactionProperties.today = false"
+                        :required="!transactionProperties.date.today"
+                        @click="transactionProperties.date.today = false"
                     />
                 </label>
             </div>
@@ -285,14 +282,11 @@ function submit() {
                 <label for="transaction-first">Erster Umsatz</label>
                 <MonthInput
                     id="transaction-first"
-                    v-model="transactionProperties.monthlyTransactionProperties.monthFrom"
+                    v-model="transactionProperties.monthFrom"
                     :required="true"
                 />
                 <label for="transaction-last">Letzter Umsatz</label>
-                <MonthInput
-                    id="transaction-last"
-                    v-model="transactionProperties.monthlyTransactionProperties.monthTo"
-                />
+                <MonthInput id="transaction-last" v-model="transactionProperties.monthTo" />
             </GridForm>
         </section>
 
@@ -304,19 +298,19 @@ function submit() {
 
                 <label for="category">Kategorie</label>
                 <AutoComplete
-                    v-model="transactionProperties.Category"
+                    v-model="transactionProperties.category"
                     :suggestions="CategoryShopStore.categories"
                     :required="true"
                     :suggest-create-object="true"
-                    @request-create="(name) => createCategoryShop('Category', name)"
+                    @request-create="(name) => createCategoryShop('category', name)"
                 />
 
                 <label for="shop">Händler</label>
                 <AutoComplete
-                    v-model="transactionProperties.Shop"
+                    v-model="transactionProperties.shop"
                     :suggestions="CategoryShopStore.shops"
                     :suggest-create-object="true"
-                    @request-create="(name) => createCategoryShop('Shop', name)"
+                    @request-create="(name) => createCategoryShop('shop', name)"
                 />
 
                 <label for="description">Beschreibung</label>

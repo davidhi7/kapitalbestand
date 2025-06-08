@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
-
 import TransactionForm from '@/components/forms/TransactionForm.vue';
+import { MonthlyTransaction, OneoffTransaction } from '@/stores/TransactionStore';
 
 const props = defineProps<{
     transaction: OneoffTransaction | MonthlyTransaction;

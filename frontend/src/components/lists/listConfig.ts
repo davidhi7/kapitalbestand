@@ -1,5 +1,3 @@
-import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
-
 import {
     formatCurrency,
     longDateFormat,
@@ -7,6 +5,7 @@ import {
     shortDateFormat,
     shortYearMonthFormat
 } from '@/common';
+import { MonthlyTransaction, OneoffTransaction } from '@/stores/TransactionStore';
 
 export const breakpoints = ['', 'sm', 'md', 'lg', 'xl', '2xl'] as const;
 export type Breakpoint = (typeof breakpoints)[number];
@@ -35,36 +34,29 @@ export interface ColumnSettings<T extends OneoffTransaction | MonthlyTransaction
 const genericCategories: ColumnSettings<OneoffTransaction | MonthlyTransaction>[] = [
     {
         title: 'Kategorie',
-        text_function: (transaction, style) => {
-            return String(transaction.Transaction.Category.name);
-        },
+        text_function: (transaction, style) => transaction.category ?? '',
         breakpoint: ''
     },
     {
         title: 'Händler',
-        text_function: (transaction, style) => {
-            if (transaction.Transaction.Shop) {
-                return String(transaction.Transaction.Shop.name);
-            }
-            return '';
-        },
+        text_function: (transaction, style) => transaction.shop ?? '',
         breakpoint: 'sm'
     },
     {
         title: 'Betrag',
         text_function: (transaction, style) => {
-            const prefix = transaction.Transaction.isExpense ? '' : '+';
-            return prefix + formatCurrency(transaction.Transaction.amount);
+            const prefix = transaction.isExpense ? '' : '+';
+            return prefix + formatCurrency(transaction.amount);
         },
         style_function: (transaction) => {
-            if (!transaction.Transaction.isExpense) return 'text-positive font-semibold';
+            if (!transaction.isExpense) return 'text-positive font-semibold';
             return 'font-semibold';
         },
         breakpoint: ''
     },
     {
         title: 'Beschreibung',
-        text_function: (transaction, style) => transaction.Transaction.description,
+        text_function: (transaction, style) => transaction.description ?? '-',
         breakpoint: 'xl'
     }
 ];

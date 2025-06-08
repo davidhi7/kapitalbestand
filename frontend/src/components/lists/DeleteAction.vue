@@ -1,11 +1,10 @@
 <script setup lang="ts" generic="T extends OneoffTransaction | MonthlyTransaction">
 import { ref } from 'vue';
 
-import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
-
 import { NotificationEvent, NotificationStyle, eventEmitter } from '@/components/Notification.vue';
 import LoadingButton from '@/components/input/LoadingButton.vue';
 import { ColumnSettings } from '@/components/lists/listConfig';
+import { MonthlyTransaction, OneoffTransaction } from '@/stores/TransactionStore';
 import { isOneoffTransaction, useTransactionStore } from '@/stores/TransactionStore';
 
 const props = defineProps<{

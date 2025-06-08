@@ -1,7 +1,6 @@
 <script setup lang="ts" generic="T extends OneoffTransaction | MonthlyTransaction">
 import { computed, ref, shallowRef, watch } from 'vue';
 
-import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
 import { breakpointsTailwind } from '@vueuse/core';
 
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
@@ -12,6 +11,7 @@ import TransactionListHeader from '@/components/lists/TransactionListHeader.vue'
 import TransactionListRow from '@/components/lists/TransactionListRow.vue';
 import type { Breakpoint, ColumnSettings, NotEmptyBreakpoint } from '@/components/lists/listConfig';
 import { breakpoints } from '@/components/lists/listConfig';
+import { MonthlyTransaction, OneoffTransaction } from '@/stores/TransactionStore';
 
 // Generate a unique CSS identifier for the table, because we may need to apply CSS rules specific to this component instance, without relying on scoped css
 const id = 'id' + Math.floor(Math.random() * 1_000_000).toString();

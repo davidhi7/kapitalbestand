@@ -1,36 +1,129 @@
 import { defineStore } from 'pinia';
 
-import { Category, Shop } from '@backend-types/CategoryShopTypes';
-import {
-    MonthlyTransaction,
-    MonthlyTransactionCreateParameters,
-    MonthlyTransactionQueryParameters,
-    OneoffTransaction,
-    OneoffTransactionCreateParameters,
-    OneoffTransactionQueryParameters
-} from '@backend-types/TransactionTypes';
-
 import HttpError from '@/HttpError';
 import { dateToIsoDate } from '@/common';
+import { Category, Shop } from '@/stores/CategoryShopStore';
 
-export type TransactionFilterRules = {
-    Category?: Category;
-    Shop?: Shop;
+export enum Ordering {
+    Asc = 'Asc',
+    Desc = 'Desc'
+}
+
+export enum OrderKey {
+    Time = 'Time',
+    Amount = 'Amont',
+    Category = 'Category',
+    Shop = 'Shop'
+}
+
+export type OrderSettings = {
+    ordering: Ordering;
+    orderKey: OrderKey;
+};
+
+export type TransactionType = 'oneoff' | 'monthly';
+
+type BaseTransaction = {
+    id: number;
+    userId: number;
+    isExpense: boolean;
+    amount: number;
+    description?: string;
+    categoryId: number;
+    category: string;
+    shopId?: number;
+    shop?: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+export type OneoffTransaction = {
+    date: string;
+} & BaseTransaction;
+
+export type MonthlyTransaction = {
+    monthFrom: string;
+    monthTo?: string;
+} & BaseTransaction;
+
+type BaseTransactionCreateParams = {
+    isExpense: boolean;
+    amount: number;
+    description?: string;
+    categoryId: number;
+    shopId?: number;
+};
+
+type OneoffTransactionCreateParams = {
+    date: string;
+} & BaseTransactionCreateParams;
+
+type MonthlyTransactionCreateParams = {
+    monthFrom: string;
+    monthTo?: string;
+} & BaseTransactionCreateParams;
+
+export type CreateParams<T extends TransactionType> = T extends 'oneoff'
+    ? OneoffTransactionCreateParams
+    : MonthlyTransactionCreateParams;
+
+type BaseTransactionQueryParams = {
     isExpense?: boolean;
-    isMonthlyTransaction: boolean;
     amountFrom?: number;
     amountTo?: number;
+    categoryId?: number;
+    shopId?: number | null;
+} & OrderSettings;
+
+type OneoffTransactionQueryParams = {
+    dateFrom?: string;
+    dateTo?: string;
+} & BaseTransactionQueryParams;
+
+type MonthlyTransactionQueryParams = {
+    monthFrom?: string;
+    monthTo?: string | null;
+} & BaseTransactionQueryParams;
+
+export type QueryParams<T extends TransactionType> = T extends 'oneoff'
+    ? OneoffTransactionQueryParams
+    : MonthlyTransactionQueryParams;
+
+type BaseTransactionUpdateParams = {
+    isExpense?: boolean;
+    amount?: number;
+    description?: string | null;
+    categoryId?: number;
+    shopId?: number | null;
+};
+
+type OneoffTransactionUpdateParams = {
+    date?: string;
+} & BaseTransactionUpdateParams;
+
+type MonthlyTransactionUpdateParams = {
+    monthFrom?: string;
+    monthTo?: string | null;
+} & BaseTransactionUpdateParams;
+
+export type UpdateParams<T extends TransactionType> = BaseTransactionUpdateParams &
+    T extends 'oneoff'
+    ? OneoffTransactionUpdateParams
+    : MonthlyTransactionUpdateParams;
+
+export type TransactionFilterRules = {
+    isMonthlyTransaction: boolean;
+    isExpense?: boolean;
     dateFrom?: string;
     dateTo?: string;
     monthFrom?: string;
     monthTo?: string;
-    order: {
-        key: 'Category' | 'Shop' | 'amount' | 'time';
-        order: 'ASC' | 'DESC';
-    };
+    amountFrom?: number;
+    amountTo?: number;
+    Category?: Category;
+    Shop?: Shop;
+    order: OrderSettings;
 };
-
-export type TransactionType = 'oneoff' | 'monthly';
 
 export function isOneoffTransaction(
     transaction: OneoffTransaction | MonthlyTransaction
@@ -54,20 +147,15 @@ export const useTransactionStore = defineStore('Transaction', {
                 monthFrom: `${currentDate.getFullYear()}-01`,
                 isMonthlyTransaction: false,
                 order: {
-                    key: 'time',
-                    order: 'ASC'
+                    ordering: Ordering.Asc,
+                    orderKey: OrderKey.Time
                 }
             },
             transactions: []
         };
     },
     actions: {
-        async create<T extends TransactionType>(
-            type: T,
-            payload: T extends 'oneoff'
-                ? OneoffTransactionCreateParameters
-                : MonthlyTransactionCreateParameters
-        ) {
+        async create<T extends TransactionType>(type: T, payload: CreateParams<T>) {
             const response = await fetch(`/api/transactions/${type}`, {
                 method: 'POST',
                 headers: {
@@ -81,43 +169,20 @@ export const useTransactionStore = defineStore('Transaction', {
 
             // Only fetch transactions if currently filtered transaction type is equal to type of just created transaction
             const isMonthlyTransaction =
-                (payload as OneoffTransactionCreateParameters).date == undefined;
+                (payload as OneoffTransactionCreateParams).date == undefined;
             if (isMonthlyTransaction === this.transactionFilterRules.isMonthlyTransaction) {
                 this.fetch();
             }
         },
         async fetch() {
-            const payload: {
-                [key in keyof (OneoffTransactionQueryParameters &
-                    MonthlyTransactionQueryParameters)]: string;
-            } = {};
-            const filters = this.transactionFilterRules;
+            // Not pretty but simplest solution
+            // const payload: Partial<Record<keyof QueryParams<T>, string>> = {};
+            // ^ this code doesn't work
+            const payload: Partial<
+                Record<keyof (OneoffTransactionQueryParams & MonthlyTransactionQueryParams), string>
+            > = {};
+            let filters = this.transactionFilterRules;
             let endpoint: string;
-
-            if (filters.isExpense !== undefined) {
-                payload['isExpense'] = String(filters.isExpense);
-            }
-
-            if (filters.amountFrom !== undefined) {
-                payload['amountFrom'] = String(filters.amountFrom);
-            }
-
-            if (filters.amountTo !== undefined) {
-                payload['amountTo'] = String(filters.amountTo);
-            }
-
-            if (filters.Category !== undefined) {
-                payload['CategoryId'] = String(filters.Category.id);
-            }
-
-            if (filters.Shop !== undefined) {
-                payload['ShopId'] = String(filters.Shop.id);
-            }
-
-            if (filters.order) {
-                payload['orderKey'] = filters.order.key;
-                payload['order'] = filters.order.order;
-            }
 
             if (!filters.isMonthlyTransaction) {
                 endpoint = '/api/transactions/oneoff';
@@ -139,6 +204,34 @@ export const useTransactionStore = defineStore('Transaction', {
                 }
             }
 
+            if (filters.isExpense !== undefined) {
+                payload['isExpense'] = String(filters.isExpense);
+            }
+
+            if (filters.amountFrom !== undefined) {
+                payload['amountFrom'] = String(filters.amountFrom);
+            }
+
+            if (filters.amountTo !== undefined) {
+                payload['amountTo'] = String(filters.amountTo);
+            }
+
+            if (filters.Category !== undefined) {
+                payload['categoryId'] = String(filters.Category.id);
+            }
+
+            if (filters.Shop !== undefined) {
+                payload['shopId'] = String(filters.Shop.id);
+            }
+
+            if (filters.order.orderKey) {
+                payload['orderKey'] = filters.order.orderKey;
+            }
+
+            if (filters.order.ordering) {
+                payload['ordering'] = filters.order.ordering;
+            }
+
             const response = await fetch(endpoint + '?' + new URLSearchParams(payload));
 
             if (!response.ok) {
@@ -148,13 +241,7 @@ export const useTransactionStore = defineStore('Transaction', {
             this.transactions = (await response.json()).data;
             return this.transactions;
         },
-        async update<T extends TransactionType>(
-            type: T,
-            id: number,
-            payload: T extends 'oneoff'
-                ? OneoffTransactionCreateParameters
-                : MonthlyTransactionCreateParameters
-        ) {
+        async update<T extends TransactionType>(type: T, id: number, payload: UpdateParams<T>) {
             const response = await fetch(`/api/transactions/${type}/${id}`, {
                 method: 'PATCH',
                 headers: {
