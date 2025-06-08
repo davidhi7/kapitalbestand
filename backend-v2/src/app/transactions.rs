@@ -63,7 +63,7 @@ impl UnvalidatedShopId {
 validate_newtype_range!(UnvalidatedCategoryId, i32);
 validate_newtype_range!(UnvalidatedShopId, i32);
 
-#[derive(Clone, Debug, Serialize, FromRow)]
+#[derive(Clone, Debug, Serialize, FromRow, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct OneoffTransaction {
     id: i32,
@@ -95,7 +95,7 @@ pub struct OneoffTransactionCreateParams {
     shop_id: Option<UnvalidatedShopId>,
 }
 
-#[derive(Clone, Debug, Deserialize, Validate)]
+#[derive(Clone, Debug, Default, Deserialize, Validate)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct OneoffTransactionQueryParams {
     is_expense: Option<bool>,
@@ -108,14 +108,14 @@ pub struct OneoffTransactionQueryParams {
     #[validate(range(min = 0))]
     category_id: Option<UnvalidatedCategoryId>,
     #[validate(range(min = 0))]
-    shop_id: Option<UnvalidatedShopId>,
+    shop_id: JsonField<UnvalidatedShopId>,
     #[serde(default)]
     ordering: Ordering,
     #[serde(default)]
     order_key: OrderKey,
 }
 
-#[derive(Debug, Clone, Deserialize, Validate)]
+#[derive(Debug, Clone, Default, Deserialize, Validate)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct OneoffTransactionUpdateParams {
     date: Option<NaiveDate>,
@@ -223,10 +223,12 @@ impl Resource for OneoffTransaction {
                 .push_bind(category_id.validate(user, database).await?);
         }
 
-        if let Some(shop_id) = params.shop_id {
+        if let JsonField::Defined(Some(shop_id)) = params.shop_id {
             query_builder
                 .push(" AND ot.shop_id = ")
                 .push_bind(shop_id.validate(user, database).await?);
+        } else if let JsonField::Defined(None) = params.shop_id {
+            query_builder.push(" AND ot.shop_id IS NULL");
         }
 
         // Handle ordering
