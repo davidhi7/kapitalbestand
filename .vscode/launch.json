@@ -12,6 +12,21 @@
             "args": []
         },
         {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Cargo test",
+            "cargo": {
+                "cwd": "${workspaceFolder}/backend-v2",
+                "args": ["test", "--no-run", "--bin=backend-v2", "--package=backend-v2"],
+                "filter": {
+                    "name": "backend-v2",
+                    "kind": "bin"
+                }
+            },
+            "cwd": "${workspaceFolder}/backend-v2",
+            "args": []
+        },
+        {
             "args": ["npm", "run", "test:debug"],
             "internalConsoleOptions": "openOnSessionStart",
             "name": "Backend tests",
