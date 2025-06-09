@@ -4,7 +4,7 @@ use sqlx::{PgPool, Postgres, QueryBuilder, prelude::FromRow};
 use validator::Validate;
 
 use crate::{
-    app::{api::pagination::Pagination, resource::Resource},
+    app::{api::pagination::Pagination, resources::Resource},
     users::User,
 };
 

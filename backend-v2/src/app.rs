@@ -8,16 +8,15 @@ use tokio::net::TcpListener;
 
 use crate::{
     app::{
-        categories_shops::{Category, Shop},
-        transactions::OneoffTransaction,
+        resources::categories_shops::{Category, Shop},
+        resources::oneoff_transactions::OneoffTransaction,
     },
     build_routes,
     users::Backend,
 };
 mod api;
 mod auth;
-mod categories_shops;
-mod resource;
+mod resources;
 mod transactions;
 
 pub struct App {
