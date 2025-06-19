@@ -1,12 +1,16 @@
+use std::ops::Deref;
+
 use chrono::{DateTime, NaiveDate, Utc};
+use garde::Validate;
 use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, Postgres, QueryBuilder};
-use validator::Validate;
 
 use crate::app::api::json_field::JsonField;
 use crate::app::api::pagination::Pagination;
 use crate::app::resources::Resource;
-use crate::app::transactions::{OrderKey, Ordering, UnvalidatedCategoryId, UnvalidatedShopId};
+use crate::app::transactions::{
+    Amount, Description, OrderKey, Ordering, UnvalidatedCategoryId, UnvalidatedShopId,
+};
 use crate::errors::ServerError;
 use crate::users::User;
 
@@ -30,50 +34,59 @@ pub struct OneoffTransaction {
 #[derive(Clone, Debug, Deserialize, Validate)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct OneoffTransactionCreateParams {
+    #[garde(skip)]
     date: NaiveDate,
+    #[garde(skip)]
     is_expense: bool,
-    #[validate(range(min = 1))]
-    amount: i32,
-    #[validate(length(min = 1))]
-    description: Option<String>,
-    #[validate(range(min = 0))]
+    #[garde(dive)]
+    amount: Amount,
+    #[garde(dive)]
+    description: Option<Description>,
+    #[garde(dive)]
     category_id: UnvalidatedCategoryId,
-    #[validate(range(min = 0))]
+    #[garde(dive)]
     shop_id: Option<UnvalidatedShopId>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Validate)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct OneoffTransactionQueryParams {
+    #[garde(skip)]
     is_expense: Option<bool>,
+    #[garde(skip)]
     date_from: Option<NaiveDate>,
+    #[garde(skip)]
     date_to: Option<NaiveDate>,
-    #[validate(range(min = 1))]
-    amount_from: Option<i32>,
-    #[validate(range(min = 1))]
-    amount_to: Option<i32>,
-    #[validate(range(min = 0))]
+    #[garde(dive)]
+    amount_from: Option<Amount>,
+    #[garde(dive)]
+    amount_to: Option<Amount>,
+    #[garde(dive)]
     category_id: Option<UnvalidatedCategoryId>,
-    #[validate(range(min = 0))]
+    #[garde(dive)]
     shop_id: JsonField<UnvalidatedShopId>,
     #[serde(default)]
+    #[garde(skip)]
     ordering: Ordering,
     #[serde(default)]
+    #[garde(skip)]
     order_key: OrderKey,
 }
 
 #[derive(Debug, Clone, Default, Deserialize, Validate)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct OneoffTransactionUpdateParams {
+    #[garde(skip)]
     date: Option<NaiveDate>,
+    #[garde(skip)]
     is_expense: Option<bool>,
-    #[validate(range(min = 1))]
-    amount: Option<i32>,
-    #[validate(length(min = 1))]
-    description: JsonField<String>,
-    #[validate(range(min = 0))]
+    #[garde(dive)]
+    amount: Option<Amount>,
+    #[garde(dive)]
+    description: JsonField<Description>,
+    #[garde(dive)]
     category_id: Option<UnvalidatedCategoryId>,
-    #[validate(range(min = 0))]
+    #[garde(dive)]
     shop_id: JsonField<UnvalidatedShopId>,
 }
 
@@ -106,8 +119,8 @@ impl Resource for OneoffTransaction {
             params.date,
             user.id,
             params.is_expense,
-            params.amount,
-            params.description,
+            params.amount.deref(),
+            params.description.as_deref(),
             params.category_id.validate(&user, database).await?,
             match params.shop_id {
                 Some(value) => Some(value.validate(user, database).await?),
@@ -155,13 +168,13 @@ impl Resource for OneoffTransaction {
         if let Some(amount_from) = params.amount_from {
             query_builder
                 .push(" AND ot.amount >= ")
-                .push_bind(amount_from);
+                .push_bind(*amount_from);
         }
 
         if let Some(amount_to) = params.amount_to {
             query_builder
                 .push(" AND ot.amount <= ")
-                .push_bind(amount_to);
+                .push_bind(*amount_to);
         }
 
         if let Some(category_id) = params.category_id {
@@ -297,11 +310,11 @@ impl Resource for OneoffTransaction {
         }
 
         if let Some(amount) = params.amount {
-            query = query.bind(amount);
+            query = query.bind(*amount);
         }
 
-        if let JsonField::Defined(field) = params.description {
-            query = query.bind(field);
+        if let JsonField::Defined(field) = &params.description {
+            query = query.bind(field.as_deref());
         }
 
         if let Some(category_id) = params.category_id {
@@ -421,7 +434,7 @@ mod tests {
             OneoffTransactionCreateParams {
                 date: NaiveDate::from_ymd_opt(2024, 12, 31).unwrap(),
                 is_expense: true,
-                amount: 1,
+                amount: Amount(1),
                 description: None,
                 category_id: UnvalidatedCategoryId::from(category.id),
                 shop_id: None,
@@ -462,7 +475,7 @@ mod tests {
             OneoffTransactionCreateParams {
                 date: NaiveDate::from_ymd_opt(2024, 12, 31).unwrap(),
                 is_expense: true,
-                amount: 1,
+                amount: Amount(1),
                 description: None,
                 category_id: UnvalidatedCategoryId::from(category.id),
                 shop_id: Some(UnvalidatedShopId::from(shop.id)),
@@ -497,7 +510,7 @@ mod tests {
             OneoffTransactionCreateParams {
                 date: NaiveDate::from_ymd_opt(2024, 12, 31).unwrap(),
                 is_expense: true,
-                amount: 1,
+                amount: Amount(1),
                 description: None,
                 category_id: UnvalidatedCategoryId::from(999999),
                 shop_id: None,
@@ -512,7 +525,7 @@ mod tests {
             OneoffTransactionCreateParams {
                 date: NaiveDate::from_ymd_opt(2024, 12, 31).unwrap(),
                 is_expense: true,
-                amount: 1,
+                amount: Amount(1),
                 description: None,
                 category_id: UnvalidatedCategoryId::from(16),
                 shop_id: None,
@@ -548,7 +561,7 @@ mod tests {
             OneoffTransactionCreateParams {
                 date: NaiveDate::from_ymd_opt(2024, 12, 31).unwrap(),
                 is_expense: true,
-                amount: 1,
+                amount: Amount(1),
                 description: None,
                 category_id: UnvalidatedCategoryId::from(category.id),
                 shop_id: Some(UnvalidatedShopId::from(999999)),
@@ -563,7 +576,7 @@ mod tests {
             OneoffTransactionCreateParams {
                 date: NaiveDate::from_ymd_opt(2024, 12, 31).unwrap(),
                 is_expense: true,
-                amount: 1,
+                amount: Amount(1),
                 description: None,
                 category_id: UnvalidatedCategoryId::from(category.id),
                 shop_id: Some(UnvalidatedShopId::from(16)),
@@ -721,7 +734,7 @@ mod tests {
     #[sqlx::test(fixtures("base", "oneoff"))]
     fn test_fetch_with_amount_from_filter(pool: PgPool) -> anyhow::Result<()> {
         let user = get_user_by_id(&pool, 1).await; // Alice
-        let amount_from = 100000; // 1000.00 in cents
+        let amount_from = Amount(100000); // 1000.00 in cents
         let params = OneoffTransactionQueryParams {
             amount_from: Some(amount_from),
             ..Default::default()
@@ -730,7 +743,7 @@ mod tests {
         let result = OneoffTransaction::fetch(&pool, &user, params, Pagination::default()).await?;
 
         // All transactions should have amount >= amount_from
-        assert!(result.iter().all(|t| t.amount >= amount_from));
+        assert!(result.iter().all(|t| t.amount >= *amount_from));
         assert_eq!(result.len(), 4);
 
         Ok(())
@@ -739,7 +752,7 @@ mod tests {
     #[sqlx::test(fixtures("base", "oneoff"))]
     fn test_fetch_with_amount_to_filter(pool: PgPool) -> anyhow::Result<()> {
         let user = get_user_by_id(&pool, 1).await; // Alice
-        let amount_to = 10000; // 100.00 in cents
+        let amount_to = Amount(10000); // 100.00 in cents
         let params = OneoffTransactionQueryParams {
             amount_to: Some(amount_to),
             ..Default::default()
@@ -748,7 +761,7 @@ mod tests {
         let result = OneoffTransaction::fetch(&pool, &user, params, Pagination::default()).await?;
 
         // All transactions should have amount <= amount_to
-        assert!(result.iter().all(|t| t.amount <= amount_to));
+        assert!(result.iter().all(|t| t.amount <= *amount_to));
         assert_eq!(result.len(), 9);
 
         Ok(())
@@ -757,8 +770,8 @@ mod tests {
     #[sqlx::test(fixtures("base", "oneoff"))]
     fn test_fetch_with_amount_range_filter(pool: PgPool) -> anyhow::Result<()> {
         let user = get_user_by_id(&pool, 1).await; // Alice
-        let amount_from = 5000; // 50.00 in cents
-        let amount_to = 20000; // 200.00 in cents
+        let amount_from = Amount(5000); // 50.00 in cents
+        let amount_to = Amount(20000); // 200.00 in cents
         let params = OneoffTransactionQueryParams {
             amount_from: Some(amount_from),
             amount_to: Some(amount_to),
@@ -771,7 +784,7 @@ mod tests {
         assert!(
             result
                 .iter()
-                .all(|t| t.amount >= amount_from && t.amount <= amount_to)
+                .all(|t| t.amount >= *amount_from && t.amount <= *amount_to)
         );
         assert_eq!(result.len(), 7);
 
@@ -781,11 +794,11 @@ mod tests {
     #[sqlx::test(fixtures("base", "oneoff"))]
     fn test_fetch_with_negative_amount_range_no_results(pool: PgPool) -> anyhow::Result<()> {
         let user = get_user_by_id(&pool, 1).await; // Alice
-        let amount_from = Some(10000); // 100.00 in cents
-        let amount_to = Some(5000); // 50.00 in cents
+        let amount_from = Amount(10000); // 100.00 in cents
+        let amount_to = Amount(5000); // 50.00 in cents
         let params = OneoffTransactionQueryParams {
-            amount_from,
-            amount_to,
+            amount_from: Some(amount_from),
+            amount_to: Some(amount_to),
             ..Default::default()
         };
 
@@ -1365,7 +1378,7 @@ mod tests {
             &user,
             1,
             OneoffTransactionUpdateParams {
-                amount: Some(10000),
+                amount: Some(Amount(10000)),
                 ..Default::default()
             },
         )
@@ -1402,7 +1415,7 @@ mod tests {
             &user,
             1,
             OneoffTransactionUpdateParams {
-                description: JsonField::Defined(Some("new description".to_string())),
+                description: JsonField::Defined(Some(Description("new description".to_string()))),
                 ..Default::default()
             },
         )
@@ -1651,7 +1664,7 @@ mod tests {
             OneoffTransactionUpdateParams {
                 date: Some(NaiveDate::from_ymd_opt(2030, 1, 1).unwrap()),
                 is_expense: Some(false),
-                amount: Some(10000),
+                amount: Some(Amount(10000)),
                 description: JsonField::Defined(None),
                 category_id: Some(UnvalidatedCategoryId::from(4)),
                 shop_id: JsonField::Defined(Some(UnvalidatedShopId::from(4))),
@@ -1698,7 +1711,7 @@ mod tests {
             &user,
             1,
             OneoffTransactionUpdateParams {
-                amount: Some(10000),
+                amount: Some(Amount(10000)),
                 ..Default::default()
             },
         )
@@ -1727,7 +1740,9 @@ mod tests {
                 &user,
                 user_2_transaction.id,
                 OneoffTransactionUpdateParams {
-                    description: JsonField::Defined(Some("updated description".to_string())),
+                    description: JsonField::Defined(Some(Description(
+                        "updated description".to_string()
+                    ))),
                     ..Default::default()
                 },
             )
@@ -1766,7 +1781,9 @@ mod tests {
                 &user,
                 999999,
                 OneoffTransactionUpdateParams {
-                    description: JsonField::Defined(Some("updated description".to_string())),
+                    description: JsonField::Defined(Some(Description(
+                        "updated description".to_string()
+                    ))),
                     ..Default::default()
                 },
             )

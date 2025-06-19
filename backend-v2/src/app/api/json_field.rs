@@ -1,8 +1,8 @@
+use garde::{Validate, rules::length::graphemes::Graphemes};
 use serde::{Deserialize, Serialize};
-use validator::{ValidateLength, ValidateRange};
 
 // https://github.com/serde-rs/serde/issues/1042#issuecomment-1656337230
-#[derive(Debug, Clone, Serialize, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Default, Serialize, PartialEq, Eq)]
 pub enum JsonField<T> {
     /// key-value pair doesn't exist in the json source
     #[default]
@@ -21,38 +21,36 @@ impl<'de, T: Deserialize<'de>> Deserialize<'de> for JsonField<T> {
     }
 }
 
-impl<V: PartialOrd, T: ValidateLength<V>> ValidateLength<V> for JsonField<T> {
-    fn length(&self) -> Option<V> {
+impl<T: Graphemes> Graphemes for JsonField<T> {
+    fn validate_num_graphemes(&self, min: usize, max: usize) -> Result<(), garde::Error> {
         match self {
-            JsonField::Undefined => None,
-            JsonField::Defined(None) => None,
-            JsonField::Defined(Some(val)) => val.length(),
+            JsonField::Defined(Some(val)) => val.validate_num_graphemes(min, max),
+            _ => Ok(()),
         }
     }
 }
 
-impl<V, T: ValidateRange<V>> ValidateRange<V> for JsonField<T> {
-    fn greater_than(&self, max: V) -> Option<bool> {
-        match self {
-            JsonField::Undefined => None,
-            JsonField::Defined(None) => None,
-            JsonField::Defined(Some(val)) => val.greater_than(max),
-        }
-    }
+impl<T: Validate> Validate for JsonField<T> {
+    type Context = T::Context;
 
-    fn less_than(&self, min: V) -> Option<bool> {
-        match self {
-            JsonField::Undefined => None,
-            JsonField::Defined(None) => None,
-            JsonField::Defined(Some(val)) => val.less_than(min),
+    fn validate_into(
+        &self,
+        ctx: &Self::Context,
+        parent: &mut dyn FnMut() -> garde::Path,
+        report: &mut garde::Report,
+    ) {
+        if let JsonField::Defined(Some(value)) = self {
+            // TODO check path
+
+            value.validate_into(ctx, parent, report);
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use garde::{Validate, rules::length::graphemes::Graphemes};
     use serde::Deserialize;
-    use validator::{ValidateLength, ValidateRange};
 
     use crate::app::api::json_field::JsonField;
 
@@ -81,30 +79,73 @@ mod tests {
     }
 
     #[test]
-    fn test_validate_length() {
-        assert_eq!(JsonField::Undefined::<String>.length(), None);
-        assert_eq!(JsonField::Defined::<String>(None).length(), None);
-        assert_eq!(
-            JsonField::Defined(Some("hello world".to_owned())).length(),
-            Some(11)
+    fn test_nested() {
+        #[derive(Validate)]
+        struct Inner(#[garde(range(min = 0, max = 100))] i32);
+
+        #[derive(Validate)]
+        struct Test {
+            #[garde(dive)]
+            data: JsonField<Inner>,
+        }
+
+        assert!(
+            Test {
+                data: JsonField::Undefined
+            }
+            .validate()
+            .is_ok()
+        );
+
+        assert!(
+            Test {
+                data: JsonField::Defined(None)
+            }
+            .validate()
+            .is_ok()
+        );
+
+        assert!(
+            Test {
+                data: JsonField::Defined(Some(Inner(50)))
+            }
+            .validate()
+            .is_ok()
+        );
+
+        assert!(
+            Test {
+                data: JsonField::Defined(Some(Inner(150)))
+            }
+            .validate()
+            .is_err()
         );
     }
 
     #[test]
-    fn test_validate_range() {
-        assert_eq!(JsonField::Undefined::<i32>.greater_than(i32::MAX), None);
-        assert_eq!(JsonField::Undefined::<i32>.less_than(i32::MIN), None);
-
-        assert_eq!(JsonField::Defined::<i32>(None).greater_than(i32::MAX), None);
-        assert_eq!(JsonField::Defined::<i32>(None).less_than(i32::MIN), None);
-
-        assert_eq!(
-            JsonField::Defined::<i32>(Some(100)).greater_than(0),
-            Some(true)
+    fn test_validate_length() {
+        assert!(
+            JsonField::Undefined::<String>
+                .validate_num_graphemes(1, 10)
+                .is_ok()
         );
-        assert_eq!(
-            JsonField::Defined::<i32>(Some(100)).less_than(0),
-            Some(false)
+
+        assert!(
+            JsonField::Defined::<String>(None)
+                .validate_num_graphemes(1, 10)
+                .is_ok(),
+        );
+
+        assert!(
+            JsonField::Defined::<String>(Some("some str".to_string()))
+                .validate_num_graphemes(1, 10)
+                .is_ok()
+        );
+
+        assert!(
+            JsonField::Defined::<String>(Some("".to_string()))
+                .validate_num_graphemes(1, 10)
+                .is_err()
         );
     }
 }

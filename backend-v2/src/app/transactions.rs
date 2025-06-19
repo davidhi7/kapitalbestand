@@ -1,4 +1,7 @@
+use std::ops::Deref;
+
 use axum::http::StatusCode;
+use garde::Validate;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 
@@ -9,7 +12,6 @@ use crate::{
     },
     errors::ServerError,
     users::User,
-    validate_newtype_range,
 };
 
 #[derive(Clone, Debug, Default, Deserialize)]
@@ -28,9 +30,10 @@ pub enum OrderKey {
     Shop,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, Validate)]
 #[serde(transparent)]
-pub struct UnvalidatedCategoryId(i32);
+#[garde(transparent)]
+pub struct UnvalidatedCategoryId(#[garde(range(min = 1))] i32);
 
 impl UnvalidatedCategoryId {
     #[cfg(test)]
@@ -49,9 +52,10 @@ impl UnvalidatedCategoryId {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, Validate)]
 #[serde(transparent)]
-pub struct UnvalidatedShopId(i32);
+#[garde(transparent)]
+pub struct UnvalidatedShopId(#[garde(range(min = 1))] i32);
 
 impl UnvalidatedShopId {
     #[cfg(test)]
@@ -70,5 +74,28 @@ impl UnvalidatedShopId {
     }
 }
 
-validate_newtype_range!(UnvalidatedCategoryId, i32);
-validate_newtype_range!(UnvalidatedShopId, i32);
+#[derive(Clone, Debug, Deserialize, Serialize, Validate)]
+#[serde(transparent)]
+#[garde(transparent)]
+pub struct Description(#[garde(length(graphemes, min = 1))] pub String);
+
+impl Deref for Description {
+    type Target = String;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Serialize, Validate)]
+#[serde(transparent)]
+#[garde(transparent)]
+pub struct Amount(#[garde(range(min = 1))] pub i32);
+
+impl Deref for Amount {
+    type Target = i32;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
