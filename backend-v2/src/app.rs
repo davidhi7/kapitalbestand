@@ -7,9 +7,10 @@ use sqlx::{Pool, Postgres, postgres::PgPoolOptions};
 use tokio::net::TcpListener;
 
 use crate::{
-    app::{
-        resources::categories_shops::{Category, Shop},
-        resources::oneoff_transactions::OneoffTransaction,
+    app::resources::{
+        categories_shops::{Category, Shop},
+        oneoff_transactions::OneoffTransaction,
+        recurring_transactions::RecurringTransaction,
     },
     build_routes,
     users::Backend,
@@ -67,7 +68,11 @@ impl App {
                 Router::new()
                     .nest("/categories", build_routes!(Category))
                     .nest("/shops", build_routes!(Shop))
-                    .nest("/transactions/oneoff", build_routes!(OneoffTransaction)),
+                    .nest("/transactions/oneoff", build_routes!(OneoffTransaction))
+                    .nest(
+                        "/transactions/recurring",
+                        build_routes!(RecurringTransaction),
+                    ),
             )
             .with_state(self.state.clone())
             .route_layer(login_required!(Backend))

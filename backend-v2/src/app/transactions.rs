@@ -1,4 +1,7 @@
-use std::ops::Deref;
+use std::{
+    fmt::{self, Display},
+    ops::Deref,
+};
 
 use axum::http::StatusCode;
 use garde::Validate;
@@ -19,6 +22,15 @@ pub enum Ordering {
     #[default]
     Asc,
     Desc,
+}
+
+impl fmt::Display for Ordering {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Ordering::Asc => write!(f, "ASC"),
+            Ordering::Desc => write!(f, "DESC"),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Default, Deserialize)]

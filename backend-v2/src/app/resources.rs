@@ -19,6 +19,7 @@ use crate::{
 
 pub mod categories_shops;
 pub mod oneoff_transactions;
+pub mod recurring_transactions;
 
 pub trait Resource {
     type CreateParams;
