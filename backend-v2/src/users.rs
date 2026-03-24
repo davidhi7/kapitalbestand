@@ -5,25 +5,25 @@ use argon2::{
 use async_trait::async_trait;
 use axum_login::{AuthUser, AuthnBackend, UserId};
 use chrono::{DateTime, Utc};
+use garde::Validate;
 use serde::Deserialize;
 use sqlx::{Pool, Postgres};
 use tokio::task;
-use validator::Validate;
 
 // Validate minimum password length of 8 only for newly registered accounts
 #[derive(Debug, Clone, Deserialize, Validate)]
 pub struct RegisterCredentials {
-    #[validate(length(min = 1))]
+    #[garde(length(graphemes, min = 1))]
     pub username: String,
-    #[validate(length(min = 8))]
+    #[garde(length(graphemes, min = 8))]
     pub password: String,
 }
 
 #[derive(Debug, Clone, Deserialize, Validate)]
 pub struct LoginCredentials {
-    #[validate(length(min = 1))]
+    #[garde(length(graphemes, min = 1))]
     pub username: String,
-    #[validate(length(min = 1))]
+    #[garde(length(graphemes, min = 1))]
     pub password: String,
 }
 

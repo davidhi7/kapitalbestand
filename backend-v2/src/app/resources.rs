@@ -17,6 +17,10 @@ use crate::{
     users::User,
 };
 
+pub mod categories_shops;
+pub mod oneoff_transactions;
+pub mod recurring_transactions;
+
 pub trait Resource {
     type CreateParams;
     type FetchParams;
@@ -149,7 +153,7 @@ where
 macro_rules! build_routes {
     ($type:ty) => {{
         use axum::routing::{delete, get, patch, post};
-        use $crate::app::resource::{create, fetch, get_by_id, remove, update};
+        use $crate::app::resources::{create, fetch, get_by_id, remove, update};
 
         Router::new()
             .route("/", post(create::<$type>))

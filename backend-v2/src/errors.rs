@@ -11,7 +11,7 @@ use crate::users::{self, Backend};
 #[derive(Debug, Error)]
 pub enum ServerError {
     #[error(transparent)]
-    ValidationError(#[from] validator::ValidationErrors),
+    GardeValidationError(#[from] garde::Report),
 
     #[error(transparent)]
     AxumJsonRejection(#[from] JsonRejection),
@@ -34,7 +34,7 @@ pub enum ServerError {
 impl IntoResponse for ServerError {
     fn into_response(self) -> Response {
         match self {
-            ServerError::ValidationError(_) => {
+            ServerError::GardeValidationError(_) => {
                 let message = format!("Input validation error: {self}");
                 (StatusCode::BAD_REQUEST, message).into_response()
             }

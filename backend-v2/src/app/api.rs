@@ -6,8 +6,8 @@ use axum::{
     },
     http::{StatusCode, request::Parts},
 };
+use garde::Validate;
 use serde::de::DeserializeOwned;
-use validator::Validate;
 
 use crate::{app::auth::AuthSession, errors::ServerError, users::User};
 
@@ -47,7 +47,7 @@ pub struct ValidJson<T>(pub T);
 
 impl<T, S> FromRequest<S> for ValidJson<T>
 where
-    T: DeserializeOwned + Validate,
+    T: DeserializeOwned + Validate<Context = ()>,
     S: Send + Sync,
     Json<T>: FromRequest<S, Rejection = JsonRejection>,
 {
@@ -62,7 +62,7 @@ where
 
 impl<T, S> OptionalFromRequest<S> for ValidJson<T>
 where
-    T: DeserializeOwned + Validate,
+    T: DeserializeOwned + Validate<Context = ()>,
     S: Send + Sync,
     Json<T>: FromRequest<S, Rejection = JsonRejection>,
 {
@@ -86,7 +86,7 @@ pub struct ValidQuery<T>(pub T);
 
 impl<T, S> FromRequestParts<S> for ValidQuery<T>
 where
-    T: DeserializeOwned + Validate,
+    T: DeserializeOwned + Validate<Context = ()>,
     S: Send + Sync,
     Query<T>: FromRequestParts<S, Rejection = QueryRejection>,
 {
