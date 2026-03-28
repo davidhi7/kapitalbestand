@@ -1,5 +1,9 @@
 import { createPinia } from 'pinia';
+import 'primeicons/primeicons.css';
+import PrimeVue from 'primevue/config';
 import { createApp } from 'vue';
+
+import Aura from '@primeuix/themes/aura';
 
 import '@/assets/base.css';
 import '@/assets/icons.css';
@@ -14,6 +18,11 @@ const pinia = createPinia();
 
 app.use(router);
 app.use(pinia);
+app.use(PrimeVue, {
+    theme: {
+        preset: Aura
+    }
+});
 
 const AuthStateStore = useAuthStateStore();
 const CategoryShopStore = useCategoryShopStore();
