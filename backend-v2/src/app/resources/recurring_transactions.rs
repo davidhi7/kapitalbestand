@@ -268,7 +268,7 @@ impl Resource for RecurringTransaction {
                 FROM recurring_transactions rt
                 INNER JOIN categories c ON rt.category_id = c.id
                 LEFT JOIN shops s ON rt.shop_id = s.id
-                WHERE rt.user_id = 
+                WHERE rt.user_id =
         "#,
         );
         query_builder.push_bind(user.id);
@@ -404,7 +404,7 @@ impl Resource for RecurringTransaction {
 
         // Build SET clause dynamically based on provided parameters
         // Note that no actual values are inserted at this point
-        if let Some(_) = &params.recurrence {
+        if params.recurrence.is_some() {
             // Always write all recurrence data for simplicity
             query_parts.push(format!("frequency = ${bind_count}"));
             bind_count += 1;

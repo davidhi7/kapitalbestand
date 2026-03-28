@@ -11,6 +11,8 @@ async fn main() -> anyhow::Result<()> {
         .with_env_filter(EnvFilter::from_default_env())
         .init();
 
+    dotenv::dotenv().ok();
+
     let app = App::new().await?;
     app.serve().await?;
 

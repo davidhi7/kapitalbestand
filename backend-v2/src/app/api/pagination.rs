@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, Validate)]
 #[serde(transparent)]
 #[garde(transparent)]
-pub struct Limit(#[garde(range(min = 1))] pub i32);
+pub struct Limit(#[garde(range(min = 0))] pub i32);
 
 impl Default for Limit {
     fn default() -> Self {
@@ -15,7 +15,7 @@ impl Default for Limit {
 #[derive(Clone, Copy, Debug, Default, Deserialize, Serialize, Validate)]
 #[serde(transparent)]
 #[garde(transparent)]
-pub struct Offset(#[garde(range(min = 1))] pub i32);
+pub struct Offset(#[garde(range(min = 0))] pub i32);
 
 #[derive(Clone, Copy, Debug, Default, Deserialize, Validate)]
 pub struct Pagination {

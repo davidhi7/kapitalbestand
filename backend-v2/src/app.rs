@@ -1,3 +1,6 @@
+use std::env;
+
+use anyhow::Context;
 use axum::Router;
 use axum_login::{
     AuthManagerLayerBuilder, login_required,
@@ -31,9 +34,10 @@ struct AppState {
 
 impl App {
     pub async fn new() -> anyhow::Result<App> {
+        let database_url = env::var("DATABASE_URL").context("DATABASE_URL must be set")?;
         let pool = PgPoolOptions::new()
             .max_connections(5)
-            .connect("postgres://test:test@localhost/kapitalbestand-dev")
+            .connect(&database_url)
             .await?;
 
         sqlx::migrate!("./migrations").run(&pool).await?;
@@ -83,6 +87,7 @@ impl App {
 
     pub async fn serve(self) -> anyhow::Result<()> {
         let listener = TcpListener::bind("localhost:8080").await?;
+        log::info!("App listening to localhost:8080");
         axum::serve(listener, self.router()).await?;
 
         Ok(())

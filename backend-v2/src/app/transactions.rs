@@ -1,5 +1,5 @@
 use std::{
-    fmt::{self, Display},
+    fmt::{self},
     ops::Deref,
 };
 

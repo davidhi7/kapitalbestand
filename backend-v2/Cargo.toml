@@ -10,7 +10,9 @@ async-trait = "0.1.88"
 axum = "0.8.4"
 axum-login = "0.17.0"
 chrono = { version = "0.4.41", features = ["serde"] }
+dotenv = "0.15.0"
 garde = { version = "0.22.0", features = ["derive", "unicode"] }
+log = "0.4.29"
 serde = "1.0.219"
 serde_json = { version = "1.0.140", features = ["preserve_order"] }
 sqlx = { version = "0.8.5", features = [
