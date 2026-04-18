@@ -1,10 +1,10 @@
-<script setup lang="ts" generic="T extends OneoffTransaction | MonthlyTransaction">
+<script setup lang="ts" generic="T extends OneoffTransaction | RecurringTransaction">
+import Button from 'primevue/button';
+import { useToast } from 'primevue/usetoast';
 import { ref } from 'vue';
 
-import { NotificationEvent, NotificationStyle, eventEmitter } from '@/components/Notification.vue';
-import LoadingButton from '@/components/input/LoadingButton.vue';
 import { ColumnSettings } from '@/components/lists/listConfig';
-import { MonthlyTransaction, OneoffTransaction } from '@/stores/TransactionStore';
+import { OneoffTransaction, RecurringTransaction } from '@/stores/TransactionStore';
 import { isOneoffTransaction, useTransactionStore } from '@/stores/TransactionStore';
 
 const props = defineProps<{
@@ -16,6 +16,7 @@ const emit = defineEmits<{
     done: [];
 }>();
 
+const toast = useToast();
 const TransactionStore = useTransactionStore();
 const requestPending = ref(false);
 
@@ -23,16 +24,12 @@ async function del() {
     requestPending.value = true;
     try {
         await TransactionStore.delete(
-            isOneoffTransaction(props.transaction) ? 'oneoff' : 'monthly',
+            isOneoffTransaction(props.transaction) ? 'oneoff' : 'recurring',
             props.transaction.id
         );
-        eventEmitter.dispatchEvent(
-            new NotificationEvent(NotificationStyle.SUCCESS, 'Transaktion gelöscht')
-        );
+        toast.add({ severity: 'success', summary: 'Transaktion gelöscht', life: 3000 });
     } catch (e) {
-        eventEmitter.dispatchEvent(
-            new NotificationEvent(NotificationStyle.ERROR, 'Fehler bei Löschung')
-        );
+        toast.add({ severity: 'error', summary: 'Fehler bei Löschung', life: 3000 });
     }
     requestPending.value = false;
     emit('done');
@@ -65,14 +62,19 @@ async function del() {
         </table>
 
         <div class="flex justify-center gap-2">
-            <LoadingButton
-                class="btn-red"
+            <Button
+                label="Löschen"
+                severity="danger"
                 :disabled="requestPending"
                 :loading="requestPending"
                 @click="del"
-                >Löschen</LoadingButton
-            >
-            <button class="btn" :disabled="requestPending" @click="emit('done')">Abbrechen</button>
+            />
+            <Button
+                label="Abbrechen"
+                severity="secondary"
+                :disabled="requestPending"
+                @click="emit('done')"
+            />
         </div>
     </div>
 </template>

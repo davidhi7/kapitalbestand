@@ -1,59 +1,25 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import DatePicker from 'primevue/datepicker';
+import { computed } from 'vue';
 
-import { dateToIsoDate } from '@/common';
-import TextInput from '@/components/input/TextInput.vue';
-
-defineOptions({
-    inheritAttrs: false
-});
-
-const rawInput = ref('');
 const model = defineModel<string>();
 
-// Firefox desktop does not support input[type='month'] tags on desktop and falls back to a simple text input.
-const testElement = document.createElement('input');
-testElement.setAttribute('type', 'month');
-const browserSupport = testElement.type === 'month';
-
-function handleInput() {
-    const value = rawInput.value;
-    if (!value) {
-        model.value = undefined;
-        return;
-    }
-    const [year, month, day] = value.split('-');
-    model.value = `${year}-${month.padStart(2, '0')}`;
-    if (!browserSupport && Number(day) !== 1) {
-        rawInput.value = dateToIsoDate(new Date(model.value));
-    }
-}
-
-watch(
-    model,
-    (value) => {
+const dateModel = computed({
+    get() {
+        if (!model.value) return null;
+        const [year, month] = model.value.split('-');
+        return new Date(Number(year), Number(month) - 1);
+    },
+    set(value: Date | null) {
         if (!value) {
-            rawInput.value = '';
+            model.value = undefined;
             return;
         }
-
-        if (browserSupport) {
-            rawInput.value = value;
-        } else {
-            rawInput.value = `${value}-01`;
-        }
-    },
-    { immediate: true }
-);
+        model.value = `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}`;
+    }
+});
 </script>
 
 <template>
-    <TextInput
-        v-if="browserSupport"
-        v-model="rawInput"
-        type="month"
-        v-bind="$attrs"
-        @focusout="handleInput"
-    />
-    <TextInput v-else v-model="rawInput" type="date" v-bind="$attrs" @focusout="handleInput" />
+    <DatePicker v-model="dateModel" view="month" dateFormat="MM yy" showIcon fluid />
 </template>

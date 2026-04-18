@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import Button from 'primevue/button';
+import Checkbox from 'primevue/checkbox';
+import DatePicker from 'primevue/datepicker';
+import RadioButton from 'primevue/radiobutton';
+import { computed, ref } from 'vue';
 
+import { dateToIsoDate } from '@/common';
 import AutoComplete from '@/components/autocomplete/AutoComplete.vue';
 import CurrencyInput from '@/components/input/CurrencyInput.vue';
-import IconButton from '@/components/input/IconButton.vue';
 import MonthInput from '@/components/input/MonthInput.vue';
-import TextInput from '@/components/input/TextInput.vue';
 import VerticalSlidingTransition from '@/components/transitions/VerticalSlidingTransition.vue';
 import { useCategoryShopStore } from '@/stores/CategoryShopStore';
 import type { TransactionFilterRules } from '@/stores/TransactionStore';
@@ -24,24 +27,46 @@ const emit = defineEmits<{
     submit: [filterRules: TransactionFilterRules];
     reset: [filterRules: TransactionFilterRules];
 }>();
-true;
+
 function resetFilterRules() {
     filterRules.value = props.defaultFilterRules;
     emit('reset', filterRules.value);
 }
+
+const dateFromModel = computed({
+    get() {
+        if (!filterRules.value.dateFrom) return null;
+        return new Date(filterRules.value.dateFrom);
+    },
+    set(value: Date | null) {
+        filterRules.value.dateFrom = value ? dateToIsoDate(value) : undefined;
+    }
+});
+
+const dateToModel = computed({
+    get() {
+        if (!filterRules.value.dateTo) return null;
+        return new Date(filterRules.value.dateTo);
+    },
+    set(value: Date | null) {
+        filterRules.value.dateTo = value ? dateToIsoDate(value) : undefined;
+    }
+});
 </script>
 
 <template>
     <header class="grid grid-cols-3">
         <div class="col-start-2 flex justify-center gap-1 p-2 font-semibold">
-            <span class="material-symbols-outlined place-self-center text-xl">filter_alt</span>
+            <span class="pi pi-filter" />
             <span>Filter</span>
         </div>
-        <IconButton
-            class="m-1 self-center justify-self-end child:transition-transform child:duration-200"
-            :class="{ 'child:rotate-180': isExpanded }"
-            icon-name="expand_more"
+        <Button
             v-if="props.allowMinimizing"
+            :icon="isExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+            text
+            rounded
+            size="small"
+            class="m-1 self-center justify-self-end"
             @click.prevent="isExpanded = !isExpanded"
         />
     </header>
@@ -56,39 +81,55 @@ function resetFilterRules() {
             @reset.prevent="resetFilterRules"
         >
             <section>
-                <label>
-                    <input v-model="filterRules.isExpense" type="radio" :value="undefined" />
-                    Alle Transaktionen
-                </label>
-                <label>
-                    <input v-model="filterRules.isExpense" type="radio" :value="true" />
-                    Geldausgänge
-                </label>
-                <label>
-                    <input v-model="filterRules.isExpense" type="radio" :value="false" />
-                    Geldeingänge
-                </label>
+                <div class="flex items-center gap-2">
+                    <RadioButton
+                        v-model="filterRules.isExpense"
+                        :value="undefined"
+                        inputId="filter-all"
+                    />
+                    <label for="filter-all">Alle Transaktionen</label>
+                </div>
+                <div class="flex items-center gap-2">
+                    <RadioButton
+                        v-model="filterRules.isExpense"
+                        :value="true"
+                        inputId="filter-expense"
+                    />
+                    <label for="filter-expense">Geldausgänge</label>
+                </div>
+                <div class="flex items-center gap-2">
+                    <RadioButton
+                        v-model="filterRules.isExpense"
+                        :value="false"
+                        inputId="filter-income"
+                    />
+                    <label for="filter-income">Geldeingänge</label>
+                </div>
 
-                <label class="mt-4">
-                    <input v-model="filterRules.isMonthlyTransaction" type="checkbox" />
-                    Monatliche Umsätze
-                </label>
+                <div class="mt-4 flex items-center gap-2">
+                    <Checkbox
+                        v-model="filterRules.isRecurringTransaction"
+                        :binary="true"
+                        inputId="filter-recurring"
+                    />
+                    <label for="filter-recurring">Wiederkehrende Umsätze</label>
+                </div>
             </section>
 
-            <section v-if="!filterRules.isMonthlyTransaction" class="vertical-form">
+            <section v-if="!filterRules.isRecurringTransaction" class="vertical-form">
                 <label>ab</label>
-                <TextInput v-model.lazy="filterRules.dateFrom" type="date" />
+                <DatePicker v-model="dateFromModel" dateFormat="dd.mm.yy" showIcon fluid />
 
                 <label>bis</label>
-                <TextInput v-model.lazy="filterRules.dateTo" type="date" />
+                <DatePicker v-model="dateToModel" dateFormat="dd.mm.yy" showIcon fluid />
             </section>
 
             <section v-else class="vertical-form">
-                <label>ab Monat</label>
-                <MonthInput v-model="filterRules.monthFrom" />
+                <label>Beginn vor</label>
+                <MonthInput v-model="filterRules.intervalStartsLe" />
 
-                <label>bis Monat</label>
-                <MonthInput v-model="filterRules.monthTo" />
+                <label>Ende nach</label>
+                <MonthInput v-model="filterRules.intervalEndsGe" />
             </section>
 
             <section class="vertical-form">
@@ -112,8 +153,8 @@ function resetFilterRules() {
 
             <section>
                 <div class="flex justify-center gap-2">
-                    <button class="btn btn-green" type="submit">Suchen</button>
-                    <button class="btn" type="reset">Zurücksetzen</button>
+                    <Button label="Suchen" type="submit" severity="success" />
+                    <Button label="Zurücksetzen" type="reset" severity="secondary" />
                 </div>
             </section>
         </form>
@@ -121,12 +162,8 @@ function resetFilterRules() {
 </template>
 
 <style scoped>
-label > :is(input[type='checkbox'], input[type='radio']) {
-    @apply mr-2;
-}
-
 section {
-    @apply flex flex-col py-4;
+    @apply flex flex-col gap-2 py-4;
 
     &.vertical-form {
         > :nth-child(odd) {

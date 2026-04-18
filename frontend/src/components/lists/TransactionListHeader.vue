@@ -1,6 +1,6 @@
-<script setup lang="ts" generic="T extends OneoffTransaction | MonthlyTransaction">
+<script setup lang="ts" generic="T extends OneoffTransaction | RecurringTransaction">
 import { ColumnSettings } from '@/components/lists/listConfig';
-import { MonthlyTransaction, OneoffTransaction } from '@/stores/TransactionStore';
+import { RecurringTransaction, OneoffTransaction } from '@/stores/TransactionStore';
 
 const props = defineProps<{
     columnSettings: ColumnSettings<T>[];

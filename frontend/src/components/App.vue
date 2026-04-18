@@ -1,9 +1,9 @@
 <script setup>
+import Toast from 'primevue/toast';
 import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import MenuBar from '@/components/MenuBar.vue';
-import Notification from '@/components/Notification.vue';
 import AuthenticationPage from '@/components/pages/Authentication.vue';
 import { useAuthStateStore } from '@/stores/AuthStateStore';
 
@@ -22,7 +22,7 @@ watch(
 </script>
 
 <template>
-    <Notification :class="{ 'mt-16': AuthStateStore.authenticated }" />
+    <Toast />
     <MenuBar
         v-if="AuthStateStore.authenticated"
         :username="AuthStateStore.username"

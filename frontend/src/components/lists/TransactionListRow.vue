@@ -1,10 +1,10 @@
-<script setup lang="ts" generic="T extends OneoffTransaction | MonthlyTransaction">
+<script setup lang="ts" generic="T extends OneoffTransaction | RecurringTransaction">
 import { ref } from 'vue';
 
 import ExpandAction from '@/components/lists/ExpandAction.vue';
 import { ColumnSettings } from '@/components/lists/listConfig';
 import VerticalSlidingTransition from '@/components/transitions/VerticalSlidingTransition.vue';
-import { MonthlyTransaction, OneoffTransaction } from '@/stores/TransactionStore';
+import { RecurringTransaction, OneoffTransaction } from '@/stores/TransactionStore';
 
 const props = defineProps<{
     transaction: T;

@@ -8,6 +8,7 @@
     },
     "dependencies": {
         "@primeuix/themes": "^2.0.3",
+        "@primevue/forms": "^4.5.5",
         "@types/chart.js": "^2.9.41",
         "@vitejs/plugin-vue": "^4.0.0",
         "@vue/compiler-sfc": "^3.4.0",

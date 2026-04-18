@@ -1,6 +1,7 @@
 import { createPinia } from 'pinia';
 import 'primeicons/primeicons.css';
 import PrimeVue from 'primevue/config';
+import ToastService from 'primevue/toastservice';
 import { createApp } from 'vue';
 
 import Aura from '@primeuix/themes/aura';
@@ -21,8 +22,18 @@ app.use(pinia);
 app.use(PrimeVue, {
     theme: {
         preset: Aura
+    },
+    locale: {
+        emptySearchMessage: 'Keine Einträge gefunden'
+    },
+    pt: {
+        fieldset: {
+            root: { style: 'background: transparent' },
+            legend: { style: 'background: transparent' }
+        }
     }
 });
+app.use(ToastService);
 
 const AuthStateStore = useAuthStateStore();
 const CategoryShopStore = useCategoryShopStore();

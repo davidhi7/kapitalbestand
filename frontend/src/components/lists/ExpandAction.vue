@@ -2,11 +2,11 @@
 import { computed } from 'vue';
 
 import { shortDateTimeFormat } from '@/common';
-import { MonthlyTransaction, OneoffTransaction } from '@/stores/TransactionStore';
+import { OneoffTransaction, RecurringTransaction } from '@/stores/TransactionStore';
 import { isOneoffTransaction } from '@/stores/TransactionStore';
 
 const props = defineProps<{
-    transaction: OneoffTransaction | MonthlyTransaction;
+    transaction: OneoffTransaction | RecurringTransaction;
 }>();
 
 const emit = defineEmits<{
@@ -18,10 +18,12 @@ const keyValuePairs = computed<Record<string, string>>(() => {
     const isOneoff = isOneoffTransaction(props.transaction);
     let type;
     if (!isOneoff) {
+        const recurring = props.transaction as RecurringTransaction;
+        const freqLabel = recurring.recurrence.frequency === 'yearly' ? 'jährlich' : 'monatlich';
         if (isExpense) {
-            type = 'monatliche Ausgabe';
+            type = `${freqLabel}e Ausgabe`;
         } else {
-            type = 'monatliches Einkommen';
+            type = `${freqLabel}es Einkommen`;
         }
     } else {
         if (isExpense) {

@@ -1,14 +1,16 @@
 <script setup lang="ts">
+import Select from 'primevue/select';
+import { useToast } from 'primevue/usetoast';
+import { computed } from 'vue';
 import { breakpointsTailwind, useAsyncState, useBreakpoints } from '@vueuse/core';
 
-import { NotificationEvent, NotificationStyle, eventEmitter } from '@/components/Notification.vue';
 import TransactionFilterForm from '@/components/lists/TransactionFilterForm.vue';
 import TransactionList from '@/components/lists/TransactionList.vue';
 import {
-    monthlyTransactionColumnSettings,
+    recurringTransactionColumnSettings,
     oneoffTransactionColumnSettings
 } from '@/components/lists/listConfig';
-import { MonthlyTransaction, OneoffTransaction } from '@/stores/TransactionStore';
+import { OneoffTransaction, RecurringTransaction } from '@/stores/TransactionStore';
 import {
     OrderKey,
     OrderSettings,
@@ -19,6 +21,7 @@ import {
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const TransactionStore = useTransactionStore();
+const toast = useToast();
 
 const orderOptions: { text: string; value: OrderSettings }[] = [
     {
@@ -59,23 +62,39 @@ let {
     state: transactionData,
     execute: fetchTransactions,
     isLoading
-} = useAsyncState<(OneoffTransaction | MonthlyTransaction)[]>(
+} = useAsyncState<(OneoffTransaction | RecurringTransaction)[]>(
     async () => {
         try {
             await TransactionStore.fetch();
         } catch (err) {
-            eventEmitter.dispatchEvent(
-                new NotificationEvent(
-                    NotificationStyle.ERROR,
-                    'Fehler beim Laden der Transaktionen'
-                )
-            );
+            toast.add({
+                severity: 'error',
+                summary: 'Fehler beim Laden der Transaktionen',
+                life: 3000
+            });
         }
         return TransactionStore.transactions;
     },
     TransactionStore.transactions,
     { resetOnExecute: true }
 );
+
+const selectedOrderOption = computed({
+    get() {
+        const current = TransactionStore.transactionFilterRules.order;
+        return (
+            orderOptions.find(
+                (o) =>
+                    o.value.orderKey === current.orderKey &&
+                    o.value.ordering === current.ordering
+            ) ?? orderOptions[0]
+        );
+    },
+    set(option: { text: string; value: OrderSettings }) {
+        TransactionStore.transactionFilterRules.order = option.value;
+        fetchTransactions();
+    }
+});
 
 function applyRules(filterRules: TransactionFilterRules) {
     TransactionStore.transactionFilterRules = Object.assign(
@@ -90,18 +109,14 @@ function applyRules(filterRules: TransactionFilterRules) {
 
 <template>
     <div class="layout">
-        <header class="flex flex-row items-center gap-1 md:col-start-2">
+        <header class="flex flex-row items-center gap-2 md:col-start-2">
             <h1 class="flex-grow text-left">Liste</h1>
-            <span class="material-symbols-outlined text-xl">sort</span>
-            <select
-                v-model="TransactionStore.transactionFilterRules.order"
-                class="rounded-md border-[1px] border-input-bg bg-main-bg p-2 transition-colors hover:bg-input-bg"
-                @change="fetchTransactions()"
-            >
-                <option v-for="option in orderOptions" :value="option.value">
-                    {{ option.text }}
-                </option>
-            </select>
+            <span class="pi pi-sort-alt" />
+            <Select
+                v-model="selectedOrderOption"
+                :options="orderOptions"
+                optionLabel="text"
+            />
         </header>
 
         <aside class="row-start-2">
@@ -114,9 +129,9 @@ function applyRules(filterRules: TransactionFilterRules) {
         </aside>
         <main class="row-start-2">
             <TransactionList
-                v-if="TransactionStore.transactionFilterRules.isMonthlyTransaction"
-                :column-settings="monthlyTransactionColumnSettings"
-                :transactions="transactionData as MonthlyTransaction[]"
+                v-if="TransactionStore.transactionFilterRules.isRecurringTransaction"
+                :column-settings="recurringTransactionColumnSettings"
+                :transactions="transactionData as RecurringTransaction[]"
                 :loading="isLoading"
             />
             <TransactionList

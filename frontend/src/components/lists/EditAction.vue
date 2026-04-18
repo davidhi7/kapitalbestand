@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import TransactionForm from '@/components/forms/TransactionForm.vue';
-import { MonthlyTransaction, OneoffTransaction } from '@/stores/TransactionStore';
+import { OneoffTransaction, RecurringTransaction } from '@/stores/TransactionStore';
 
 const props = defineProps<{
-    transaction: OneoffTransaction | MonthlyTransaction;
+    transaction: OneoffTransaction | RecurringTransaction;
 }>();
 
 const emit = defineEmits<{

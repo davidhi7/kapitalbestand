@@ -1,43 +1,47 @@
 <script setup lang="ts">
-defineProps<{
+import Button from 'primevue/button';
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+
+const props = defineProps<{
     to?: string;
     icon?: string;
     label?: string;
-    labelLeft?: boolean;
 }>();
+
+const route = useRoute();
+const isActive = computed(() => props.to != null && route.path === props.to);
 </script>
 
 <template>
-    <component
-        :is="to ? 'router-link' : 'button'"
+    <!-- in case of a link make this into a router link for navigation -->
+    <Button
+        :as="to ? 'router-link' : undefined"
         :to="to"
-        class="flex cursor-pointer flex-row transition-colors hover:bg-header-bg-hover sm:flex-col"
-    >
-        <!--
-            Indicator visible if the current url matches the link; Located on wide screens on the top, on mobile devices on the left
-            If the router 'link' is only a button, don't show this
-        -->
-        <div v-if="to != null" class="w-1 sm:h-1 sm:w-auto" />
-        <!-- Container for the icon and label, respecting the space occupied by the indicator. -->
-        <div
-            class="content flex grow items-center pb-2 pl-1 pr-2 pt-2 sm:pl-2 sm:pt-1"
-            :class="{ 'pl-2 sm:pt-2': to == null }"
-        >
-            <span v-if="label && labelLeft" class="mx-0.5 text-[1em]">
-                {{ label }}
-            </span>
-            <span v-if="icon" class="material-symbols-outlined mx-0.5 select-none text-[1.25em]">
-                {{ icon }}
-            </span>
-            <span v-if="label && !labelLeft" class="mx-0.5 text-[1em]">
-                {{ label }}
-            </span>
-        </div>
-    </component>
+        :icon="icon ? 'pi ' + icon : undefined"
+        :label="label"
+        unstyled
+        class="nav-link flex cursor-pointer items-center gap-2 border-l-2 px-4 py-2 sm:border-b-2 sm:border-l-0"
+        :class="{
+            'nav-link-active': isActive
+        }"
+    />
 </template>
 
 <style scoped>
-a.router-link-active > :first-child {
-    @apply bg-main-dark;
+.nav-link {
+    color: var(--main-dark);
+    border-radius: 0;
+    border-color: transparent;
+    border-style: solid;
+}
+
+.nav-link:hover {
+    background: var(--header-bg-hover);
+    color: var(--main-dark);
+}
+
+.nav-link-active {
+    border-color: var(--main-dark);
 }
 </style>

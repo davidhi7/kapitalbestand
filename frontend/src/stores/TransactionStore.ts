@@ -21,7 +21,7 @@ export type OrderSettings = {
     orderKey: OrderKey;
 };
 
-export type TransactionType = 'oneoff' | 'monthly';
+export type TransactionType = 'oneoff' | 'recurring';
 
 type BaseTransaction = {
     id: number;
@@ -41,10 +41,24 @@ export type OneoffTransaction = {
     date: string;
 } & BaseTransaction;
 
-export type MonthlyTransaction = {
+export type MonthlyRecurrence = {
+    frequency: 'monthly';
     monthFrom: string;
     monthTo?: string;
+};
+
+export type YearlyRecurrence = {
+    frequency: 'yearly';
+    yearFrom: number;
+    yearTo?: number;
+};
+
+export type Recurrence = MonthlyRecurrence | YearlyRecurrence;
+
+export type RecurringTransaction = {
+    recurrence: Recurrence;
 } & BaseTransaction;
+
 
 type BaseTransactionCreateParams = {
     isExpense: boolean;
@@ -58,14 +72,13 @@ type OneoffTransactionCreateParams = {
     date: string;
 } & BaseTransactionCreateParams;
 
-type MonthlyTransactionCreateParams = {
-    monthFrom: string;
-    monthTo?: string;
+type RecurringTransactionCreateParams = {
+    recurrence: Recurrence;
 } & BaseTransactionCreateParams;
 
 export type CreateParams<T extends TransactionType> = T extends 'oneoff'
     ? OneoffTransactionCreateParams
-    : MonthlyTransactionCreateParams;
+    : RecurringTransactionCreateParams;
 
 type BaseTransactionQueryParams = {
     isExpense?: boolean;
@@ -80,14 +93,16 @@ type OneoffTransactionQueryParams = {
     dateTo?: string;
 } & BaseTransactionQueryParams;
 
-type MonthlyTransactionQueryParams = {
-    monthFrom?: string;
-    monthTo?: string | null;
+type RecurringTransactionQueryParams = {
+    frequency?: 'monthly' | 'yearly';
+    intervalStartsLe?: string;
+    intervalEndsGe?: string;
+    isTerminating?: boolean;
 } & BaseTransactionQueryParams;
 
 export type QueryParams<T extends TransactionType> = T extends 'oneoff'
     ? OneoffTransactionQueryParams
-    : MonthlyTransactionQueryParams;
+    : RecurringTransactionQueryParams;
 
 type BaseTransactionUpdateParams = {
     isExpense?: boolean;
@@ -101,23 +116,24 @@ type OneoffTransactionUpdateParams = {
     date?: string;
 } & BaseTransactionUpdateParams;
 
-type MonthlyTransactionUpdateParams = {
-    monthFrom?: string;
-    monthTo?: string | null;
+type RecurringTransactionUpdateParams = {
+    recurrence?: Recurrence;
 } & BaseTransactionUpdateParams;
 
 export type UpdateParams<T extends TransactionType> = BaseTransactionUpdateParams &
     T extends 'oneoff'
     ? OneoffTransactionUpdateParams
-    : MonthlyTransactionUpdateParams;
+    : RecurringTransactionUpdateParams;
 
 export type TransactionFilterRules = {
-    isMonthlyTransaction: boolean;
+    isRecurringTransaction: boolean;
     isExpense?: boolean;
     dateFrom?: string;
     dateTo?: string;
-    monthFrom?: string;
-    monthTo?: string;
+    frequency?: 'monthly' | 'yearly';
+    intervalStartsLe?: string;
+    intervalEndsGe?: string;
+    isTerminating?: boolean;
     amountFrom?: number;
     amountTo?: number;
     Category?: Category;
@@ -126,7 +142,7 @@ export type TransactionFilterRules = {
 };
 
 export function isOneoffTransaction(
-    transaction: OneoffTransaction | MonthlyTransaction
+    transaction: OneoffTransaction | RecurringTransaction
 ): transaction is OneoffTransaction {
     return (transaction as OneoffTransaction).date != undefined;
 }
@@ -134,7 +150,7 @@ const currentDate = new Date();
 
 interface State {
     transactionFilterRules: TransactionFilterRules;
-    transactions: (OneoffTransaction | MonthlyTransaction)[];
+    transactions: (OneoffTransaction | RecurringTransaction)[];
 }
 
 export const useTransactionStore = defineStore('Transaction', {
@@ -144,8 +160,8 @@ export const useTransactionStore = defineStore('Transaction', {
                 dateFrom: dateToIsoDate(
                     new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
                 ),
-                monthFrom: `${currentDate.getFullYear()}-01`,
-                isMonthlyTransaction: false,
+                intervalStartsLe: `${currentDate.getFullYear()}-01`,
+                isRecurringTransaction: false,
                 order: {
                     ordering: Ordering.Asc,
                     orderKey: OrderKey.Time
@@ -168,23 +184,18 @@ export const useTransactionStore = defineStore('Transaction', {
             }
 
             // Only fetch transactions if currently filtered transaction type is equal to type of just created transaction
-            const isMonthlyTransaction =
+            const isRecurringTransaction =
                 (payload as OneoffTransactionCreateParams).date == undefined;
-            if (isMonthlyTransaction === this.transactionFilterRules.isMonthlyTransaction) {
+            if (isRecurringTransaction === this.transactionFilterRules.isRecurringTransaction) {
                 this.fetch();
             }
         },
         async fetch() {
-            // Not pretty but simplest solution
-            // const payload: Partial<Record<keyof QueryParams<T>, string>> = {};
-            // ^ this code doesn't work
-            const payload: Partial<
-                Record<keyof (OneoffTransactionQueryParams & MonthlyTransactionQueryParams), string>
-            > = {};
+            const payload: Record<string, string> = {};
             let filters = this.transactionFilterRules;
             let endpoint: string;
 
-            if (!filters.isMonthlyTransaction) {
+            if (!filters.isRecurringTransaction) {
                 endpoint = '/api/transactions/oneoff';
                 if (filters.dateFrom !== undefined) {
                     payload['dateFrom'] = filters.dateFrom;
@@ -194,13 +205,22 @@ export const useTransactionStore = defineStore('Transaction', {
                     payload['dateTo'] = filters.dateTo;
                 }
             } else {
-                endpoint = '/api/transactions/monthly';
-                if (filters.monthFrom !== undefined) {
-                    payload['monthFrom'] = filters.monthFrom;
+                endpoint = '/api/transactions/recurring';
+
+                if (filters.frequency !== undefined) {
+                    payload['frequency'] = filters.frequency;
                 }
 
-                if (filters.monthTo !== undefined) {
-                    payload['monthTo'] = filters.monthTo;
+                if (filters.intervalStartsLe !== undefined) {
+                    payload['intervalStartsLe'] = filters.intervalStartsLe;
+                }
+
+                if (filters.intervalEndsGe !== undefined) {
+                    payload['intervalEndsGe'] = filters.intervalEndsGe;
+                }
+
+                if (filters.isTerminating !== undefined) {
+                    payload['isTerminating'] = String(filters.isTerminating);
                 }
             }
 

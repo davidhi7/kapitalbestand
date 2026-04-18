@@ -4,4 +4,5 @@ dist/
 coverage/
 .*.env
 backend-v2/target/
-backend-v2/scripts/private
+
+.zed

@@ -1,12 +1,15 @@
 <script setup lang="ts">
+import Button from 'primevue/button';
+import FloatLabel from 'primevue/floatlabel';
+import InputText from 'primevue/inputtext';
+import Password from 'primevue/password';
+import { useToast } from 'primevue/usetoast';
 import { ref } from 'vue';
 
-import { NotificationEvent, NotificationStyle, eventEmitter } from '@/components/Notification.vue';
-import GridForm from '@/components/forms/GridForm.vue';
-import TextInput from '@/components/input/TextInput.vue';
 import { AuthResponse, useAuthStateStore } from '@/stores/AuthStateStore';
 
 const AuthStateStore = useAuthStateStore();
+const toast = useToast();
 
 const isRegisterForm = ref(false);
 const username = ref('');
@@ -28,9 +31,7 @@ async function submit() {
 
     if (register) {
         if (password.value !== passwordVerification.value) {
-            eventEmitter.dispatchEvent(
-                new NotificationEvent(NotificationStyle.WARNING, 'Passwort falsch wiederholt!')
-            );
+            toast.add({ severity: 'warn', summary: 'Passwort falsch wiederholt!', life: 3000 });
             resetPasswordFields();
             return;
         }
@@ -39,12 +40,11 @@ async function submit() {
     resetPasswordFields();
 
     if (status !== AuthResponse.Success) {
-        eventEmitter.dispatchEvent(
-            new NotificationEvent(
-                NotificationStyle.ERROR,
-                `${register ? 'Registrierung' : 'Anmeldung'} fehlgeschlagen`
-            )
-        );
+        toast.add({
+            severity: 'error',
+            summary: `${register ? 'Registrierung' : 'Anmeldung'} fehlgeschlagen`,
+            life: 3000
+        });
     }
 }
 </script>
@@ -57,49 +57,50 @@ async function submit() {
             Kapital&shy;bestand
         </h1>
         <hr class="bg-gradient h-1 w-full border-none" />
-        <GridForm>
-            <span>Benutzername</span>
-            <TextInput
-                v-model.lazy="username"
-                type="text"
-                required
-                :show-required-indicator="false"
-            />
+        <div class="flex w-full max-w-md flex-col gap-4">
+            <FloatLabel variant="in">
+                <InputText id="username" v-model="username" type="text" required fluid />
+                <label for="username">Benutzername</label>
+            </FloatLabel>
 
-            <span>Passwort</span>
-            <TextInput
-                v-model.lazy="password"
-                type="password"
-                minlength="8"
-                required
-                :show-required-indicator="false"
-            />
+            <FloatLabel variant="in">
+                <Password
+                    input-id="password"
+                    v-model="password"
+                    :feedback="false"
+                    toggle-mask
+                    minlength="8"
+                    required
+                    fluid
+                />
+                <label for="password">Passwort</label>
+            </FloatLabel>
 
-            <span v-if="isRegisterForm">Passwort bestätigen</span>
-            <TextInput
-                v-if="isRegisterForm"
-                v-model.lazy="passwordVerification"
-                type="password"
-                minlength="8"
-                required
-                :show-required-indicator="false"
-            />
-        </GridForm>
-        <hr class="bg-gradient h-1 w-full border-none" />
+            <FloatLabel v-if="isRegisterForm" variant="in">
+                <Password
+                    input-id="password-verification"
+                    v-model="passwordVerification"
+                    :feedback="false"
+                    toggle-mask
+                    minlength="8"
+                    required
+                    fluid
+                />
+                <label for="password-verification">Passwort bestätigen</label>
+            </FloatLabel>
+        </div>
         <div class="flex flex-row items-center gap-4">
-            <button class="btn" type="submit" :name="isRegisterForm ? 'register' : 'login'">
-                {{ isRegisterForm ? 'Registrieren' : 'Anmelden' }}
-            </button>
-            <span>
-                Oder
-                <button
+            <Button type="submit" :label="isRegisterForm ? 'Registrieren' : 'Anmelden'" />
+            <span class="flex flex-row items-center gap-1">
+                oder
+                <Button
                     type="button"
-                    class="cursor-pointer text-inherit underline decoration-1 transition-colors hover:text-tertiary"
+                    link
+                    :label="isRegisterForm ? 'anmelden' : 'neu registrieren'"
                     @click="toggleFormType"
-                >
-                    {{ isRegisterForm ? 'anmelden' : 'neu registrieren' }}</button
-                >?
+                />
             </span>
         </div>
+        <hr class="bg-gradient h-1 w-full border-none" />
     </form>
 </template>
