@@ -11,7 +11,6 @@ const props = withDefaults(
         suggestCreateObject?: boolean;
     }>(),
     {
-        suggestions: () => [],
         suggestCreateObject: false
     }
 );
@@ -21,7 +20,9 @@ const emit = defineEmits<{
 }>();
 
 // Hack to make the PvAutoComplete hide function available
-const pvAutoComplete = ref<InstanceType<typeof PvAutoComplete> & { hide: () => void }>();
+const pvAutoComplete = ref<
+    InstanceType<typeof PvAutoComplete> & { hide: () => void }
+>();
 
 const filteredSuggestions = ref<string[]>([]);
 const lastQuery = ref('');
@@ -69,12 +70,19 @@ defineExpose({ hide });
         :suggestions="filteredSuggestions"
         fluid
         dropdown
-        forceSelection
+        force-selection
         @complete="search"
-        @input="(e: Event) => (inputText = (e.target as HTMLInputElement).value)"
+        @input="
+            (e: Event) => (inputText = (e.target as HTMLInputElement).value)
+        "
     >
         <template #footer>
-            <div v-if="suggestCreateObject && !exactMatch && lastQuery.length > 0" class="p-2">
+            <div
+                v-if="
+                    suggestCreateObject && !exactMatch && lastQuery.length > 0
+                "
+                class="p-2"
+            >
                 <Button
                     label="Neu erstellen"
                     fluid

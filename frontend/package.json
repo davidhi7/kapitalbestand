@@ -1,18 +1,21 @@
 {
     "name": "kapitalbestand-frontend",
     "private": true,
+    "type": "module",
     "scripts": {
         "dev": "vite",
         "build": "vite build",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "lint": "eslint",
+        "lint:fix": "eslint --fix",
+        "format": "prettier --write"
     },
     "dependencies": {
         "@primeuix/themes": "^2.0.3",
         "@primevue/forms": "^4.5.5",
         "@types/chart.js": "^2.9.41",
-        "@vitejs/plugin-vue": "^4.0.0",
-        "@vue/compiler-sfc": "^3.4.0",
-        "@vueuse/core": "^10.9.0",
+        "@vitejs/plugin-vue": "^6.0.0",
+        "@vueuse/core": "^14.2.1",
         "autoprefixer": "^10.4.13",
         "chart.js": "^4.2.1",
         "pinia": "^2.0.29",
@@ -21,12 +24,43 @@
         "primeicons": "^7.0.0",
         "primevue": "^4.5.4",
         "tailwindcss": "^3.2.4",
-        "vite": "^4.0.1",
-        "vue": "^3.2.45",
+        "vite": "^8.0.9",
+        "vue": "^3.5",
         "vue-chartjs": "^5.2.0",
         "vue-router": "^4.1.6"
     },
     "devDependencies": {
-        "typescript": "^5.8.3"
+        "@eslint/js": "^10.0.1",
+        "@trivago/prettier-plugin-sort-imports": "^4.1.1",
+        "eslint": "^10.0.0",
+        "eslint-config-prettier": "^10.0.0",
+        "eslint-plugin-vue": "^10.0.0",
+        "globals": "^17.5.0",
+        "prettier": "^3.2.5",
+        "prettier-plugin-tailwindcss": "^0.5.13",
+        "typescript": "^5.8.3",
+        "typescript-eslint": "^8.58.2"
+    },
+    "prettier": {
+        "tabWidth": 4,
+        "trailingComma": "none",
+        "singleQuote": true,
+        "semi": true,
+        "plugins": [
+            "@trivago/prettier-plugin-sort-imports",
+            "prettier-plugin-tailwindcss"
+        ],
+        "importOrder": [
+            "^@[^/].*$",
+            "^@/.*$",
+            "^[./]"
+        ],
+        "importOrderSeparation": true,
+        "importOrderSortSpecifiers": true,
+        "importOrderParserPlugins": [
+            "typescript",
+            "decorators-legacy"
+        ],
+        "tailwindConfig": "./tailwind.config.js"
     }
 }

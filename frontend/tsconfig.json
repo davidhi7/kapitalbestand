@@ -11,8 +11,8 @@
         "isolatedModules": true,
         "paths": {
             "@/*": ["./src/*"],
-            "@backend-types/*": ["../backend/src/types/*"]
         },
+        "rootDir": ".",
         "outDir": "dist/"
     },
     "include": ["src/"]
