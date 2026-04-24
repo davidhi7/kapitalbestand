@@ -1,25 +1,10 @@
 import { defineStore } from 'pinia';
 
 import HttpError from '@/HttpError';
-import { dateToIsoDate } from '@/common';
-import { Category, Shop } from '@/stores/CategoryShopStore';
-
-export enum Ordering {
-    Asc = 'Asc',
-    Desc = 'Desc'
-}
-
-export enum OrderKey {
-    Time = 'Time',
-    Amount = 'Amont',
-    Category = 'Category',
-    Shop = 'Shop'
-}
-
-export type OrderSettings = {
-    ordering: Ordering;
-    orderKey: OrderKey;
-};
+import {
+    TransactionFilterRules,
+    TransactionOrderRules
+} from '@/components/pages/ListPage.vue';
 
 export type TransactionType = 'oneoff' | 'recurring';
 
@@ -59,7 +44,6 @@ export type RecurringTransaction = {
     recurrence: Recurrence;
 } & BaseTransaction;
 
-
 type BaseTransactionCreateParams = {
     isExpense: boolean;
     amount: number;
@@ -86,7 +70,7 @@ type BaseTransactionQueryParams = {
     amountTo?: number;
     categoryId?: number;
     shopId?: number | null;
-} & OrderSettings;
+} & TransactionOrderRules;
 
 type OneoffTransactionQueryParams = {
     dateFrom?: string;
@@ -120,58 +104,30 @@ type RecurringTransactionUpdateParams = {
     recurrence?: Recurrence;
 } & BaseTransactionUpdateParams;
 
-export type UpdateParams<T extends TransactionType> = BaseTransactionUpdateParams &
-    T extends 'oneoff'
-    ? OneoffTransactionUpdateParams
-    : RecurringTransactionUpdateParams;
-
-export type TransactionFilterRules = {
-    isRecurringTransaction: boolean;
-    isExpense?: boolean;
-    dateFrom?: string;
-    dateTo?: string;
-    frequency?: 'monthly' | 'yearly';
-    intervalStartsLe?: string;
-    intervalEndsGe?: string;
-    isTerminating?: boolean;
-    amountFrom?: number;
-    amountTo?: number;
-    Category?: Category;
-    Shop?: Shop;
-    order: OrderSettings;
-};
+export type UpdateParams<T extends TransactionType> =
+    BaseTransactionUpdateParams & T extends 'oneoff'
+        ? OneoffTransactionUpdateParams
+        : RecurringTransactionUpdateParams;
 
 export function isOneoffTransaction(
     transaction: OneoffTransaction | RecurringTransaction
 ): transaction is OneoffTransaction {
     return (transaction as OneoffTransaction).date != undefined;
 }
-const currentDate = new Date();
 
-interface State {
-    transactionFilterRules: TransactionFilterRules;
-    transactions: (OneoffTransaction | RecurringTransaction)[];
-}
+// This used to hold actual state but no more
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface State {}
 
 export const useTransactionStore = defineStore('Transaction', {
     state: (): State => {
-        return {
-            transactionFilterRules: {
-                dateFrom: dateToIsoDate(
-                    new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
-                ),
-                intervalStartsLe: `${currentDate.getFullYear()}-01`,
-                isRecurringTransaction: false,
-                order: {
-                    ordering: Ordering.Asc,
-                    orderKey: OrderKey.Time
-                }
-            },
-            transactions: []
-        };
+        return {};
     },
     actions: {
-        async create<T extends TransactionType>(type: T, payload: CreateParams<T>) {
+        async create<T extends TransactionType>(
+            type: T,
+            payload: CreateParams<T>
+        ) {
             const response = await fetch(`/api/transactions/${type}`, {
                 method: 'POST',
                 headers: {
@@ -182,17 +138,13 @@ export const useTransactionStore = defineStore('Transaction', {
             if (!response.ok) {
                 throw new HttpError(response.status);
             }
-
-            // Only fetch transactions if currently filtered transaction type is equal to type of just created transaction
-            const isRecurringTransaction =
-                (payload as OneoffTransactionCreateParams).date == undefined;
-            if (isRecurringTransaction === this.transactionFilterRules.isRecurringTransaction) {
-                this.fetch();
-            }
         },
-        async fetch() {
+        async fetch(
+            filters: TransactionFilterRules,
+            order: TransactionOrderRules
+        ): Promise<(OneoffTransaction | RecurringTransaction)[]> {
+            // todo revise
             const payload: Record<string, string> = {};
-            let filters = this.transactionFilterRules;
             let endpoint: string;
 
             if (!filters.isRecurringTransaction) {
@@ -252,16 +204,21 @@ export const useTransactionStore = defineStore('Transaction', {
                 payload['ordering'] = filters.order.ordering;
             }
 
-            const response = await fetch(endpoint + '?' + new URLSearchParams(payload));
+            const response = await fetch(
+                endpoint + '?' + new URLSearchParams(payload)
+            );
 
             if (!response.ok) {
                 throw new HttpError(response.status);
             }
 
-            this.transactions = (await response.json()).data;
-            return this.transactions;
+            return (await response.json()).data;
         },
-        async update<T extends TransactionType>(type: T, id: number, payload: UpdateParams<T>) {
+        async update<T extends TransactionType>(
+            type: T,
+            id: number,
+            payload: UpdateParams<T>
+        ) {
             const response = await fetch(`/api/transactions/${type}/${id}`, {
                 method: 'PATCH',
                 headers: {

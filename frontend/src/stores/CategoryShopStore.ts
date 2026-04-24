@@ -69,10 +69,10 @@ export const useCategoryShopStore = defineStore('CategoryShop', {
                     .then((res) => res.json())
                     .then((json) => json.data)
             ]);
-            for (let category of categories) {
+            for (const category of categories) {
                 this.categories[category.name] = category;
             }
-            for (let shop of shops) {
+            for (const shop of shops) {
                 this.shops[shop.name] = shop;
             }
         }

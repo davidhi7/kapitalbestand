@@ -85,7 +85,7 @@ const currentMonthSelected = computed(() => {
                     :to="`/analysis/${monthAfter.year}/${String(monthAfter.month + 1).padStart(2, '0')}`"
                     :label="shortYearMonthFormat.format(new Date(monthAfter.year, monthAfter.month))"
                     icon="pi pi-chevron-right"
-                    iconPos="right"
+                    icon-pos="right"
                     text
                 />
             </div>

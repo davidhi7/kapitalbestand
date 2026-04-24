@@ -41,9 +41,9 @@ async function del() {
         Folgende Transaktion wirklich löschen?
         <table>
             <tr
-                class="odd:bg-secondary-bg"
                 v-for="(column, index) in props.columnSettings"
                 :key="index"
+                class="odd:bg-secondary-bg"
             >
                 <div v-if="column.text_function(props.transaction, 'long')" class="contents">
                     <td class="p-1 text-center font-semibold">

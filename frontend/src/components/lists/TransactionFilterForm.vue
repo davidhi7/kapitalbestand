@@ -1,178 +1,214 @@
 <script setup lang="ts">
 import Button from 'primevue/button';
-import Checkbox from 'primevue/checkbox';
 import DatePicker from 'primevue/datepicker';
+import FieldSet from 'primevue/fieldset';
+import FloatLabel from 'primevue/floatlabel';
+import InputNumber from 'primevue/inputnumber';
 import RadioButton from 'primevue/radiobutton';
-import { computed, ref } from 'vue';
+import RadioButtonGroup from 'primevue/radiobuttongroup';
 
-import { dateToIsoDate } from '@/common';
-import AutoComplete from '@/components/autocomplete/AutoComplete.vue';
-import CurrencyInput from '@/components/input/CurrencyInput.vue';
-import MonthInput from '@/components/input/MonthInput.vue';
-import VerticalSlidingTransition from '@/components/transitions/VerticalSlidingTransition.vue';
+import AutoComplete from '@/components/AutoComplete.vue';
+import { TransactionFilterRules } from '@/components/pages/ListPage.vue';
 import { useCategoryShopStore } from '@/stores/CategoryShopStore';
-import type { TransactionFilterRules } from '@/stores/TransactionStore';
 
 const CategoryShopStore = useCategoryShopStore();
 
-const props = defineProps<{
-    defaultFilterRules: TransactionFilterRules;
-    allowMinimizing: boolean;
-}>();
-
-const isExpanded = ref(!props.allowMinimizing);
-const filterRules = ref(props.defaultFilterRules);
-
 const emit = defineEmits<{
-    submit: [filterRules: TransactionFilterRules];
-    reset: [filterRules: TransactionFilterRules];
+    submit: [];
+    reset: [];
 }>();
 
-function resetFilterRules() {
-    filterRules.value = props.defaultFilterRules;
-    emit('reset', filterRules.value);
+const form = defineModel<TransactionFilterRules>({
+    default: {}
+});
+
+function setLastDays(days: number) {
+    const dateFrom = new Date();
+    dateFrom.setDate(dateFrom.getDate() - days);
+    form.value = {
+        type: 'all',
+        recurrence: 'all',
+        dateFrom,
+        dateTo: undefined
+    };
 }
 
-const dateFromModel = computed({
-    get() {
-        if (!filterRules.value.dateFrom) return null;
-        return new Date(filterRules.value.dateFrom);
-    },
-    set(value: Date | null) {
-        filterRules.value.dateFrom = value ? dateToIsoDate(value) : undefined;
-    }
-});
+function setAllRecurring() {
+    const today = new Date();
+    form.value = {
+        type: 'all',
+        recurrence: 'recurring',
+        dateFrom: today,
+        dateTo: today
+    };
+}
 
-const dateToModel = computed({
-    get() {
-        if (!filterRules.value.dateTo) return null;
-        return new Date(filterRules.value.dateTo);
-    },
-    set(value: Date | null) {
-        filterRules.value.dateTo = value ? dateToIsoDate(value) : undefined;
-    }
-});
+function setAll() {
+    form.value = {
+        type: 'all',
+        recurrence: 'all',
+        dateFrom: undefined,
+        dateTo: undefined
+    };
+}
 </script>
 
 <template>
-    <header class="grid grid-cols-3">
-        <div class="col-start-2 flex justify-center gap-1 p-2 font-semibold">
-            <span class="pi pi-filter" />
-            <span>Filter</span>
-        </div>
-        <Button
-            v-if="props.allowMinimizing"
-            :icon="isExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
-            text
-            rounded
-            size="small"
-            class="m-1 self-center justify-self-end"
-            @click.prevent="isExpanded = !isExpanded"
-        />
-    </header>
-    <VerticalSlidingTransition
-        duration-class="duration-200"
-        :render="isExpanded || !allowMinimizing"
-        class="border-t-[1px] border-tertiary-bg"
+    <form
+        class="mx-4 flex min-h-0 flex-col gap-2 self-end py-2"
+        @submit.prevent="emit('submit')"
     >
-        <form
-            class="mx-4 min-h-0 self-end"
-            @submit.prevent="emit('submit', filterRules)"
-            @reset.prevent="resetFilterRules"
-        >
-            <section>
-                <div class="flex items-center gap-2">
-                    <RadioButton
-                        v-model="filterRules.isExpense"
-                        :value="undefined"
-                        inputId="filter-all"
+        <FieldSet legend="Typ">
+            <RadioButtonGroup v-model="form.type" class="flex flex-col gap-1">
+                <label class="flex items-center gap-2">
+                    <RadioButton value="all" />
+                    Alle Transaktionen
+                </label>
+                <label class="flex items-center gap-2">
+                    <RadioButton value="expense" />
+                    Nur Geldausgänge
+                </label>
+                <label class="flex items-center gap-2">
+                    <RadioButton value="income" />
+                    Nur Geldeingänge
+                </label>
+            </RadioButtonGroup>
+        </FieldSet>
+
+        <FieldSet legend="Häufigkeit">
+            <div class="flex flex-col gap-2">
+                <RadioButtonGroup
+                    v-model="form.recurrence"
+                    class="flex flex-col gap-1"
+                >
+                    <label class="flex items-center gap-2">
+                        <RadioButton value="all" />
+                        Alle Transaktionen
+                    </label>
+                    <label class="flex items-center gap-2">
+                        <RadioButton value="oneoff" />
+                        Nur einmalige Transaktionen
+                    </label>
+                    <label class="flex items-center gap-2">
+                        <RadioButton value="recurring" />
+                        Nur wiederkehrende Transaktionen
+                    </label>
+                </RadioButtonGroup>
+                <div class="mt-4 flex flex-col gap-2">
+                    <FloatLabel variant="on" class="flex-1">
+                        <DatePicker
+                            v-model="form.dateFrom"
+                            input-id="dateFrom"
+                            date-format="dd.mm.yy"
+                            show-button-bar
+                            show-clear
+                            fluid
+                        />
+                        <label for="dateFrom">Frühester Zeitpunkt</label>
+                    </FloatLabel>
+                    <FloatLabel variant="on" class="flex-1">
+                        <DatePicker
+                            v-model="form.dateTo"
+                            input-id="dateTo"
+                            date-format="dd.mm.yy"
+                            show-button-bar
+                            show-clear
+                            fluid
+                        />
+                        <label for="dateTo">Spätester Zeitpunkt</label>
+                    </FloatLabel>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <Button
+                        label="Letzten 30 Tage"
+                        severity="secondary"
+                        rounded
+                        size="small"
+                        type="button"
+                        @click="setLastDays(30)"
+                    ></Button>
+                    <Button
+                        label="Letzten 90 Tage"
+                        severity="secondary"
+                        rounded
+                        size="small"
+                        type="button"
+                        @click="setLastDays(90)"
+                    ></Button>
+                    <Button
+                        label="Aktive wiederkehrende Transaktionen"
+                        severity="secondary"
+                        rounded
+                        size="small"
+                        type="button"
+                        @click="setAllRecurring"
+                    ></Button>
+                    <Button
+                        label="Alles"
+                        severity="secondary"
+                        rounded
+                        size="small"
+                        type="button"
+                        @click="setAll"
+                    ></Button>
+                </div>
+            </div>
+        </FieldSet>
+
+        <FieldSet legend="Transaktion">
+            <div class="flex flex-col gap-2">
+                <FloatLabel variant="on">
+                    <InputNumber
+                        v-model="form.amountFrom"
+                        input-id="amountFrom"
+                        mode="currency"
+                        currency="EUR"
+                        locale="de-DE"
+                        fluid
                     />
-                    <label for="filter-all">Alle Transaktionen</label>
-                </div>
-                <div class="flex items-center gap-2">
-                    <RadioButton
-                        v-model="filterRules.isExpense"
-                        :value="true"
-                        inputId="filter-expense"
+                    <label for="amountFrom">Ab Betrag</label>
+                </FloatLabel>
+                <FloatLabel variant="on">
+                    <InputNumber
+                        v-model="form.amountTo"
+                        input-id="amountTo"
+                        mode="currency"
+                        currency="EUR"
+                        locale="de-DE"
+                        fluid
                     />
-                    <label for="filter-expense">Geldausgänge</label>
-                </div>
-                <div class="flex items-center gap-2">
-                    <RadioButton
-                        v-model="filterRules.isExpense"
-                        :value="false"
-                        inputId="filter-income"
+                    <label for="amountTo">Bis Betrag</label>
+                </FloatLabel>
+                <FloatLabel variant="on">
+                    <AutoComplete
+                        v-model="form.category"
+                        input-id="category"
+                        :suggestions="Object.keys(CategoryShopStore.categories)"
+                        show-clear
                     />
-                    <label for="filter-income">Geldeingänge</label>
-                </div>
+                    <label for="category">Kategorie</label>
+                </FloatLabel>
 
-                <div class="mt-4 flex items-center gap-2">
-                    <Checkbox
-                        v-model="filterRules.isRecurringTransaction"
-                        :binary="true"
-                        inputId="filter-recurring"
+                <FloatLabel variant="on">
+                    <AutoComplete
+                        v-model="form.shop"
+                        input-id="shop"
+                        :suggestions="Object.keys(CategoryShopStore.shops)"
+                        show-clear
                     />
-                    <label for="filter-recurring">Wiederkehrende Umsätze</label>
-                </div>
-            </section>
+                    <label for="shop">Händler</label>
+                </FloatLabel>
+            </div>
+        </FieldSet>
 
-            <section v-if="!filterRules.isRecurringTransaction" class="vertical-form">
-                <label>ab</label>
-                <DatePicker v-model="dateFromModel" dateFormat="dd.mm.yy" showIcon fluid />
-
-                <label>bis</label>
-                <DatePicker v-model="dateToModel" dateFormat="dd.mm.yy" showIcon fluid />
-            </section>
-
-            <section v-else class="vertical-form">
-                <label>Beginn vor</label>
-                <MonthInput v-model="filterRules.intervalStartsLe" />
-
-                <label>Ende nach</label>
-                <MonthInput v-model="filterRules.intervalEndsGe" />
-            </section>
-
-            <section class="vertical-form">
-                <label>Kategorie</label>
-                <AutoComplete
-                    v-model="filterRules.Category"
-                    :suggestions="CategoryShopStore.categories"
-                />
-
-                <label>Händler</label>
-                <AutoComplete v-model="filterRules.Shop" :suggestions="CategoryShopStore.shops" />
-            </section>
-
-            <section class="vertical-form">
-                <label>ab Betrag</label>
-                <CurrencyInput v-model="filterRules.amountFrom" />
-
-                <label>bis Betrag</label>
-                <CurrencyInput v-model="filterRules.amountTo" />
-            </section>
-
-            <section>
-                <div class="flex justify-center gap-2">
-                    <Button label="Suchen" type="submit" severity="success" />
-                    <Button label="Zurücksetzen" type="reset" severity="secondary" />
-                </div>
-            </section>
-        </form>
-    </VerticalSlidingTransition>
+        <div class="flex justify-center gap-2">
+            <Button label="Suchen" type="submit" severity="success" />
+            <Button
+                label="Zurücksetzen"
+                type="button"
+                severity="secondary"
+                @click="emit('reset')"
+            />
+        </div>
+    </form>
 </template>
-
-<style scoped>
-section {
-    @apply flex flex-col gap-2 py-4;
-
-    &.vertical-form {
-        > :nth-child(odd) {
-            @apply relative left-2 text-secondary;
-        }
-
-        > :nth-child(even) {
-            @apply mb-2;
-        }
-    }
-}
-</style>

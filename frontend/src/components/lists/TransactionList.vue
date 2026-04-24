@@ -54,11 +54,11 @@ function breakpointClass(breakpoint: string): string {
 
 <template>
     <DataTable
+        v-model:expanded-rows="expandedRows"
         :value="transactions"
-        v-model:expandedRows="expandedRows"
-        dataKey="id"
+        data-key="id"
         :loading="loading"
-        stripedRows
+        striped-rows
     >
         <template #empty>Keine Einträge</template>
 
@@ -68,8 +68,8 @@ function breakpointClass(breakpoint: string): string {
             v-for="(col, i) in columnSettings"
             :key="i"
             :header="col.title"
-            :headerClass="breakpointClass(col.breakpoint)"
-            :bodyClass="breakpointClass(col.breakpoint)"
+            :header-class="breakpointClass(col.breakpoint)"
+            :body-class="breakpointClass(col.breakpoint)"
         >
             <template #body="{ data }">
                 <span :class="col.style_function?.(data)">

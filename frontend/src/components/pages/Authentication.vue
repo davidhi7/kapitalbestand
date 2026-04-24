@@ -65,8 +65,8 @@ async function submit() {
 
             <FloatLabel variant="in">
                 <Password
-                    input-id="password"
                     v-model="password"
+                    input-id="password"
                     :feedback="false"
                     toggle-mask
                     minlength="8"
@@ -78,8 +78,8 @@ async function submit() {
 
             <FloatLabel v-if="isRegisterForm" variant="in">
                 <Password
-                    input-id="password-verification"
                     v-model="passwordVerification"
+                    input-id="password-verification"
                     :feedback="false"
                     toggle-mask
                     minlength="8"

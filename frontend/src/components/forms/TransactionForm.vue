@@ -15,12 +15,13 @@ import type { FormInstance, FormResolverOptions, FormSubmitEvent } from '@primev
 import { templateRef, useDateFormat, useNow } from '@vueuse/core';
 
 import { dateToIsoDate, dateToYearMonth } from '@/common';
-import AutoComplete from '@/components/autocomplete/AutoComplete.vue';
+import AutoComplete from '@/components/AutoComplete.vue';
 import { useCategoryShopStore } from '@/stores/CategoryShopStore';
 import {
     OneoffTransaction,
     Recurrence,
     RecurringTransaction,
+    isOneoffTransaction,
     useTransactionStore
 } from '@/stores/TransactionStore';
 
@@ -97,6 +98,7 @@ function resolver({ values }: FormResolverOptions) {
 }
 
 // TODO work
+// set form.recurrence.value to oneoff-custom/monthly/yearly depending in transaction type
 watch(props, (value: { transaction: OneoffTransaction | RecurringTransaction | undefined }) => {}, {
     immediate: true
 });
@@ -204,7 +206,7 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
     <Form
         ref="form"
         v-slot="$form"
-        :initialValues
+        :initial-values
         :resolver="resolver"
         class="flex flex-col gap-2"
         @submit="submitForm"
@@ -221,15 +223,21 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
                 </label>
             </RadioButtonGroup>
         </FieldSet>
-        <FieldSet v-if="!isEditDialog" legend="Häufigkeit?">
-            <RadioButtonGroup name="recurrence" class="flex w-full flex-col gap-1">
+        <FieldSet legend="Häufigkeit">
+            <RadioButtonGroup
+                v-if="!isEditDialog"
+                name="recurrence"
+                class="flex w-full flex-col gap-1"
+            >
                 <label class="flex items-center gap-2">
                     <RadioButton value="oneoff-today" />
-                    Einmalig, heute ({{ formattedToday }})
+                    Einmalig, heute
+                    <span class="text-tertiary">{{ formattedToday }}</span>
                 </label>
                 <label class="flex items-center gap-2">
                     <RadioButton value="oneoff-yesterday" />
-                    Einmalig, gestern ({{ formattedYesterday }})
+                    Einmalig, gestern
+                    <span class="text-tertiary">{{ formattedToday }}</span>
                 </label>
                 <label class="flex items-center gap-2">
                     <RadioButton value="oneoff-custom" />
@@ -246,7 +254,7 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
             </RadioButtonGroup>
             <div v-if="$form.recurrence?.value === 'oneoff-custom'" class="mt-4">
                 <FloatLabel variant="on" class="flex-1">
-                    <DatePicker name="date" inputId="date" dateFormat="dd.mm.yy" fluid></DatePicker>
+                    <DatePicker name="date" input-id="date" date-format="dd.mm.yy" fluid></DatePicker>
                     <label for="date">Datum</label>
                 </FloatLabel>
             </div>
@@ -254,44 +262,44 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
                 <FloatLabel variant="on" class="flex-1">
                     <DatePicker
                         name="monthFrom"
-                        inputId="monthFrom"
+                        input-id="monthFrom"
                         view="month"
-                        dateFormat="mm.yy"
+                        date-format="mm.yy"
                         fluid
                     ></DatePicker>
-                    <label for="monthFrom">Anfang</label>
+                    <label for="monthFrom">Erster Monat</label>
                 </FloatLabel>
                 <FloatLabel variant="on" class="flex-1">
                     <DatePicker
                         name="monthTo"
-                        inputId="monthTo"
+                        input-id="monthTo"
                         view="month"
-                        dateFormat="mm.yy"
+                        date-format="mm.yy"
                         fluid
                     ></DatePicker>
-                    <label for="monthTo">Ende (inkl.)</label>
+                    <label for="monthTo">Letzter Monat (inkl.)</label>
                 </FloatLabel>
             </div>
             <div v-if="$form.recurrence?.value === 'yearly'" class="mt-4 flex gap-2 msm:flex-col">
                 <FloatLabel variant="on" class="flex-1">
                     <DatePicker
                         name="yearFrom"
-                        inputId="yearFrom"
+                        input-id="yearFrom"
                         view="year"
-                        dateFormat="yy"
+                        date-format="yy"
                         fluid
                     ></DatePicker>
-                    <label for="yearFrom">Anfang</label>
+                    <label for="yearFrom">Erstes Jahr</label>
                 </FloatLabel>
                 <FloatLabel variant="on" class="flex-1">
                     <DatePicker
                         name="yearTo"
-                        inputId="yearTo"
+                        input-id="yearTo"
                         view="year"
-                        dateFormat="yy"
+                        date-format="yy"
                         fluid
                     ></DatePicker>
-                    <label for="yearTo">Ende (inkl.)</label>
+                    <label for="yearTo">Letztes Jahr (inkl.)</label>
                 </FloatLabel>
             </div>
         </FieldSet>
@@ -300,7 +308,7 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
             <div class="flex flex-col gap-2">
                 <FloatLabel variant="on">
                     <InputNumber
-                        inputId="amount"
+                        input-id="amount"
                         name="amount"
                         mode="currency"
                         currency="EUR"
@@ -312,18 +320,18 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
                 <FloatLabel variant="on">
                     <AutoComplete
                         ref="categoryAutoComplete"
-                        inputId="category"
+                        input-id="category"
                         name="category"
                         :suggestions="Object.keys(CategoryShopStore.categories)"
                         required
                         :suggest-create-object="true"
+                        :loading="locks.has('create_category')"
                         @create="
                             async (name) => {
                                 await createCategoryShop('category', name);
                                 categoryAutoComplete?.hide();
                             }
                         "
-                        :loading="locks.has('create_category')"
                     />
                     <label for="category">Kategorie</label>
                 </FloatLabel>
@@ -331,23 +339,24 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
                 <FloatLabel variant="on">
                     <AutoComplete
                         ref="shopAutoComplete"
-                        inputId="shop"
+                        input-id="shop"
                         name="shop"
                         :suggestions="Object.keys(CategoryShopStore.shops)"
                         :suggest-create-object="true"
+                        :loading="locks.has('create_shop')"
+                        show-clear
                         @create="
                             async (name) => {
                                 await createCategoryShop('shop', name);
                                 shopAutoComplete?.hide();
                             }
                         "
-                        :loading="locks.has('create_shop')"
                     />
                     <label for="shop">Händler</label>
                 </FloatLabel>
 
                 <FloatLabel variant="on">
-                    <InputText inputId="description" name="description" fluid />
+                    <InputText input-id="description" name="description" fluid />
                     <label for="description">Beschreibung</label>
                 </FloatLabel>
                 <div></div>
@@ -372,13 +381,3 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
         </div>
     </Form>
 </template>
-
-<style scoped>
-h2 {
-    @apply text-xl;
-}
-
-section {
-    text-align: left;
-}
-</style>

@@ -1,29 +1,77 @@
 <script setup lang="ts">
+import Button from 'primevue/button';
 import Select from 'primevue/select';
 import { useToast } from 'primevue/usetoast';
-import { computed } from 'vue';
-import { breakpointsTailwind, useAsyncState, useBreakpoints } from '@vueuse/core';
+import { ref } from 'vue';
+
+import {
+    breakpointsTailwind,
+    useAsyncState,
+    useBreakpoints
+} from '@vueuse/core';
 
 import TransactionFilterForm from '@/components/lists/TransactionFilterForm.vue';
 import TransactionList from '@/components/lists/TransactionList.vue';
 import {
-    recurringTransactionColumnSettings,
-    oneoffTransactionColumnSettings
+    oneoffTransactionColumnSettings,
+    recurringTransactionColumnSettings
 } from '@/components/lists/listConfig';
-import { OneoffTransaction, RecurringTransaction } from '@/stores/TransactionStore';
 import {
-    OrderKey,
-    OrderSettings,
-    Ordering,
-    TransactionFilterRules,
-    useTransactionStore
+    OneoffTransaction,
+    RecurringTransaction
 } from '@/stores/TransactionStore';
+import { useTransactionStore } from '@/stores/TransactionStore';
 
-const breakpoints = useBreakpoints(breakpointsTailwind);
+import VerticalSlidingTransition from '../transitions/VerticalSlidingTransition.vue';
+
+enum Ordering {
+    Asc = 'Asc',
+    Desc = 'Desc'
+}
+
+enum OrderKey {
+    Time = 'Time',
+    Amount = 'Amont',
+    Category = 'Category',
+    Shop = 'Shop'
+}
+
+export type TransactionOrderRules = {
+    ordering: Ordering;
+    orderKey: OrderKey;
+};
+
+export type TransactionFilterRules = {
+    type: 'all' | 'expense' | 'income';
+    recurrence: 'all' | 'oneoff' | 'recurring';
+    dateFrom?: Date;
+    dateTo?: Date;
+    amountFrom?: number;
+    amountTo?: number;
+    category?: string;
+    shop?: string;
+};
+
 const TransactionStore = useTransactionStore();
 const toast = useToast();
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const allowMinimizing = breakpoints.smaller('lg');
+const isExpanded = ref(true);
 
-const orderOptions: { text: string; value: OrderSettings }[] = [
+// default filter rules set to all transactions since start of the month
+const now = new Date();
+const defaultRules = ref<TransactionFilterRules>({
+    dateFrom: new Date(now.getFullYear(), now.getMonth(), 1),
+    type: 'all',
+    recurrence: 'all'
+});
+const activeRules = ref<TransactionFilterRules>({ ...defaultRules.value });
+const activeOrder = ref<TransactionOrderRules>({
+    ordering: Ordering.Asc,
+    orderKey: OrderKey.Time
+});
+
+const orderOptions: { text: string; value: TransactionOrderRules }[] = [
     {
         text: 'Älteste zuerst',
         value: { orderKey: OrderKey.Time, ordering: Ordering.Asc }
@@ -63,9 +111,10 @@ let {
     execute: fetchTransactions,
     isLoading
 } = useAsyncState<(OneoffTransaction | RecurringTransaction)[]>(
-    async () => {
+    async (rules: TransactionFilterRules) => {
+        console.log(activeRules.value);
         try {
-            await TransactionStore.fetch();
+            return await TransactionStore.fetch(rules, activeOrder.value);
         } catch (err) {
             toast.add({
                 severity: 'error',
@@ -73,38 +122,11 @@ let {
                 life: 3000
             });
         }
-        return TransactionStore.transactions;
+        return [];
     },
-    TransactionStore.transactions,
+    [],
     { resetOnExecute: true }
 );
-
-const selectedOrderOption = computed({
-    get() {
-        const current = TransactionStore.transactionFilterRules.order;
-        return (
-            orderOptions.find(
-                (o) =>
-                    o.value.orderKey === current.orderKey &&
-                    o.value.ordering === current.ordering
-            ) ?? orderOptions[0]
-        );
-    },
-    set(option: { text: string; value: OrderSettings }) {
-        TransactionStore.transactionFilterRules.order = option.value;
-        fetchTransactions();
-    }
-});
-
-function applyRules(filterRules: TransactionFilterRules) {
-    TransactionStore.transactionFilterRules = Object.assign(
-        {
-            order: TransactionStore.transactionFilterRules.order
-        },
-        filterRules
-    );
-    fetchTransactions();
-}
 </script>
 
 <template>
@@ -113,29 +135,56 @@ function applyRules(filterRules: TransactionFilterRules) {
             <h1 class="flex-grow text-left">Liste</h1>
             <span class="pi pi-sort-alt" />
             <Select
-                v-model="selectedOrderOption"
+                v-model="activeOrder"
                 :options="orderOptions"
-                optionLabel="text"
+                option-label="text"
+                option-value="value"
+                scroll-height="24rem"
             />
         </header>
 
         <aside class="row-start-2">
-            <TransactionFilterForm
-                :default-filter-rules="Object.assign({}, TransactionStore.transactionFilterRules)"
-                :allow-minimizing="breakpoints.smaller('md').value"
-                @submit="applyRules"
-                @reset="applyRules"
-            />
+            <header class="grid grid-cols-3 border-b-[1px] border-tertiary-bg">
+                <div
+                    class="col-start-2 flex items-center justify-center gap-1 p-2 font-semibold"
+                >
+                    <span class="pi pi-filter" />
+                    <span>Filter</span>
+                </div>
+                <Button
+                    v-if="allowMinimizing"
+                    :icon="
+                        isExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'
+                    "
+                    text
+                    rounded
+                    severity="secondary"
+                    size="small"
+                    class="m-1 self-center justify-self-end"
+                    @click.prevent="isExpanded = !isExpanded"
+                />
+            </header>
+            <VerticalSlidingTransition
+                duration-class="duration-200"
+                :render="isExpanded || !allowMinimizing"
+            >
+                <TransactionFilterForm
+                    v-model="activeRules"
+                    :default-filter-rules="activeRules"
+                    @submit="fetchTransactions(undefined, activeRules)"
+                />
+            </VerticalSlidingTransition>
         </aside>
+
         <main class="row-start-2">
             <TransactionList
-                v-if="TransactionStore.transactionFilterRules.isRecurringTransaction"
+                v-if="activeRules.recurrence !== 'recurring'"
                 :column-settings="recurringTransactionColumnSettings"
                 :transactions="transactionData as RecurringTransaction[]"
                 :loading="isLoading"
             />
             <TransactionList
-                v-else
+                v-if="activeRules.recurrence !== 'oneoff'"
                 :column-settings="oneoffTransactionColumnSettings"
                 :transactions="transactionData as OneoffTransaction[]"
                 :loading="isLoading"
@@ -146,10 +195,10 @@ function applyRules(filterRules: TransactionFilterRules) {
 
 <style scoped>
 .layout {
-    @apply flex flex-col gap-y-8 md:grid md:grid-cols-[300px_auto] md:gap-x-8 2xl:grid-cols-[300px_auto_300px] 2xl:gap-x-12;
+    @apply flex flex-col gap-y-8 lg:grid lg:grid-cols-[400px_auto] lg:gap-x-8 2xl:gap-x-12;
 
     & > :is(aside, main) {
-        @apply overflow-hidden rounded-lg border-[1px] border-tertiary-bg shadow-xl md:self-start dark:shadow-2xl;
+        @apply overflow-hidden rounded-lg border-[1px] border-tertiary-bg shadow-xl lg:self-start dark:shadow-2xl;
     }
 }
 </style>
