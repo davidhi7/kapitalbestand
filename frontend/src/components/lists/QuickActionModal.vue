@@ -21,7 +21,7 @@ defineExpose({
     <Teleport to="body">
         <dialog
             ref="dialog"
-            class="flex-col gap-4 rounded-lg border-[1px] border-tertiary-bg bg-main-bg p-6 open:flex"
+            class="flex-col gap-4 rounded-lg border border-tertiary-bg bg-main-bg p-6 open:flex"
         >
             <header class="flex justify-between gap-4">
                 <h1>{{ props.title }}</h1>

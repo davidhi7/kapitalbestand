@@ -61,14 +61,14 @@ const currentMonthSelected = computed(() => {
                 :label="shortYearMonthFormat.format(new Date(monthBefore.year, monthBefore.month))"
                 icon="pi pi-chevron-left"
                 text
-                class="row-[2]"
+                class="row-2"
             />
 
             <h1 class="col-span-2">
                 {{ longYearMonthFormat.format(new Date(year, month)) }}
             </h1>
 
-            <div class="row-[2] flex justify-end gap-1">
+            <div class="row-2 flex justify-end gap-1">
                 <Button
                     v-if="!currentMonthSelected"
                     as="router-link"
@@ -94,7 +94,7 @@ const currentMonthSelected = computed(() => {
             <Card class="grow">
                 <MonthlyExpensesStats :year="year" :month="month" :report="report" />
             </Card>
-            <Card class="min-h-[30rem] grow">
+            <Card class="min-h-120 grow">
                 <MonthlyExpensesChart :year="year" :report="report" />
             </Card>
         </div>

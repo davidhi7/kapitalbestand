@@ -72,7 +72,7 @@ const emit = defineEmits(['logout']);
                 to="/account"
                 icon="pi-user"
                 :label="props.username"
-                class="flex-grow"
+                class="grow"
                 @click="display_menu = false"
             />
             <IconRouterLink
@@ -87,6 +87,8 @@ const emit = defineEmits(['logout']);
 </template>
 
 <style scoped>
+@reference '@/assets/base.css';
+
 nav * {
     @apply -outline-offset-4 outline-main;
 }

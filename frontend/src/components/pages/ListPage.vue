@@ -137,7 +137,7 @@ let {
         class="flex flex-col gap-y-8 lg:grid lg:grid-cols-[400px_auto] lg:gap-x-8 2xl:gap-x-12"
     >
         <header class="flex flex-row items-center gap-2 md:col-start-2">
-            <h1 class="flex-grow text-left">Liste</h1>
+            <h1 class="grow text-left">Liste</h1>
             <span class="pi pi-sort-alt" />
             <Select
                 v-model="activeOrder"
@@ -149,11 +149,11 @@ let {
         </header>
 
         <aside
-            class="row-start-2 overflow-hidden rounded-lg border-[1px] border-tertiary-bg shadow-xl lg:self-start dark:shadow-2xl"
+            class="row-start-2 overflow-hidden rounded-lg border border-tertiary-bg shadow-xl lg:self-start dark:shadow-2xl"
         >
             <header
                 class="grid grid-cols-3 border-tertiary-bg"
-                :class="{ 'border-b-[1px]': isExpanded }"
+                :class="{ 'border-b': isExpanded }"
             >
                 <div
                     class="col-start-2 flex items-center justify-center gap-1 p-2 font-semibold"
@@ -202,7 +202,7 @@ let {
                 :column-settings="oneoffTransactionColumnSettings"
                 :transactions="transactionData.oneoff"
                 :loading="isLoading"
-                class="overflow-hidden rounded-lg border-[1px] border-tertiary-bg shadow-xl lg:self-start dark:shadow-2xl"
+                class="overflow-hidden rounded-lg border border-tertiary-bg shadow-xl lg:self-start dark:shadow-2xl"
             />
         </main>
     </div>
