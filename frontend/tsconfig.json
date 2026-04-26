@@ -10,7 +10,7 @@
         "sourceMap": true,
         "isolatedModules": true,
         "paths": {
-            "@/*": ["./src/*"],
+            "@/*": ["./src/*"]
         },
         "rootDir": ".",
         "outDir": "dist/"

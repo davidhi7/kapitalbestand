@@ -43,17 +43,31 @@ const emit = defineEmits(['logout']);
             :class="{ 'msm:hidden': !display_menu }"
             @click="display_menu = false"
         >
-            <IconRouterLink to="/" icon="pi-home" :label="compactMode ? 'Start' : undefined" />
+            <IconRouterLink
+                to="/"
+                icon="pi-home"
+                :label="compactMode ? 'Start' : undefined"
+            />
             <IconRouterLink to="/new" icon="pi-plus" label="Neue Transaktion" />
             <IconRouterLink to="/list" icon="pi-list" label="Liste" />
-            <IconRouterLink to="/analysis" icon="pi-chart-line" label="Analyse" />
+            <IconRouterLink
+                to="/analysis"
+                icon="pi-chart-line"
+                label="Analyse"
+            />
         </section>
 
         <!-- Separator between main pages and logout; only on small screens -->
-        <div class="m-1 h-px w-auto bg-main-dark sm:hidden" :class="{ hidden: !display_menu }" />
+        <div
+            class="m-1 h-px w-auto bg-main-dark sm:hidden"
+            :class="{ hidden: !display_menu }"
+        />
 
         <!-- Account settings & logout -->
-        <section class="flex msm:justify-between" :class="{ 'msm:hidden': !display_menu }">
+        <section
+            class="flex msm:justify-between"
+            :class="{ 'msm:hidden': !display_menu }"
+        >
             <IconRouterLink
                 to="/account"
                 icon="pi-user"

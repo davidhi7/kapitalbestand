@@ -11,7 +11,6 @@ export default tseslint.config(
     eslint.configs.recommended,
     ...tseslint.configs.recommended,
     ...vuePlugin.configs['flat/recommended'],
-    eslintConfigPrettier,
     {
         files: ['./src/**/*.{ts,vue}'],
         languageOptions: {
@@ -27,5 +26,6 @@ export default tseslint.config(
             'vue/html-indent': ['warn', 4],
             'space-before-function-paren': 'off'
         }
-    }
+    },
+    eslintConfigPrettier
 );

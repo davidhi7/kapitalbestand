@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Button from 'primevue/button';
+import Panel from 'primevue/panel';
 import Select from 'primevue/select';
 import { useToast } from 'primevue/usetoast';
 import { ref } from 'vue';
@@ -110,27 +111,31 @@ let {
     state: transactionData,
     execute: fetchTransactions,
     isLoading
-} = useAsyncState<(OneoffTransaction | RecurringTransaction)[]>(
-    async (rules: TransactionFilterRules) => {
-        console.log(activeRules.value);
-        try {
-            return await TransactionStore.fetch(rules, activeOrder.value);
-        } catch (err) {
-            toast.add({
-                severity: 'error',
-                summary: 'Fehler beim Laden der Transaktionen',
-                life: 3000
-            });
-        }
-        return [];
-    },
-    [],
-    { resetOnExecute: true }
-);
+} = useAsyncState<{
+    oneoff?: OneoffTransaction[];
+    recurring?: RecurringTransaction[];
+}>(async () => {
+    try {
+        return await TransactionStore.fetch(
+            activeRules.value,
+            activeOrder.value
+        );
+    } catch (err) {
+        console.error(err);
+        toast.add({
+            severity: 'error',
+            summary: 'Fehler beim Laden der Transaktionen',
+            life: 3000
+        });
+    }
+    return {};
+}, {});
 </script>
 
 <template>
-    <div class="layout">
+    <div
+        class="flex flex-col gap-y-8 lg:grid lg:grid-cols-[400px_auto] lg:gap-x-8 2xl:gap-x-12"
+    >
         <header class="flex flex-row items-center gap-2 md:col-start-2">
             <h1 class="flex-grow text-left">Liste</h1>
             <span class="pi pi-sort-alt" />
@@ -143,8 +148,13 @@ let {
             />
         </header>
 
-        <aside class="row-start-2">
-            <header class="grid grid-cols-3 border-b-[1px] border-tertiary-bg">
+        <aside
+            class="row-start-2 overflow-hidden rounded-lg border-[1px] border-tertiary-bg shadow-xl lg:self-start dark:shadow-2xl"
+        >
+            <header
+                class="grid grid-cols-3 border-tertiary-bg"
+                :class="{ 'border-b-[1px]': isExpanded }"
+            >
                 <div
                     class="col-start-2 flex items-center justify-center gap-1 p-2 font-semibold"
                 >
@@ -171,34 +181,29 @@ let {
                 <TransactionFilterForm
                     v-model="activeRules"
                     :default-filter-rules="activeRules"
-                    @submit="fetchTransactions(undefined, activeRules)"
+                    @submit="fetchTransactions()"
                 />
             </VerticalSlidingTransition>
         </aside>
 
-        <main class="row-start-2">
+        <main
+            class="row-start-2 flex flex-col items-stretch gap-4 child:w-full"
+        >
+            <Panel>
+                <TransactionList
+                    v-if="transactionData.recurring"
+                    :column-settings="recurringTransactionColumnSettings"
+                    :transactions="transactionData.recurring"
+                    :loading="isLoading"
+                />
+            </Panel>
             <TransactionList
-                v-if="activeRules.recurrence !== 'recurring'"
-                :column-settings="recurringTransactionColumnSettings"
-                :transactions="transactionData as RecurringTransaction[]"
-                :loading="isLoading"
-            />
-            <TransactionList
-                v-if="activeRules.recurrence !== 'oneoff'"
+                v-if="transactionData.oneoff"
                 :column-settings="oneoffTransactionColumnSettings"
-                :transactions="transactionData as OneoffTransaction[]"
+                :transactions="transactionData.oneoff"
                 :loading="isLoading"
+                class="overflow-hidden rounded-lg border-[1px] border-tertiary-bg shadow-xl lg:self-start dark:shadow-2xl"
             />
         </main>
     </div>
 </template>
-
-<style scoped>
-.layout {
-    @apply flex flex-col gap-y-8 lg:grid lg:grid-cols-[400px_auto] lg:gap-x-8 2xl:gap-x-12;
-
-    & > :is(aside, main) {
-        @apply overflow-hidden rounded-lg border-[1px] border-tertiary-bg shadow-xl lg:self-start dark:shadow-2xl;
-    }
-}
-</style>

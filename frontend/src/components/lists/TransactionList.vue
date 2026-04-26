@@ -1,4 +1,8 @@
-<script setup lang="ts" generic="T extends OneoffTransaction | RecurringTransaction">
+<script
+    setup
+    lang="ts"
+    generic="T extends OneoffTransaction | RecurringTransaction"
+>
 import Button from 'primevue/button';
 import Column from 'primevue/column';
 import DataTable from 'primevue/datatable';
@@ -9,7 +13,10 @@ import DeleteAction from '@/components/lists/DeleteAction.vue';
 import EditAction from '@/components/lists/EditAction.vue';
 import ExpandAction from '@/components/lists/ExpandAction.vue';
 import type { ColumnSettings } from '@/components/lists/listConfig';
-import { RecurringTransaction, OneoffTransaction } from '@/stores/TransactionStore';
+import {
+    OneoffTransaction,
+    RecurringTransaction
+} from '@/stores/TransactionStore';
 
 const props = withDefaults(
     defineProps<{
@@ -46,7 +53,7 @@ function closeDialog() {
     dialogVisible.value = false;
 }
 
-function breakpointClass(breakpoint: string): string {
+function breakpointClass(breakpoint?: string): string {
     if (!breakpoint) return '';
     return `hidden ${breakpoint}:table-cell`;
 }
@@ -58,9 +65,12 @@ function breakpointClass(breakpoint: string): string {
         :value="transactions"
         data-key="id"
         :loading="loading"
-        striped-rows
     >
-        <template #empty>Keine Einträge</template>
+        <template #empty
+            ><div class="flex justify-center">
+                Keine Transaktionen
+            </div></template
+        >
 
         <Column expander style="width: 3rem" />
 
@@ -78,7 +88,7 @@ function breakpointClass(breakpoint: string): string {
             </template>
         </Column>
 
-        <Column header="Aktionen">
+        <Column header="Aktionen" header-class="flex justify-center">
             <template #body="{ data }">
                 <div class="flex justify-center gap-1">
                     <Button
@@ -86,14 +96,15 @@ function breakpointClass(breakpoint: string): string {
                         text
                         rounded
                         size="small"
+                        severity="info"
                         @click="edit(data)"
                     />
                     <Button
                         icon="pi pi-trash"
                         text
                         rounded
-                        severity="danger"
                         size="small"
+                        severity="danger"
                         @click="del(data)"
                     />
                 </div>

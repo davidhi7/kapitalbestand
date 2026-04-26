@@ -76,7 +76,7 @@ function setAll() {
         </FieldSet>
 
         <FieldSet legend="Häufigkeit">
-            <div class="flex flex-col gap-2">
+            <div class="flex flex-col gap-4">
                 <RadioButtonGroup
                     v-model="form.recurrence"
                     class="flex flex-col gap-1"
@@ -94,7 +94,7 @@ function setAll() {
                         Nur wiederkehrende Transaktionen
                     </label>
                 </RadioButtonGroup>
-                <div class="mt-4 flex flex-col gap-2">
+                <div class="flex flex-col gap-2">
                     <FloatLabel variant="on" class="flex-1">
                         <DatePicker
                             v-model="form.dateFrom"

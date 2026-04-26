@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia';
 
 import HttpError from '@/HttpError';
-import {
+import { dateToIsoDate, dateToYearMonth } from '@/common';
+import type {
     TransactionFilterRules,
     TransactionOrderRules
 } from '@/components/pages/ListPage.vue';
@@ -142,77 +143,76 @@ export const useTransactionStore = defineStore('Transaction', {
         async fetch(
             filters: TransactionFilterRules,
             order: TransactionOrderRules
-        ): Promise<(OneoffTransaction | RecurringTransaction)[]> {
-            // todo revise
-            const payload: Record<string, string> = {};
-            let endpoint: string;
+        ): Promise<{
+            oneoff: OneoffTransaction[];
+            recurring: RecurringTransaction[];
+        }> {
+            const fetchOneoff =
+                filters.recurrence === 'all' || filters.recurrence === 'oneoff';
+            const fetchRecurring =
+                filters.recurrence === 'all' ||
+                filters.recurrence === 'recurring';
 
-            if (!filters.isRecurringTransaction) {
-                endpoint = '/api/transactions/oneoff';
-                if (filters.dateFrom !== undefined) {
-                    payload['dateFrom'] = filters.dateFrom;
-                }
+            const baseParams: Record<string, string> = {
+                ordering: order.ordering,
+                orderKey: order.orderKey
+            };
+            if (filters.type === 'expense') baseParams.isExpense = 'true';
+            if (filters.type === 'income') baseParams.isExpense = 'false';
+            if (filters.amountFrom != null)
+                baseParams.amountFrom = String(filters.amountFrom);
+            if (filters.amountTo != null)
+                baseParams.amountTo = String(filters.amountTo);
 
-                if (filters.dateTo !== undefined) {
-                    payload['dateTo'] = filters.dateTo;
-                }
-            } else {
-                endpoint = '/api/transactions/recurring';
+            const oneoffPromise = fetchOneoff
+                ? (async (): Promise<OneoffTransaction[]> => {
+                      const params = new URLSearchParams(baseParams);
+                      if (filters.dateFrom)
+                          params.set(
+                              'dateFrom',
+                              dateToIsoDate(filters.dateFrom)
+                          );
+                      if (filters.dateTo)
+                          params.set('dateTo', dateToIsoDate(filters.dateTo));
+                      const r = await fetch(
+                          `/api/transactions/oneoff?${params}`
+                      );
+                      if (!r.ok) throw new HttpError(r.status);
+                      return await (
+                          await r.json()
+                      ).data;
+                  })()
+                : Promise.resolve([] as OneoffTransaction[]);
 
-                if (filters.frequency !== undefined) {
-                    payload['frequency'] = filters.frequency;
-                }
+            const recurringPromise = fetchRecurring
+                ? (async (): Promise<RecurringTransaction[]> => {
+                      const params = new URLSearchParams(baseParams);
+                      if (filters.dateFrom)
+                          params.set(
+                              'intervalStartsLe',
+                              dateToYearMonth(filters.dateFrom)
+                          );
+                      if (filters.dateTo)
+                          params.set(
+                              'intervalEndsGe',
+                              dateToYearMonth(filters.dateTo)
+                          );
+                      const r = await fetch(
+                          `/api/transactions/recurring?${params}`
+                      );
+                      if (!r.ok) throw new HttpError(r.status);
+                      return await (
+                          await r.json()
+                      ).data;
+                  })()
+                : Promise.resolve([] as RecurringTransaction[]);
 
-                if (filters.intervalStartsLe !== undefined) {
-                    payload['intervalStartsLe'] = filters.intervalStartsLe;
-                }
+            const [oneoff, recurring] = await Promise.all([
+                oneoffPromise,
+                recurringPromise
+            ]);
 
-                if (filters.intervalEndsGe !== undefined) {
-                    payload['intervalEndsGe'] = filters.intervalEndsGe;
-                }
-
-                if (filters.isTerminating !== undefined) {
-                    payload['isTerminating'] = String(filters.isTerminating);
-                }
-            }
-
-            if (filters.isExpense !== undefined) {
-                payload['isExpense'] = String(filters.isExpense);
-            }
-
-            if (filters.amountFrom !== undefined) {
-                payload['amountFrom'] = String(filters.amountFrom);
-            }
-
-            if (filters.amountTo !== undefined) {
-                payload['amountTo'] = String(filters.amountTo);
-            }
-
-            if (filters.Category !== undefined) {
-                payload['categoryId'] = String(filters.Category.id);
-            }
-
-            if (filters.Shop !== undefined) {
-                payload['shopId'] = String(filters.Shop.id);
-            }
-
-            if (filters.order.orderKey) {
-                payload['orderKey'] = filters.order.orderKey;
-            }
-
-            if (filters.order.ordering) {
-                payload['ordering'] = filters.order.ordering;
-            }
-
-            const response = await fetch(
-                endpoint + '?' + new URLSearchParams(payload)
-            );
-
-            if (!response.ok) {
-                throw new HttpError(response.status);
-            }
-
-            return (await response.json()).data;
+            return { oneoff, recurring };
         },
         async update<T extends TransactionType>(
             type: T,
@@ -229,13 +229,6 @@ export const useTransactionStore = defineStore('Transaction', {
             if (!response.ok) {
                 throw new HttpError(response.status);
             }
-
-            for (let i = 0; i < this.transactions.length; i++) {
-                if (this.transactions[i].id == id) {
-                    this.transactions[i] = (await response.json()).data;
-                    return;
-                }
-            }
         },
         async delete(type: TransactionType, id: number) {
             const endpoint = `/api/transactions/${type}/${id}`;
@@ -244,13 +237,6 @@ export const useTransactionStore = defineStore('Transaction', {
             });
             if (!response.ok) {
                 throw new HttpError(response.status);
-            }
-
-            for (let i = 0; i < this.transactions.length; i++) {
-                if (this.transactions[i].id == id) {
-                    this.transactions.splice(i, 1);
-                    return;
-                }
             }
         }
     }

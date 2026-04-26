@@ -11,12 +11,14 @@ import {
     RecurringTransaction
 } from '@/stores/TransactionStore';
 
-export const breakpoints = ['', 'sm', 'md', 'lg', 'xl', '2xl'] as const;
-export type Breakpoint = (typeof breakpoints)[number];
-export type NotEmptyBreakpoint = Exclude<Breakpoint, ''>;
+export type Breakpoint = 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 
-export function formatRecurrenceRange(recurrence: Recurrence, format: 'long' | 'short') {
-    const yearMonthFormat = format === 'long' ? longYearMonthFormat : shortYearMonthFormat;
+export function formatRecurrenceRange(
+    recurrence: Recurrence,
+    format: 'long' | 'short'
+) {
+    const yearMonthFormat =
+        format === 'long' ? longYearMonthFormat : shortYearMonthFormat;
 
     if (recurrence.frequency === 'monthly') {
         if (!recurrence.monthTo) {
@@ -34,18 +36,21 @@ export function formatRecurrenceRange(recurrence: Recurrence, format: 'long' | '
     }
 }
 
-export interface ColumnSettings<T extends OneoffTransaction | RecurringTransaction> {
+export interface ColumnSettings<
+    T extends OneoffTransaction | RecurringTransaction
+> {
     title: string;
     text_function: (instance: T, style: 'long' | 'short') => string;
     style_function?: (instance: T) => string;
-    breakpoint: Breakpoint;
+    breakpoint?: Breakpoint;
 }
 
-const genericCategories: ColumnSettings<OneoffTransaction | RecurringTransaction>[] = [
+const genericCategories: ColumnSettings<
+    OneoffTransaction | RecurringTransaction
+>[] = [
     {
         title: 'Kategorie',
-        text_function: (transaction, style) => transaction.category ?? '',
-        breakpoint: ''
+        text_function: (transaction, style) => transaction.category ?? ''
     },
     {
         title: 'Händler',
@@ -61,8 +66,7 @@ const genericCategories: ColumnSettings<OneoffTransaction | RecurringTransaction
         style_function: (transaction) => {
             if (!transaction.isExpense) return 'text-positive font-semibold';
             return 'font-semibold';
-        },
-        breakpoint: ''
+        }
     },
     {
         title: 'Beschreibung',
@@ -71,25 +75,26 @@ const genericCategories: ColumnSettings<OneoffTransaction | RecurringTransaction
     }
 ];
 
-export const oneoffTransactionColumnSettings: ColumnSettings<OneoffTransaction>[] = [
-    {
-        title: 'Datum',
-        text_function: (transaction, style) => {
-            if (style === 'short') return shortDateFormat.format(new Date(transaction.date));
-            else return longDateFormat.format(new Date(transaction.date));
+export const oneoffTransactionColumnSettings: ColumnSettings<OneoffTransaction>[] =
+    [
+        {
+            title: 'Datum',
+            text_function: (transaction, style) => {
+                if (style === 'short')
+                    return shortDateFormat.format(new Date(transaction.date));
+                else return longDateFormat.format(new Date(transaction.date));
+            }
         },
-        breakpoint: ''
-    },
-    ...genericCategories
-];
+        ...genericCategories
+    ];
 
-export const recurringTransactionColumnSettings: ColumnSettings<RecurringTransaction>[] = [
-    {
-        title: 'Zeitraum',
-        text_function: (transaction, style) => {
-            return formatRecurrenceRange(transaction.recurrence, style);
+export const recurringTransactionColumnSettings: ColumnSettings<RecurringTransaction>[] =
+    [
+        {
+            title: 'Zeitraum',
+            text_function: (transaction, style) => {
+                return formatRecurrenceRange(transaction.recurrence, style);
+            }
         },
-        breakpoint: ''
-    },
-    ...genericCategories
-];
+        ...genericCategories
+    ];

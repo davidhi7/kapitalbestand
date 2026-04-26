@@ -2,7 +2,10 @@
 import { computed } from 'vue';
 
 import { shortDateTimeFormat } from '@/common';
-import { OneoffTransaction, RecurringTransaction } from '@/stores/TransactionStore';
+import {
+    OneoffTransaction,
+    RecurringTransaction
+} from '@/stores/TransactionStore';
 import { isOneoffTransaction } from '@/stores/TransactionStore';
 
 const props = defineProps<{
@@ -14,12 +17,16 @@ const emit = defineEmits<{
 }>();
 
 const keyValuePairs = computed<Record<string, string>>(() => {
-    const { isExpense, category, shop, createdAt, updatedAt, id } = props.transaction;
+    const { isExpense, category, shop, createdAt, updatedAt, id } =
+        props.transaction;
     const isOneoff = isOneoffTransaction(props.transaction);
     let type;
     if (!isOneoff) {
         const recurring = props.transaction as RecurringTransaction;
-        const freqLabel = recurring.recurrence.frequency === 'yearly' ? 'jährlich' : 'monatlich';
+        const freqLabel =
+            recurring.recurrence.frequency === 'yearly'
+                ? 'jährlich'
+                : 'monatlich';
         if (isExpense) {
             type = `${freqLabel}e Ausgabe`;
         } else {
@@ -34,9 +41,9 @@ const keyValuePairs = computed<Record<string, string>>(() => {
     }
 
     return {
-        erstellt: shortDateTimeFormat.format(new Date(createdAt)),
+        Erstellt: shortDateTimeFormat.format(new Date(createdAt)),
         Kategorie: category,
-        aktualisiert: shortDateTimeFormat.format(new Date(updatedAt)),
+        Aktualisiert: shortDateTimeFormat.format(new Date(updatedAt)),
         Händler: shop ? shop : '-',
         Identifikation: id.toString(),
         Typ: type
@@ -54,7 +61,9 @@ const keyValuePairs = computed<Record<string, string>>(() => {
             :key="index"
             class="overflow-hidden text-ellipsis text-left"
         >
-            <span class="text-sm font-semibold after:content-[':']">{{ key }}</span>
+            <span class="text-sm font-semibold after:content-[':']">{{
+                key
+            }}</span>
             <span class="text-sm before:content-['_']">{{ value }}</span>
         </div>
     </section>

@@ -11,7 +11,11 @@ import { useToast } from 'primevue/usetoast';
 import { computed, ref, watch } from 'vue';
 
 import { Form } from '@primevue/forms';
-import type { FormInstance, FormResolverOptions, FormSubmitEvent } from '@primevue/forms';
+import type {
+    FormInstance,
+    FormResolverOptions,
+    FormSubmitEvent
+} from '@primevue/forms';
 import { templateRef, useDateFormat, useNow } from '@vueuse/core';
 
 import { dateToIsoDate, dateToYearMonth } from '@/common';
@@ -27,12 +31,19 @@ import {
 
 type FormValues = {
     type: 'expense' | 'income';
-    recurrence: 'oneoff-today' | 'oneoff-yesterday' | 'oneoff-custom' | 'monthly' | 'yearly';
+    recurrence:
+        | 'oneoff-today'
+        | 'oneoff-yesterday'
+        | 'oneoff-custom'
+        | 'monthly'
+        | 'yearly';
     date?: Date;
     monthFrom?: Date;
     monthTo?: Date;
-    yearFrom?: Date;
-    yearTo?: Date;
+    // if directly input without interacting with the primevue popup, this is a string
+    yearFrom?: Date | string;
+    // if directly input without interacting with the primevue popup, this is a string
+    yearTo?: Date | string;
     category?: string;
     shop?: string;
     amount?: number;
@@ -50,11 +61,17 @@ const emit = defineEmits<{
 
 const CategoryShopStore = useCategoryShopStore();
 const TransactionStore = useTransactionStore();
-const initialValues = ref<FormValues>({ type: 'expense', recurrence: 'oneoff-today' });
+const initialValues = ref<FormValues>({
+    type: 'expense',
+    recurrence: 'oneoff-today'
+});
 const toast = useToast();
 const form = templateRef<FormInstance>('form');
-const categoryAutoComplete = templateRef<InstanceType<typeof AutoComplete>>('categoryAutoComplete');
-const shopAutoComplete = templateRef<InstanceType<typeof AutoComplete>>('shopAutoComplete');
+const categoryAutoComplete = templateRef<InstanceType<typeof AutoComplete>>(
+    'categoryAutoComplete'
+);
+const shopAutoComplete =
+    templateRef<InstanceType<typeof AutoComplete>>('shopAutoComplete');
 
 const today = useNow();
 const yesterday = computed(() => {
@@ -90,7 +107,11 @@ function resolver({ values }: FormResolverOptions) {
             Object.assign(errors, invalid('monthTo'));
     } else if (values.recurrence === 'yearly') {
         if (!values.yearFrom) Object.assign(errors, invalid('yearFrom'));
-        if (values.yearTo && values.yearFrom && new Date(values.yearTo) < new Date(values.yearFrom))
+        if (
+            values.yearTo &&
+            values.yearFrom &&
+            new Date(values.yearTo) < new Date(values.yearFrom)
+        )
             Object.assign(errors, invalid('yearTo'));
     }
 
@@ -99,9 +120,15 @@ function resolver({ values }: FormResolverOptions) {
 
 // TODO work
 // set form.recurrence.value to oneoff-custom/monthly/yearly depending in transaction type
-watch(props, (value: { transaction: OneoffTransaction | RecurringTransaction | undefined }) => {}, {
-    immediate: true
-});
+watch(
+    props,
+    (value: {
+        transaction: OneoffTransaction | RecurringTransaction | undefined;
+    }) => {},
+    {
+        immediate: true
+    }
+);
 
 async function createCategoryShop(type: 'category' | 'shop', name: string) {
     locks.value.add(`create_${type}`);
@@ -125,7 +152,11 @@ async function createCategoryShop(type: 'category' | 'shop', name: string) {
 
 const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
     if (!evt.valid) {
-        toast.add({ severity: 'error', summary: 'Ungültiges Formular', life: 3000 });
+        toast.add({
+            severity: 'error',
+            summary: 'Ungültiges Formular',
+            life: 3000
+        });
         return;
     }
 
@@ -135,33 +166,50 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
     try {
         let basePayload = {
             isExpense: values.type == 'expense',
-            amount: values.amount!,
+            amount: Math.round(values.amount! * 100),
             categoryId: CategoryShopStore.categories[values.category!].id,
-            shopId: values.shop ? CategoryShopStore.shops[values.shop!].id : undefined,
+            shopId: values.shop
+                ? CategoryShopStore.shops[values.shop!].id
+                : undefined,
             description: values.description || undefined
         };
 
-        const isRecurring = values.recurrence === 'monthly' || values.recurrence === 'yearly';
+        const isRecurring =
+            values.recurrence === 'monthly' || values.recurrence === 'yearly';
 
         const buildRecurrence = (): Recurrence => {
             if (values.recurrence === 'monthly') {
                 return {
                     frequency: 'monthly',
                     monthFrom: dateToYearMonth(values.monthFrom!),
-                    monthTo: values.monthTo ? dateToYearMonth(values.monthTo) : undefined
+                    monthTo: values.monthTo
+                        ? dateToYearMonth(values.monthTo)
+                        : undefined
                 };
             } else {
+                var yearTo = undefined;
+                if (values.yearTo !== undefined) {
+                    yearTo =
+                        typeof values.yearTo == 'string'
+                            ? Number(values.yearTo)
+                            : values.yearTo!.getFullYear();
+                }
                 return {
                     frequency: 'yearly',
-                    yearFrom: values.yearFrom!.getFullYear(),
-                    yearTo: values.yearTo ? values.yearTo.getFullYear() : undefined
+                    yearFrom:
+                        typeof values.yearFrom == 'string'
+                            ? Number(values.yearFrom)
+                            : values.yearFrom!.getFullYear(),
+                    yearTo
                 };
             }
         };
 
         const buildDate = (): string => {
-            if (values.recurrence === 'oneoff-today') return dateToIsoDate(today.value);
-            if (values.recurrence === 'oneoff-yesterday') return dateToIsoDate(yesterday.value);
+            if (values.recurrence === 'oneoff-today')
+                return dateToIsoDate(today.value);
+            if (values.recurrence === 'oneoff-yesterday')
+                return dateToIsoDate(yesterday.value);
             return dateToIsoDate(values.date!);
         };
 
@@ -195,7 +243,11 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
         emit('done');
     } catch (err) {
         console.error(err);
-        toast.add({ severity: 'error', summary: 'Ungültiges Formular', life: 3000 });
+        toast.add({
+            severity: 'error',
+            summary: 'Ungültiges Formular',
+            life: 3000
+        });
     } finally {
         locks.value.delete('submit');
     }
@@ -252,13 +304,24 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
                     Jährlich
                 </label>
             </RadioButtonGroup>
-            <div v-if="$form.recurrence?.value === 'oneoff-custom'" class="mt-4">
+            <div
+                v-if="$form.recurrence?.value === 'oneoff-custom'"
+                class="mt-4"
+            >
                 <FloatLabel variant="on" class="flex-1">
-                    <DatePicker name="date" input-id="date" date-format="dd.mm.yy" fluid></DatePicker>
+                    <DatePicker
+                        name="date"
+                        input-id="date"
+                        date-format="dd.mm.yy"
+                        fluid
+                    ></DatePicker>
                     <label for="date">Datum</label>
                 </FloatLabel>
             </div>
-            <div v-if="$form.recurrence?.value === 'monthly'" class="mt-4 flex gap-2 msm:flex-col">
+            <div
+                v-if="$form.recurrence?.value === 'monthly'"
+                class="mt-4 flex gap-2 msm:flex-col"
+            >
                 <FloatLabel variant="on" class="flex-1">
                     <DatePicker
                         name="monthFrom"
@@ -280,7 +343,10 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
                     <label for="monthTo">Letzter Monat (inkl.)</label>
                 </FloatLabel>
             </div>
-            <div v-if="$form.recurrence?.value === 'yearly'" class="mt-4 flex gap-2 msm:flex-col">
+            <div
+                v-if="$form.recurrence?.value === 'yearly'"
+                class="mt-4 flex gap-2 msm:flex-col"
+            >
                 <FloatLabel variant="on" class="flex-1">
                     <DatePicker
                         name="yearFrom"
@@ -356,7 +422,11 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
                 </FloatLabel>
 
                 <FloatLabel variant="on">
-                    <InputText input-id="description" name="description" fluid />
+                    <InputText
+                        input-id="description"
+                        name="description"
+                        fluid
+                    />
                     <label for="description">Beschreibung</label>
                 </FloatLabel>
                 <div></div>

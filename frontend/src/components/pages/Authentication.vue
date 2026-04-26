@@ -31,12 +31,20 @@ async function submit() {
 
     if (register) {
         if (password.value !== passwordVerification.value) {
-            toast.add({ severity: 'warn', summary: 'Passwort falsch wiederholt!', life: 3000 });
+            toast.add({
+                severity: 'warn',
+                summary: 'Passwort falsch wiederholt!',
+                life: 3000
+            });
             resetPasswordFields();
             return;
         }
     }
-    const status = await AuthStateStore.login(username.value, password.value, register);
+    const status = await AuthStateStore.login(
+        username.value,
+        password.value,
+        register
+    );
     resetPasswordFields();
 
     if (status !== AuthResponse.Success) {
@@ -59,7 +67,13 @@ async function submit() {
         <hr class="bg-gradient h-1 w-full border-none" />
         <div class="flex w-full max-w-md flex-col gap-4">
             <FloatLabel variant="in">
-                <InputText id="username" v-model="username" type="text" required fluid />
+                <InputText
+                    id="username"
+                    v-model="username"
+                    type="text"
+                    required
+                    fluid
+                />
                 <label for="username">Benutzername</label>
             </FloatLabel>
 
@@ -90,7 +104,10 @@ async function submit() {
             </FloatLabel>
         </div>
         <div class="flex flex-row items-center gap-4">
-            <Button type="submit" :label="isRegisterForm ? 'Registrieren' : 'Anmelden'" />
+            <Button
+                type="submit"
+                :label="isRegisterForm ? 'Registrieren' : 'Anmelden'"
+            />
             <span class="flex flex-row items-center gap-1">
                 oder
                 <Button
