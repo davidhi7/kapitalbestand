@@ -10,13 +10,15 @@ services:
       POSTGRES_PASSWORD: password
       # POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
     volumes:
-      - ./volumes/postgres/:/var/lib/postgresql/data
+      - ./volumes/postgres/:/var/lib/postgresql
 
   kapitalbestand:
-    build: . 
+    build: .
     image: kapitalbestand
     restart: unless-stopped
     environment:
+      RUST_LOG: info
+      DATABASE_URL: postgres://kapitalist:password@postgres:5432/kapitalbestand
       DB_DBMS: postgres
       DB_DATABASE: kapitalbestand
       DB_USER: kapitalist

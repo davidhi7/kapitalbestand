@@ -1,0 +1,7 @@
+{
+    "name": "kapitalbestand",
+    "private": true,
+    "workspaces": [
+        "frontend"
+    ]
+}

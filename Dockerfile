@@ -1,24 +1,22 @@
-FROM node:21 as builder
+FROM rust:1-bookworm AS backend-builder
 WORKDIR /build
-COPY backend/ ./backend
-COPY frontend/ ./frontend
-WORKDIR backend
-# without further arguments and NODE_ENV=production, dev packages are installed as well
-RUN npm ci
-RUN npm run build
-WORKDIR ../frontend
+COPY backend-v2/ ./backend-v2/
+WORKDIR /build/backend-v2
+ENV SQLX_OFFLINE=true
+RUN cargo build --release --locked
+
+
+FROM node:24-slim AS frontend-builder
+WORKDIR /build
+COPY frontend/ ./frontend/
+WORKDIR /build/frontend
 RUN npm ci
 RUN npm run build
 
 
-FROM node:21
-# with this env, no dev packages are being installed
-ENV NODE_ENV=production
+FROM debian:bookworm-slim
 WORKDIR /usr/src/app
-COPY backend/package*.json ./
-RUN npm ci
-COPY --from=builder /build/backend/dist/ ./dist/
-COPY --from=builder /build/frontend/dist ./static/
+COPY --from=backend-builder /build/backend-v2/target/release/backend-v2 ./backend-v2
+COPY --from=frontend-builder /build/frontend/dist ./static/
 EXPOSE 8080
-VOLUME /usr/src/app
-CMD [ "node", "dist/app.js" ]
+CMD ["./backend-v2"]

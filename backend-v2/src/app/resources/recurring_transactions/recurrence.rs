@@ -21,7 +21,8 @@ pub enum RecurrenceFrequency {
 )]
 pub enum Recurrence {
     Yearly {
-        #[garde(skip)]
+        // 262143 is the max. year allowed for chrono NaiveDate
+        #[garde(range(min=1, max=262143))]
         year_from: i32,
         #[garde(custom(validate_year_range(self)))]
         year_to: Option<i32>,

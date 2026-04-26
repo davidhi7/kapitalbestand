@@ -4,5 +4,5 @@ dist/
 coverage/
 .*.env
 backend-v2/target/
-
+volumes/
 .zed

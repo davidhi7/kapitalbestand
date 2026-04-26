@@ -8,6 +8,7 @@ use axum_login::{
 };
 use sqlx::{Pool, Postgres, postgres::PgPoolOptions};
 use tokio::net::TcpListener;
+use tower_http::services::{ServeDir, ServeFile};
 
 use crate::{
     app::resources::{
@@ -83,11 +84,14 @@ impl App {
             // The login_required macro above doesn't affect the auth routes, this module manually manages their routes
             .nest("/api/auth", auth::router())
             .route_layer(auth_layer)
+            .fallback_service(
+                ServeDir::new("static").fallback(ServeFile::new("static/index.html")),
+            )
     }
 
     pub async fn serve(self) -> anyhow::Result<()> {
-        let listener = TcpListener::bind("localhost:8080").await?;
-        log::info!("App listening to localhost:8080");
+        let listener = TcpListener::bind("0.0.0.0:8080").await?;
+        log::info!("App listening on 0.0.0.0:8080");
         axum::serve(listener, self.router()).await?;
 
         Ok(())

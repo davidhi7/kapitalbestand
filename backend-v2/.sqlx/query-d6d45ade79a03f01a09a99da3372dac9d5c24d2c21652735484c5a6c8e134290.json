@@ -1,0 +1,111 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT rt.id, rt.interval_from, rt.interval_to, rt.created_at, rt.updated_at, rt.user_id, rt.is_expense, rt.amount, rt.description, rt.category_id, rt.shop_id, rt.frequency as \"frequency: RecurrenceFrequency\", c.name as category, s.name as \"shop?\"\n            FROM recurring_transactions rt\n            INNER JOIN categories c on rt.category_id = c.id\n            LEFT JOIN shops s on rt.shop_id = s.id\n            WHERE rt.user_id = $1 AND rt.id = $2\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "interval_from",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 2,
+        "name": "interval_to",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 3,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 4,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 5,
+        "name": "user_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "is_expense",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 7,
+        "name": "amount",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 9,
+        "name": "category_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 10,
+        "name": "shop_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 11,
+        "name": "frequency: RecurrenceFrequency",
+        "type_info": {
+          "Custom": {
+            "name": "recurrence_frequency",
+            "kind": {
+              "Enum": [
+                "monthly",
+                "yearly"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 12,
+        "name": "category",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 13,
+        "name": "shop?",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "d6d45ade79a03f01a09a99da3372dac9d5c24d2c21652735484c5a6c8e134290"
+}
