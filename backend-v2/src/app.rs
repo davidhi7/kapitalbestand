@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, fs};
 
 use anyhow::Context;
 use axum::Router;
@@ -33,9 +33,36 @@ struct AppState {
     database: Pool<Postgres>,
 }
 
+/// Read a value from an env var, or if `{name}_FILE` is set, read the file contents instead.
+/// The `_FILE` variant takes precedence (for Docker secrets).
+fn env_var_or_file(name: &str) -> Option<String> {
+    let file_key = format!("{name}_FILE");
+    if let Ok(path) = env::var(&file_key) {
+        Some(fs::read_to_string(&path)
+            .unwrap_or_else(|e| panic!("failed to read {file_key}={path}: {e}"))
+            .trim()
+            .to_string())
+    } else {
+        env::var(name).ok()
+    }
+}
+
+fn build_database_url() -> anyhow::Result<String> {
+    if let Ok(url) = env::var("DATABASE_URL") {
+        return Ok(url);
+    }
+
+    let host = env::var("DB_HOST").unwrap_or_else(|_| "localhost".to_string());
+    let database = env::var("DB_DATABASE").context("either DATABASE_URL or DB_DATABASE must be set")?;
+    let user = env_var_or_file("DB_USER").context("DB_USER or DB_USER_FILE must be set when using DB_DATABASE")?;
+    let password = env_var_or_file("DB_PASSWORD").context("DB_PASSWORD or DB_PASSWORD_FILE must be set when using DB_DATABASE")?;
+
+    Ok(format!("postgres://{user}:{password}@{host}/{database}"))
+}
+
 impl App {
     pub async fn new() -> anyhow::Result<App> {
-        let database_url = env::var("DATABASE_URL").context("DATABASE_URL must be set")?;
+        let database_url = build_database_url()?;
         let pool = PgPoolOptions::new()
             .max_connections(5)
             .connect(&database_url)
