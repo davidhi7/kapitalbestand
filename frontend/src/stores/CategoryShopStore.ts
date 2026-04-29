@@ -1,37 +1,45 @@
 import { defineStore } from 'pinia';
 
-import { Category, Shop } from '@backend-types/CategoryShopTypes';
-
 import HttpError from '@/HttpError';
 
+type CategoryShop = {
+    id: number;
+    name: string;
+    userId: number;
+    createdAt: string;
+    updatedAt: string;
+};
+
+type CategoryShopWithoutMeta = {
+    id: number;
+    name: string;
+};
+
+export type CategoryShopType = 'category' | 'shop';
+
+export type Category = CategoryShop;
+export type CategoryWithoutMeta = CategoryShopWithoutMeta;
+export type Shop = CategoryShop;
+export type ShopWithoutMeta = CategoryShopWithoutMeta;
+
+type ConditionalType<T extends CategoryShopType> = T extends 'Category' ? Category : Shop;
+
 interface State {
-    categories: Category[];
-    shops: Shop[];
+    categories: { [name: string]: Category };
+    shops: { [name: string]: Shop };
 }
 
-type ConditionalReturnType<T> = T extends 'Category' ? Category : Shop;
 export const useCategoryShopStore = defineStore('CategoryShop', {
     state: (): State => {
         return {
-            categories: [],
-            shops: []
+            categories: {},
+            shops: {}
         };
     },
     actions: {
-        async fetch() {
-            const [categories, shops] = await Promise.all([
-                fetch('/api/categories').then((res) => res.json()),
-                fetch('/api/shops').then((res) => res.json())
-            ]);
-            this.categories = categories.data;
-            this.shops = shops.data;
-        },
-        async create(
-            type: 'Category' | 'Shop',
-            name: string
-        ): Promise<ConditionalReturnType<typeof type>> {
+        async create(type: CategoryShopType, name: string): Promise<ConditionalType<typeof type>> {
             let targetArray, endpoint;
-            if (type === 'Category') {
+            if (type === 'category') {
                 targetArray = this.categories;
                 endpoint = '/api/categories';
             } else {
@@ -49,8 +57,24 @@ export const useCategoryShopStore = defineStore('CategoryShop', {
                 throw new HttpError(response.status);
             }
             const instance = (await response.json()).data;
-            targetArray.push(instance);
+            targetArray[instance.name] = instance;
             return instance;
+        },
+        async fetch() {
+            const [categories, shops]: [Category[], Shop[]] = await Promise.all([
+                fetch('/api/categories')
+                    .then((res) => res.json())
+                    .then((json) => json.data),
+                fetch('/api/shops')
+                    .then((res) => res.json())
+                    .then((json) => json.data)
+            ]);
+            for (const category of categories) {
+                this.categories[category.name] = category;
+            }
+            for (const shop of shops) {
+                this.shops[shop.name] = shop;
+            }
         }
     }
 });

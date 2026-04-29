@@ -1,26 +1,12 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@config '../../tailwind.config.js';
 
 body {
-    @apply bg-main-bg text-main;
-    font-family:
-        BlinkMacSystemFont,
-        -apple-system,
-        'Segoe UI',
-        'Roboto',
-        'Oxygen',
-        'Ubuntu',
-        'Cantarell',
-        'Fira Sans',
-        'Droid Sans',
-        'Helvetica Neue',
-        'Helvetica',
-        'Arial',
-        sans-serif;
+    background-color: var(--main-bg);
+    color: var(--main);
 }
 
-@layer components {
+/* @layer components {
     .outline-default {
         @apply outline-double outline-4 outline-main;
     }
@@ -32,31 +18,7 @@ body {
     :focus-visible:is(input[type='checkbox'], input[type='radio']) {
         @apply outline-offset-2;
     }
-}
-
-.btn {
-    @apply rounded-md
-        bg-secondary-bg
-        px-4
-        py-2
-        font-semibold
-        text-main
-        transition-colors
-        hover:bg-tertiary-bg;
-
-    &:active {
-        transform: translateY(2px);
-        @apply transition-transform;
-    }
-
-    &.btn-red {
-        @apply bg-red-600 text-white hover:bg-red-500;
-    }
-
-    &.btn-green {
-        @apply bg-green-700 text-white hover:bg-green-600;
-    }
-}
+} */
 
 .bg-gradient {
     @apply bg-gradient-to-r from-gradient-0 to-gradient-1;
@@ -107,7 +69,7 @@ h1 {
         --header-bg-hover: hsl(0, 0%, 13%);
 
         /* tailwind emerald-500 */
-        --positive: #10b981;
+        --positive: var(--);
         --negative: rgb(248, 81, 73);
 
         --gradient-0: #1f7fdf;

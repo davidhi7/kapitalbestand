@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
-
 import { shortDateTimeFormat } from '@/common';
+import {
+    OneoffTransaction,
+    RecurringTransaction
+} from '@/stores/TransactionStore';
 import { isOneoffTransaction } from '@/stores/TransactionStore';
 
 const props = defineProps<{
-    transaction: OneoffTransaction | MonthlyTransaction;
+    transaction: OneoffTransaction | RecurringTransaction;
 }>();
 
 const emit = defineEmits<{
@@ -15,15 +17,20 @@ const emit = defineEmits<{
 }>();
 
 const keyValuePairs = computed<Record<string, string>>(() => {
-    const { createdAt, updatedAt, id, Transaction } = props.transaction;
-    const { Category, Shop, isExpense } = Transaction;
+    const { isExpense, category, shop, createdAt, updatedAt, id } =
+        props.transaction;
     const isOneoff = isOneoffTransaction(props.transaction);
     let type;
     if (!isOneoff) {
+        const recurring = props.transaction as RecurringTransaction;
+        const freqLabel =
+            recurring.recurrence.frequency === 'yearly'
+                ? 'jährlich'
+                : 'monatlich';
         if (isExpense) {
-            type = 'monatliche Ausgabe';
+            type = `${freqLabel}e Ausgabe`;
         } else {
-            type = 'monatliches Einkommen';
+            type = `${freqLabel}es Einkommen`;
         }
     } else {
         if (isExpense) {
@@ -34,10 +41,10 @@ const keyValuePairs = computed<Record<string, string>>(() => {
     }
 
     return {
-        erstellt: shortDateTimeFormat.format(new Date(createdAt)),
-        Kategorie: Category.name,
-        aktualisiert: shortDateTimeFormat.format(new Date(updatedAt)),
-        Händler: Shop ? Shop.name : '-',
+        Erstellt: shortDateTimeFormat.format(new Date(createdAt)),
+        Kategorie: category,
+        Aktualisiert: shortDateTimeFormat.format(new Date(updatedAt)),
+        Händler: shop ? shop : '-',
         Identifikation: id.toString(),
         Typ: type
     };
@@ -45,8 +52,8 @@ const keyValuePairs = computed<Record<string, string>>(() => {
 </script>
 
 <template>
-    <section v-if="transaction.Transaction.description">
-        {{ transaction.Transaction.description }}
+    <section v-if="transaction.description">
+        {{ transaction.description }}
     </section>
     <section class="grid grid-cols-2">
         <div
@@ -54,7 +61,9 @@ const keyValuePairs = computed<Record<string, string>>(() => {
             :key="index"
             class="overflow-hidden text-ellipsis text-left"
         >
-            <span class="text-sm font-semibold after:content-[':']">{{ key }}</span>
+            <span class="text-sm font-semibold after:content-[':']">{{
+                key
+            }}</span>
             <span class="text-sm before:content-['_']">{{ value }}</span>
         </div>
     </section>

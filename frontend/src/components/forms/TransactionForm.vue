@@ -1,23 +1,57 @@
 <script setup lang="ts">
-import { reactive, ref, watch } from 'vue';
+import Button from 'primevue/button';
+import DatePicker from 'primevue/datepicker';
+import FieldSet from 'primevue/fieldset';
+import FloatLabel from 'primevue/floatlabel';
+import InputNumber from 'primevue/inputnumber';
+import InputText from 'primevue/inputtext';
+import RadioButton from 'primevue/radiobutton';
+import RadioButtonGroup from 'primevue/radiobuttongroup';
+import { useToast } from 'primevue/usetoast';
+import { computed, ref, watch } from 'vue';
 
-import { Category, Shop } from '@backend-types/CategoryShopTypes';
-import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
-import { useDateFormat, useNow } from '@vueuse/core';
+import { Form } from '@primevue/forms';
+import type {
+    FormInstance,
+    FormResolverOptions,
+    FormSubmitEvent
+} from '@primevue/forms';
+import { templateRef, useDateFormat, useNow } from '@vueuse/core';
 
-import { formatCurrency } from '@/common';
-import { NotificationEvent, NotificationStyle, eventEmitter } from '@/components/Notification.vue';
-import AutoComplete from '@/components/autocomplete/AutoComplete.vue';
-import GridForm from '@/components/forms/GridForm.vue';
-import CurrencyInput from '@/components/input/CurrencyInput.vue';
-import LoadingButton from '@/components/input/LoadingButton.vue';
-import MonthInput from '@/components/input/MonthInput.vue';
-import TextInput from '@/components/input/TextInput.vue';
+import { dateToIsoDate, dateToYearMonth } from '@/common';
+import AutoComplete from '@/components/AutoComplete.vue';
 import { useCategoryShopStore } from '@/stores/CategoryShopStore';
-import { isOneoffTransaction, useTransactionStore } from '@/stores/TransactionStore';
+import {
+    OneoffTransaction,
+    Recurrence,
+    RecurringTransaction,
+    isOneoffTransaction,
+    useTransactionStore
+} from '@/stores/TransactionStore';
+
+type FormValues = {
+    type: 'expense' | 'income';
+    recurrence:
+        | 'oneoff-today'
+        | 'oneoff-yesterday'
+        | 'oneoff-custom'
+        | 'monthly'
+        | 'yearly';
+    date?: Date;
+    monthFrom?: Date;
+    monthTo?: Date;
+    // if directly input without interacting with the primevue popup, this is a string
+    yearFrom?: Date | string;
+    // if directly input without interacting with the primevue popup, this is a string
+    yearTo?: Date | string;
+    category?: string;
+    shop?: string;
+    amount?: number;
+    description?: string;
+};
 
 const props = defineProps<{
-    transaction?: OneoffTransaction | MonthlyTransaction;
+    transaction?: OneoffTransaction | RecurringTransaction;
     showCancelButton?: boolean;
 }>();
 
@@ -27,329 +61,393 @@ const emit = defineEmits<{
 
 const CategoryShopStore = useCategoryShopStore();
 const TransactionStore = useTransactionStore();
-
-const formattedDate = useDateFormat(useNow(), 'dddd, DD.MM.YYYY');
-const transactionProperties: {
-    monthlyTransactionProperties: {
-        monthFrom: string | undefined;
-        monthTo: string | undefined;
-    };
-    oneoffTransactionProperties: {
-        today: boolean;
-        customDate: string;
-    };
-    isExpense: boolean;
-    amount: number | undefined;
-    Category: Category | undefined;
-    Shop: Shop | undefined;
-    description: string;
-} = reactive({
-    monthlyTransactionProperties: {
-        monthFrom: undefined,
-        monthTo: undefined
-    },
-    oneoffTransactionProperties: {
-        today: true,
-        customDate: ''
-    },
-    isExpense: true,
-    amount: undefined,
-    Category: undefined,
-    Shop: undefined,
-    description: ''
+const initialValues = ref<FormValues>({
+    type: 'expense',
+    recurrence: 'oneoff-today'
 });
+const toast = useToast();
+const form = templateRef<FormInstance>('form');
+const categoryAutoComplete = templateRef<InstanceType<typeof AutoComplete>>(
+    'categoryAutoComplete'
+);
+const shopAutoComplete =
+    templateRef<InstanceType<typeof AutoComplete>>('shopAutoComplete');
 
-const isMonthlyTransaction = ref(false);
+const today = useNow();
+const yesterday = computed(() => {
+    const d = new Date(today.value);
+    d.setDate(d.getDate() - 1);
+    return d;
+});
+const formattedToday = useDateFormat(today, 'dddd, DD.MM.YYYY');
+const formattedYesterday = useDateFormat(yesterday, 'dddd, DD.MM.YYYY');
+
 const isEditDialog = ref(false);
 
-const rawAmountInput = ref<string>('');
-type Lock = 'submit' | 'createCategory' | 'createShop';
-const submitLocks = ref<Set<Lock>>(new Set());
+type Lock = 'submit' | 'create_category' | 'create_shop';
+const locks = ref<Set<Lock>>(new Set());
 
-watch(
-    props,
-    (value: { transaction: OneoffTransaction | MonthlyTransaction | undefined }) => {
-        const transaction = value.transaction;
-        if (transaction == undefined) {
-            isEditDialog.value = false;
-            return;
-        }
-        isEditDialog.value = true;
+function resolver({ values }: FormResolverOptions) {
+    // TODO look at
+    const invalid = (field: string) => ({ [field]: [{ message: '' }] });
+    let errors: Record<string, { message: string }[]> = {};
 
-        const { isExpense, amount, Category, Shop, description } = transaction.Transaction;
-        transactionProperties.isExpense = isExpense;
-        transactionProperties.amount = amount;
-        transactionProperties.description = description;
-        transactionProperties.Category = Category;
-        transactionProperties.Shop = Shop;
-        rawAmountInput.value = formatCurrency(amount);
+    if (values.amount == null) Object.assign(errors, invalid('amount'));
+    if (!values.category) Object.assign(errors, invalid('category'));
 
-        if (isOneoffTransaction(transaction)) {
-            var now = new Date();
-            var today = new Date(
-                Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
-            );
-
-            if (today.getTime() === new Date(transaction.date).getTime()) {
-                transactionProperties.oneoffTransactionProperties.today = true;
-            } else {
-                transactionProperties.oneoffTransactionProperties.today = false;
-                transactionProperties.oneoffTransactionProperties.customDate = transaction.date;
-            }
-            isMonthlyTransaction.value = false;
-        } else {
-            transactionProperties.monthlyTransactionProperties.monthFrom = transaction.monthFrom;
-            if (transaction.monthTo) {
-                transactionProperties.monthlyTransactionProperties.monthTo = transaction.monthTo;
-            }
-            isMonthlyTransaction.value = true;
-        }
-    },
-    { immediate: true }
-);
-
-async function createCategoryShop(type: 'Category' | 'Shop', name: string) {
-    submitLocks.value.add(`create${type}`);
-    try {
-        transactionProperties[type] = await CategoryShopStore.create(type, name);
-    } catch (e) {
-        console.log(e);
-        eventEmitter.dispatchEvent(
-            new NotificationEvent(
-                NotificationStyle.ERROR,
-                `${type === 'Category' ? 'Kategorie' : 'Händler'} kann nicht erstellt werden`
-            )
-        );
+    if (values.recurrence === 'oneoff-custom') {
+        if (!values.date) Object.assign(errors, invalid('date'));
+    } else if (values.recurrence === 'monthly') {
+        if (!values.monthFrom) Object.assign(errors, invalid('monthFrom'));
+        if (
+            values.monthTo &&
+            values.monthFrom &&
+            new Date(values.monthTo) < new Date(values.monthFrom)
+        )
+            Object.assign(errors, invalid('monthTo'));
+    } else if (values.recurrence === 'yearly') {
+        if (!values.yearFrom) Object.assign(errors, invalid('yearFrom'));
+        if (
+            values.yearTo &&
+            values.yearFrom &&
+            new Date(values.yearTo) < new Date(values.yearFrom)
+        )
+            Object.assign(errors, invalid('yearTo'));
     }
-    submitLocks.value.delete(`create${type}`);
+
+    return { values, errors };
 }
 
-function submit() {
-    submitLocks.value.add('submit');
+// TODO work
+// set form.recurrence.value to oneoff-custom/monthly/yearly depending in transaction type
+watch(
+    props,
+    (value: {
+        transaction: OneoffTransaction | RecurringTransaction | undefined;
+    }) => {},
+    {
+        immediate: true
+    }
+);
+
+async function createCategoryShop(type: 'category' | 'shop', name: string) {
+    locks.value.add(`create_${type}`);
+    try {
+        const created = await CategoryShopStore.create(type, name);
+        if (type === 'category') {
+            form.value.setFieldValue('category', created.name);
+        } else {
+            form.value.setFieldValue('shop', created.name);
+        }
+    } catch (e) {
+        console.log(e);
+        toast.add({
+            severity: 'error',
+            summary: `${type === 'category' ? 'Kategorie' : 'Händler'} kann nicht erstellt werden`,
+            life: 3000
+        });
+    }
+    locks.value.delete(`create_${type}`);
+}
+
+const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
+    if (!evt.valid) {
+        toast.add({
+            severity: 'error',
+            summary: 'Ungültiges Formular',
+            life: 3000
+        });
+        return;
+    }
+
+    locks.value.add('submit');
+    let values = evt.values as FormValues;
 
     try {
-        const { isExpense, amount, Category, Shop, description } = transactionProperties;
-
-        if (!Category) {
-            throw Error('`Category` is undefined');
-        }
-
-        if (!amount) {
-            throw Error('`amount` is undefined');
-        }
-
-        let payload;
         let basePayload = {
-            isExpense,
-            amount,
-            CategoryId: Category.id,
-            ShopId: Shop?.id,
-            description: description || undefined
+            isExpense: values.type == 'expense',
+            amount: Math.round(values.amount! * 100),
+            categoryId: CategoryShopStore.categories[values.category!].id,
+            shopId: values.shop
+                ? CategoryShopStore.shops[values.shop!].id
+                : undefined,
+            description: values.description || undefined
         };
 
-        if (isMonthlyTransaction.value) {
-            const { monthFrom, monthTo } = transactionProperties.monthlyTransactionProperties;
-            if (!monthFrom) {
-                throw Error('`monthFrom` is empty');
-            }
+        const isRecurring =
+            values.recurrence === 'monthly' || values.recurrence === 'yearly';
 
-            if (monthTo && new Date(monthTo) <= new Date(monthFrom)) {
-                throw Error('`monthTo` is before than `monthFrom`');
-            }
-
-            payload = {
-                ...basePayload,
-                monthFrom: monthFrom,
-                monthTo: monthTo
-            };
-        } else {
-            let date: Date;
-            const { today, customDate } = transactionProperties.oneoffTransactionProperties;
-            if (today) {
-                date = new Date();
+        const buildRecurrence = (): Recurrence => {
+            if (values.recurrence === 'monthly') {
+                return {
+                    frequency: 'monthly',
+                    monthFrom: dateToYearMonth(values.monthFrom!),
+                    monthTo: values.monthTo
+                        ? dateToYearMonth(values.monthTo)
+                        : undefined
+                };
             } else {
-                date = new Date(customDate);
+                var yearTo = undefined;
+                if (values.yearTo !== undefined) {
+                    yearTo =
+                        typeof values.yearTo == 'string'
+                            ? Number(values.yearTo)
+                            : values.yearTo!.getFullYear();
+                }
+                return {
+                    frequency: 'yearly',
+                    yearFrom:
+                        typeof values.yearFrom == 'string'
+                            ? Number(values.yearFrom)
+                            : values.yearFrom!.getFullYear(),
+                    yearTo
+                };
             }
-            payload = {
-                ...basePayload,
-                date: date.toISOString().split('T')[0]
-            };
+        };
+
+        const buildDate = (): string => {
+            if (values.recurrence === 'oneoff-today')
+                return dateToIsoDate(today.value);
+            if (values.recurrence === 'oneoff-yesterday')
+                return dateToIsoDate(yesterday.value);
+            return dateToIsoDate(values.date!);
+        };
+
+        if (isEditDialog.value) {
+            const transaction = props.transaction!;
+            if (isRecurring) {
+                await TransactionStore.update('recurring', transaction.id, {
+                    ...basePayload,
+                    recurrence: buildRecurrence()
+                });
+            } else {
+                await TransactionStore.update('oneoff', transaction.id, {
+                    ...basePayload,
+                    date: buildDate()
+                });
+            }
+        } else {
+            if (isRecurring) {
+                await TransactionStore.create('recurring', {
+                    ...basePayload,
+                    recurrence: buildRecurrence()
+                });
+            } else {
+                await TransactionStore.create('oneoff', {
+                    ...basePayload,
+                    date: buildDate()
+                });
+            }
         }
 
-        if (props.transaction) {
-            TransactionStore.update(
-                isMonthlyTransaction.value ? 'monthly' : 'oneoff',
-                props.transaction.id,
-                payload
-            )
-                .then(() => {
-                    eventEmitter.dispatchEvent(
-                        new NotificationEvent(
-                            NotificationStyle.SUCCESS,
-                            'Transaktion erfolgreich bearbeitet'
-                        )
-                    );
-                })
-                .catch((err) => {
-                    console.log(err);
-                    eventEmitter.dispatchEvent(
-                        new NotificationEvent(NotificationStyle.ERROR, 'Fehler bei der Bearbeitung')
-                    );
-                });
-        } else {
-            TransactionStore.create(isMonthlyTransaction.value ? 'monthly' : 'oneoff', payload)
-                .then(() => {
-                    eventEmitter.dispatchEvent(
-                        new NotificationEvent(
-                            NotificationStyle.SUCCESS,
-                            'Transaktion erfolgreich erstellt'
-                        )
-                    );
-                })
-                .catch((err) => {
-                    console.log(err);
-                    eventEmitter.dispatchEvent(
-                        new NotificationEvent(NotificationStyle.ERROR, 'Fehler bei der Erstellung')
-                    );
-                });
-        }
         emit('done');
     } catch (err) {
         console.error(err);
-        eventEmitter.dispatchEvent(
-            new NotificationEvent(NotificationStyle.ERROR, 'Ungültiges Formular')
-        );
+        toast.add({
+            severity: 'error',
+            summary: 'Ungültiges Formular',
+            life: 3000
+        });
     } finally {
-        submitLocks.value.delete('submit');
+        locks.value.delete('submit');
     }
-}
+};
 </script>
 
 <template>
-    <form class="flex flex-col gap-8" @submit.prevent="submit">
-        <section>
-            <h2>Es handelt sich um einen</h2>
-            <div class="mx-4 flex flex-col">
-                <label>
-                    <input v-model="transactionProperties.isExpense" type="radio" :value="true" />
+    <Form
+        ref="form"
+        v-slot="$form"
+        :initial-values
+        :resolver="resolver"
+        class="flex flex-col gap-2"
+        @submit="submitForm"
+    >
+        <FieldSet legend="Typ">
+            <RadioButtonGroup name="type" class="flex flex-col gap-1">
+                <label class="flex items-center gap-2">
+                    <RadioButton value="expense" />
                     Geldausgang
                 </label>
-                <label>
-                    <input v-model="transactionProperties.isExpense" type="radio" :value="false" />
+                <label class="flex items-center gap-2">
+                    <RadioButton value="income" />
                     Geldeingang
                 </label>
-                <label v-if="!isEditDialog" class="mt-4">
-                    <input v-model="isMonthlyTransaction" type="checkbox" />
-                    Monatlicher Umsatz
+            </RadioButtonGroup>
+        </FieldSet>
+        <FieldSet legend="Häufigkeit">
+            <RadioButtonGroup
+                v-if="!isEditDialog"
+                name="recurrence"
+                class="flex w-full flex-col gap-1"
+            >
+                <label class="flex items-center gap-2">
+                    <RadioButton value="oneoff-today" />
+                    Einmalig, heute
+                    <span class="text-tertiary">{{ formattedToday }}</span>
                 </label>
+                <label class="flex items-center gap-2">
+                    <RadioButton value="oneoff-yesterday" />
+                    Einmalig, gestern
+                    <span class="text-tertiary">{{ formattedYesterday }}</span>
+                </label>
+                <label class="flex items-center gap-2">
+                    <RadioButton value="oneoff-custom" />
+                    Einmalig, anderer Tag
+                </label>
+                <label class="flex items-center gap-2">
+                    <RadioButton value="monthly" />
+                    Monatlich
+                </label>
+                <label class="flex items-center gap-2">
+                    <RadioButton value="yearly" />
+                    Jährlich
+                </label>
+            </RadioButtonGroup>
+            <div
+                v-if="$form.recurrence?.value === 'oneoff-custom'"
+                class="mt-4"
+            >
+                <FloatLabel variant="on" class="flex-1">
+                    <DatePicker
+                        name="date"
+                        input-id="date"
+                        date-format="dd.mm.yy"
+                        fluid
+                    ></DatePicker>
+                    <label for="date">Datum</label>
+                </FloatLabel>
             </div>
-        </section>
-
-        <section v-if="!isMonthlyTransaction">
-            <h2>Datum</h2>
-            <div class="mx-4">
-                <label for="current-date-radio">
-                    <input
-                        id="current-date-radio"
-                        v-model="transactionProperties.oneoffTransactionProperties.today"
-                        type="radio"
-                        :value="true"
-                    />
-                    Heute:
-                    <time class="text-secondary">{{ formattedDate }}</time>
-                </label>
-                <br />
-                <label for="manual-date-radio">
-                    <input
-                        id="manual-date-radio"
-                        v-model="transactionProperties.oneoffTransactionProperties.today"
-                        type="radio"
-                        :value="false"
-                    />
-                    am
-                    <TextInput
-                        id="manual-date-input"
-                        v-model="transactionProperties.oneoffTransactionProperties.customDate"
-                        class="ml-1 inline-block"
-                        type="date"
-                        :required="!transactionProperties.oneoffTransactionProperties.today"
-                        @click="transactionProperties.oneoffTransactionProperties.today = false"
-                    />
-                </label>
+            <div
+                v-if="$form.recurrence?.value === 'monthly'"
+                class="mt-4 flex gap-2 msm:flex-col"
+            >
+                <FloatLabel variant="on" class="flex-1">
+                    <DatePicker
+                        name="monthFrom"
+                        input-id="monthFrom"
+                        view="month"
+                        date-format="mm.yy"
+                        fluid
+                    ></DatePicker>
+                    <label for="monthFrom">Erster Monat</label>
+                </FloatLabel>
+                <FloatLabel variant="on" class="flex-1">
+                    <DatePicker
+                        name="monthTo"
+                        input-id="monthTo"
+                        view="month"
+                        date-format="mm.yy"
+                        fluid
+                    ></DatePicker>
+                    <label for="monthTo">Letzter Monat (inkl.)</label>
+                </FloatLabel>
             </div>
-        </section>
+            <div
+                v-if="$form.recurrence?.value === 'yearly'"
+                class="mt-4 flex gap-2 msm:flex-col"
+            >
+                <FloatLabel variant="on" class="flex-1">
+                    <DatePicker
+                        name="yearFrom"
+                        input-id="yearFrom"
+                        view="year"
+                        date-format="yy"
+                        fluid
+                    ></DatePicker>
+                    <label for="yearFrom">Erstes Jahr</label>
+                </FloatLabel>
+                <FloatLabel variant="on" class="flex-1">
+                    <DatePicker
+                        name="yearTo"
+                        input-id="yearTo"
+                        view="year"
+                        date-format="yy"
+                        fluid
+                    ></DatePicker>
+                    <label for="yearTo">Letztes Jahr (inkl.)</label>
+                </FloatLabel>
+            </div>
+        </FieldSet>
 
-        <section v-else>
-            <h2>Zeitraum</h2>
-            <GridForm class="mx-4">
-                <label for="transaction-first">Erster Umsatz</label>
-                <MonthInput
-                    id="transaction-first"
-                    v-model="transactionProperties.monthlyTransactionProperties.monthFrom"
-                    :required="true"
-                />
-                <label for="transaction-last">Letzter Umsatz</label>
-                <MonthInput
-                    id="transaction-last"
-                    v-model="transactionProperties.monthlyTransactionProperties.monthTo"
-                />
-            </GridForm>
-        </section>
+        <FieldSet legend="Transaktion">
+            <div class="flex flex-col gap-2">
+                <FloatLabel variant="on">
+                    <InputNumber
+                        input-id="amount"
+                        name="amount"
+                        mode="currency"
+                        currency="EUR"
+                        fluid
+                    />
+                    <label for="amount">Betrag</label>
+                </FloatLabel>
 
-        <section>
-            <h2>Transaktion</h2>
-            <GridForm class="mx-4">
-                <label for="amount">Betrag</label>
-                <CurrencyInput v-model="transactionProperties.amount" required />
+                <FloatLabel variant="on">
+                    <AutoComplete
+                        ref="categoryAutoComplete"
+                        input-id="category"
+                        name="category"
+                        :suggestions="Object.keys(CategoryShopStore.categories)"
+                        required
+                        :suggest-create-object="true"
+                        :loading="locks.has('create_category')"
+                        @create="
+                            async (name) => {
+                                await createCategoryShop('category', name);
+                                categoryAutoComplete?.hide();
+                            }
+                        "
+                    />
+                    <label for="category">Kategorie</label>
+                </FloatLabel>
 
-                <label for="category">Kategorie</label>
-                <AutoComplete
-                    v-model="transactionProperties.Category"
-                    :suggestions="CategoryShopStore.categories"
-                    :required="true"
-                    :suggest-create-object="true"
-                    @request-create="(name) => createCategoryShop('Category', name)"
-                />
+                <FloatLabel variant="on">
+                    <AutoComplete
+                        ref="shopAutoComplete"
+                        input-id="shop"
+                        name="shop"
+                        :suggestions="Object.keys(CategoryShopStore.shops)"
+                        :suggest-create-object="true"
+                        :loading="locks.has('create_shop')"
+                        show-clear
+                        @create="
+                            async (name) => {
+                                await createCategoryShop('shop', name);
+                                shopAutoComplete?.hide();
+                            }
+                        "
+                    />
+                    <label for="shop">Händler</label>
+                </FloatLabel>
 
-                <label for="shop">Händler</label>
-                <AutoComplete
-                    v-model="transactionProperties.Shop"
-                    :suggestions="CategoryShopStore.shops"
-                    :suggest-create-object="true"
-                    @request-create="(name) => createCategoryShop('Shop', name)"
-                />
-
-                <label for="description">Beschreibung</label>
-                <TextInput v-model.lazy.trim="transactionProperties.description" type="text" />
-            </GridForm>
-        </section>
+                <FloatLabel variant="on">
+                    <InputText
+                        input-id="description"
+                        name="description"
+                        fluid
+                    />
+                    <label for="description">Beschreibung</label>
+                </FloatLabel>
+                <div></div>
+            </div>
+        </FieldSet>
 
         <div class="flex justify-center gap-2">
-            <LoadingButton
-                class="btn-green"
+            <Button
                 type="submit"
-                :loading="submitLocks.size > 0"
-                :disabled="submitLocks.size > 0"
-            >
-                Speichern
-            </LoadingButton>
-            <button v-if="showCancelButton" type="button" class="btn" @click="emit('done')">
-                {{ props.transaction ? 'Abbrechen' : 'Verwerfen' }}
-            </button>
+                label="Speichern"
+                severity="success"
+                :loading="locks.size > 0"
+                :disabled="locks.size > 0"
+            />
+            <Button
+                v-if="showCancelButton"
+                type="button"
+                :label="props.transaction ? 'Abbrechen' : 'Verwerfen'"
+                severity="secondary"
+                @click="emit('done')"
+            />
         </div>
-    </form>
+    </Form>
 </template>
-
-<style scoped>
-h2 {
-    @apply text-xl;
-}
-
-section {
-    text-align: left;
-}
-
-label > :is(input[type='checkbox'], input[type='radio']) {
-    margin-right: 8px;
-}
-</style>

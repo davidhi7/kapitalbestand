@@ -1,0 +1,101 @@
+use axum::{
+    Json,
+    extract::{
+        FromRequest, FromRequestParts, OptionalFromRequest, Query, Request,
+        rejection::{JsonRejection, QueryRejection},
+    },
+    http::{StatusCode, request::Parts},
+};
+use garde::Validate;
+use serde::de::DeserializeOwned;
+
+use crate::{app::auth::AuthSession, errors::ServerError, users::User};
+
+pub mod json_field;
+pub mod pagination;
+
+pub struct AuthUser(pub User);
+
+impl<S> FromRequestParts<S> for AuthUser
+where
+    S: Send + Sync,
+{
+    type Rejection = ServerError;
+
+    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+        let session = match AuthSession::from_request_parts(parts, state).await {
+            Ok(session) => session,
+            // Probably an internal server error for when AuthSession can't be created
+            // Don't pass message to response so we don't accidently leak any data
+            Err(err) => {
+                eprintln!("{}", err.1);
+                return Err(ServerError::Generic(err.0, None));
+            }
+        };
+
+        // If session.user is None, no user is logged in
+        let Some(user) = session.user else {
+            return Err(ServerError::Generic(StatusCode::UNAUTHORIZED, None));
+        };
+
+        Ok(AuthUser(user))
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct ValidJson<T>(pub T);
+
+impl<T, S> FromRequest<S> for ValidJson<T>
+where
+    T: DeserializeOwned + Validate<Context = ()>,
+    S: Send + Sync,
+    Json<T>: FromRequest<S, Rejection = JsonRejection>,
+{
+    type Rejection = ServerError;
+
+    async fn from_request(req: Request, state: &S) -> Result<Self, Self::Rejection> {
+        let Json(value) = <Json<T> as FromRequest<S>>::from_request(req, state).await?;
+        value.validate()?;
+        Ok(ValidJson(value))
+    }
+}
+
+impl<T, S> OptionalFromRequest<S> for ValidJson<T>
+where
+    T: DeserializeOwned + Validate<Context = ()>,
+    S: Send + Sync,
+    Json<T>: FromRequest<S, Rejection = JsonRejection>,
+{
+    type Rejection = ServerError;
+
+    async fn from_request(req: Request, state: &S) -> Result<Option<Self>, Self::Rejection> {
+        match <ValidJson<T> as FromRequest<S>>::from_request(req, state).await {
+            Ok(value) => Ok(Some(value)),
+            // If json is actually sent, we do check it and reject the request if it is malformed.
+            // Only if content type is not set to json, we ignore this
+            Err(ServerError::AxumJsonRejection(JsonRejection::MissingJsonContentType(_))) => {
+                Ok(None)
+            }
+            Err(err) => Err(err),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct ValidQuery<T>(pub T);
+
+impl<T, S> FromRequestParts<S> for ValidQuery<T>
+where
+    T: DeserializeOwned + Validate<Context = ()>,
+    S: Send + Sync,
+    Query<T>: FromRequestParts<S, Rejection = QueryRejection>,
+{
+    type Rejection = ServerError;
+
+    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+        let Query(value) =
+            <Query<T> as FromRequestParts<S>>::from_request_parts(parts, state).await?;
+        value.validate()?;
+        Ok(ValidQuery(value))
+    }
+}

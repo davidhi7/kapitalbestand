@@ -9,7 +9,7 @@ const props = defineProps<{
 
 <template>
     <Transition>
-        <div class="grid overflow-hidden" :class="[props.durationClass]" v-if="props.render">
+        <div v-if="props.render" class="grid overflow-hidden" :class="[props.durationClass]">
             <div class="min-h-0 self-end">
                 <slot></slot>
             </div>

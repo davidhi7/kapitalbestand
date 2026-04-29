@@ -5,15 +5,14 @@
         "strict": true,
         "allowJs": true,
         "importHelpers": true,
-        "moduleResolution": "node",
+        "moduleResolution": "bundler",
         "allowSyntheticDefaultImports": true,
         "sourceMap": true,
         "isolatedModules": true,
-        "baseUrl": ".",
         "paths": {
-            "@/*": ["./src/*"],
-            "@backend-types/*": ["../backend/src/types/*"]
+            "@/*": ["./src/*"]
         },
+        "rootDir": ".",
         "outDir": "dist/"
     },
     "include": ["src/"]

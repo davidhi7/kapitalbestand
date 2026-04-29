@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import Button from 'primevue/button';
 import { computed, ref, watch } from 'vue';
-import { RouterLink, useRoute } from 'vue-router';
+import { useRoute } from 'vue-router';
 
 import { MonthlySummary } from '@backend-types/AnalysisTypes';
 
@@ -54,54 +55,46 @@ const currentMonthSelected = computed(() => {
 <template>
     <main class="mx-2 space-y-8">
         <header class="grid grid-cols-2 justify-between gap-2 sm:flex">
-            <RouterLink
+            <Button
+                as="router-link"
                 :to="`/analysis/${monthBefore.year}/${String(monthBefore.month + 1).padStart(2, '0')}`"
-                class="row-[2] flex items-center gap-1"
-            >
-                <span class="material-symbols-outlined relative -bottom-0.5">navigate_before</span>
-                <span>{{
-                    shortYearMonthFormat.format(new Date(monthBefore.year, monthBefore.month))
-                }}</span>
-            </RouterLink>
+                :label="shortYearMonthFormat.format(new Date(monthBefore.year, monthBefore.month))"
+                icon="pi pi-chevron-left"
+                text
+                class="row-2"
+            />
 
             <h1 class="col-span-2">
-                {{ longYearMonthFormat.format(new Date(monthBefore.year, monthBefore.month)) }}
+                {{ longYearMonthFormat.format(new Date(year, month)) }}
             </h1>
 
-            <div class="row-[2] flex justify-end">
-                <RouterLink
+            <div class="row-2 flex justify-end gap-1">
+                <Button
                     v-if="!currentMonthSelected"
+                    as="router-link"
                     to="/analysis"
-                    class="flex items-center gap-1"
-                >
-                    <span>heute</span>
-                </RouterLink>
+                    label="heute"
+                    text
+                />
                 <div
                     v-if="!currentMonthSelected"
                     class="mx-2 my-auto h-6 w-px bg-main opacity-50"
                 />
-                <RouterLink
+                <Button
+                    as="router-link"
                     :to="`/analysis/${monthAfter.year}/${String(monthAfter.month + 1).padStart(2, '0')}`"
-                    class="flex items-center gap-1 text-right"
-                >
-                    <span>
-                        {{
-                            shortYearMonthFormat.format(
-                                new Date(new Date(monthAfter.year, monthAfter.month))
-                            )
-                        }}
-                    </span>
-                    <span class="material-symbols-outlined relative -bottom-0.5">
-                        navigate_next
-                    </span>
-                </RouterLink>
+                    :label="shortYearMonthFormat.format(new Date(monthAfter.year, monthAfter.month))"
+                    icon="pi pi-chevron-right"
+                    icon-pos="right"
+                    text
+                />
             </div>
         </header>
         <div v-if="report" class="flex flex-wrap justify-around gap-4">
             <Card class="grow">
                 <MonthlyExpensesStats :year="year" :month="month" :report="report" />
             </Card>
-            <Card class="min-h-[30rem] grow">
+            <Card class="min-h-120 grow">
                 <MonthlyExpensesChart :year="year" :report="report" />
             </Card>
         </div>

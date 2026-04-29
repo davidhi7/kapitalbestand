@@ -1,72 +1,133 @@
 import { defineStore } from 'pinia';
 
-import { Category, Shop } from '@backend-types/CategoryShopTypes';
-import {
-    MonthlyTransaction,
-    MonthlyTransactionCreateParameters,
-    MonthlyTransactionQueryParameters,
-    OneoffTransaction,
-    OneoffTransactionCreateParameters,
-    OneoffTransactionQueryParameters
-} from '@backend-types/TransactionTypes';
-
 import HttpError from '@/HttpError';
-import { dateToIsoDate } from '@/common';
+import { dateToIsoDate, dateToYearMonth } from '@/common';
+import type {
+    TransactionFilterRules,
+    TransactionOrderRules
+} from '@/components/pages/ListPage.vue';
 
-export type TransactionFilterRules = {
-    Category?: Category;
-    Shop?: Shop;
-    isExpense?: boolean;
-    isMonthlyTransaction: boolean;
-    amountFrom?: number;
-    amountTo?: number;
-    dateFrom?: string;
-    dateTo?: string;
-    monthFrom?: string;
-    monthTo?: string;
-    order: {
-        key: 'Category' | 'Shop' | 'amount' | 'time';
-        order: 'ASC' | 'DESC';
-    };
+export type TransactionType = 'oneoff' | 'recurring';
+
+type BaseTransaction = {
+    id: number;
+    userId: number;
+    isExpense: boolean;
+    amount: number;
+    description?: string;
+    categoryId: number;
+    category: string;
+    shopId?: number;
+    shop?: string;
+    createdAt: string;
+    updatedAt: string;
 };
 
-export type TransactionType = 'oneoff' | 'monthly';
+export type OneoffTransaction = {
+    date: string;
+} & BaseTransaction;
+
+export type MonthlyRecurrence = {
+    frequency: 'monthly';
+    monthFrom: string;
+    monthTo?: string;
+};
+
+export type YearlyRecurrence = {
+    frequency: 'yearly';
+    yearFrom: number;
+    yearTo?: number;
+};
+
+export type Recurrence = MonthlyRecurrence | YearlyRecurrence;
+
+export type RecurringTransaction = {
+    recurrence: Recurrence;
+} & BaseTransaction;
+
+type BaseTransactionCreateParams = {
+    isExpense: boolean;
+    amount: number;
+    description?: string;
+    categoryId: number;
+    shopId?: number;
+};
+
+type OneoffTransactionCreateParams = {
+    date: string;
+} & BaseTransactionCreateParams;
+
+type RecurringTransactionCreateParams = {
+    recurrence: Recurrence;
+} & BaseTransactionCreateParams;
+
+export type CreateParams<T extends TransactionType> = T extends 'oneoff'
+    ? OneoffTransactionCreateParams
+    : RecurringTransactionCreateParams;
+
+type BaseTransactionQueryParams = {
+    isExpense?: boolean;
+    amountFrom?: number;
+    amountTo?: number;
+    categoryId?: number;
+    shopId?: number | null;
+} & TransactionOrderRules;
+
+type OneoffTransactionQueryParams = {
+    dateFrom?: string;
+    dateTo?: string;
+} & BaseTransactionQueryParams;
+
+type RecurringTransactionQueryParams = {
+    frequency?: 'monthly' | 'yearly';
+    intervalStartsLe?: string;
+    intervalEndsGe?: string;
+    isTerminating?: boolean;
+} & BaseTransactionQueryParams;
+
+export type QueryParams<T extends TransactionType> = T extends 'oneoff'
+    ? OneoffTransactionQueryParams
+    : RecurringTransactionQueryParams;
+
+type BaseTransactionUpdateParams = {
+    isExpense?: boolean;
+    amount?: number;
+    description?: string | null;
+    categoryId?: number;
+    shopId?: number | null;
+};
+
+type OneoffTransactionUpdateParams = {
+    date?: string;
+} & BaseTransactionUpdateParams;
+
+type RecurringTransactionUpdateParams = {
+    recurrence?: Recurrence;
+} & BaseTransactionUpdateParams;
+
+export type UpdateParams<T extends TransactionType> =
+    BaseTransactionUpdateParams & T extends 'oneoff'
+        ? OneoffTransactionUpdateParams
+        : RecurringTransactionUpdateParams;
 
 export function isOneoffTransaction(
-    transaction: OneoffTransaction | MonthlyTransaction
+    transaction: OneoffTransaction | RecurringTransaction
 ): transaction is OneoffTransaction {
     return (transaction as OneoffTransaction).date != undefined;
 }
-const currentDate = new Date();
 
-interface State {
-    transactionFilterRules: TransactionFilterRules;
-    transactions: (OneoffTransaction | MonthlyTransaction)[];
-}
+// This used to hold actual state but no more
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface State {}
 
 export const useTransactionStore = defineStore('Transaction', {
     state: (): State => {
-        return {
-            transactionFilterRules: {
-                dateFrom: dateToIsoDate(
-                    new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
-                ),
-                monthFrom: `${currentDate.getFullYear()}-01`,
-                isMonthlyTransaction: false,
-                order: {
-                    key: 'time',
-                    order: 'ASC'
-                }
-            },
-            transactions: []
-        };
+        return {};
     },
     actions: {
         async create<T extends TransactionType>(
             type: T,
-            payload: T extends 'oneoff'
-                ? OneoffTransactionCreateParameters
-                : MonthlyTransactionCreateParameters
+            payload: CreateParams<T>
         ) {
             const response = await fetch(`/api/transactions/${type}`, {
                 method: 'POST',
@@ -78,82 +139,85 @@ export const useTransactionStore = defineStore('Transaction', {
             if (!response.ok) {
                 throw new HttpError(response.status);
             }
-
-            // Only fetch transactions if currently filtered transaction type is equal to type of just created transaction
-            const isMonthlyTransaction =
-                (payload as OneoffTransactionCreateParameters).date == undefined;
-            if (isMonthlyTransaction === this.transactionFilterRules.isMonthlyTransaction) {
-                this.fetch();
-            }
         },
-        async fetch() {
-            const payload: {
-                [key in keyof (OneoffTransactionQueryParameters &
-                    MonthlyTransactionQueryParameters)]: string;
-            } = {};
-            const filters = this.transactionFilterRules;
-            let endpoint: string;
+        async fetch(
+            filters: TransactionFilterRules,
+            order: TransactionOrderRules
+        ): Promise<{
+            oneoff: OneoffTransaction[];
+            recurring: RecurringTransaction[];
+        }> {
+            const fetchOneoff =
+                filters.recurrence === 'all' || filters.recurrence === 'oneoff';
+            const fetchRecurring =
+                filters.recurrence === 'all' ||
+                filters.recurrence === 'recurring';
 
-            if (filters.isExpense !== undefined) {
-                payload['isExpense'] = String(filters.isExpense);
-            }
+            const baseParams: Record<string, string> = {
+                ordering: order.ordering,
+                orderKey: order.orderKey
+            };
+            if (filters.type === 'expense') baseParams.isExpense = 'true';
+            if (filters.type === 'income') baseParams.isExpense = 'false';
+            if (filters.amountFrom != null)
+                baseParams.amountFrom = String(filters.amountFrom);
+            if (filters.amountTo != null)
+                baseParams.amountTo = String(filters.amountTo);
 
-            if (filters.amountFrom !== undefined) {
-                payload['amountFrom'] = String(filters.amountFrom);
-            }
+            const oneoffPromise = fetchOneoff
+                ? (async (): Promise<OneoffTransaction[]> => {
+                      const params = new URLSearchParams(baseParams);
+                      if (filters.dateFrom)
+                          params.set(
+                              'dateFrom',
+                              dateToIsoDate(filters.dateFrom)
+                          );
+                      if (filters.dateTo)
+                          params.set('dateTo', dateToIsoDate(filters.dateTo));
+                      const r = await fetch(
+                          `/api/transactions/oneoff?${params}`
+                      );
+                      if (!r.ok) throw new HttpError(r.status);
+                      return await (
+                          await r.json()
+                      ).data;
+                  })()
+                : Promise.resolve([] as OneoffTransaction[]);
 
-            if (filters.amountTo !== undefined) {
-                payload['amountTo'] = String(filters.amountTo);
-            }
+            const recurringPromise = fetchRecurring
+                ? (async (): Promise<RecurringTransaction[]> => {
+                      const params = new URLSearchParams(baseParams);
+                      if (filters.dateFrom)
+                          params.set(
+                              'intervalStartsLe',
+                              dateToYearMonth(filters.dateFrom)
+                          );
+                      if (filters.dateTo)
+                          params.set(
+                              'intervalEndsGe',
+                              dateToYearMonth(filters.dateTo)
+                          );
+                      const r = await fetch(
+                          `/api/transactions/recurring?${params}`
+                      );
+                      if (!r.ok) throw new HttpError(r.status);
+                      return await (
+                          await r.json()
+                      ).data;
+                  })()
+                : Promise.resolve([] as RecurringTransaction[]);
 
-            if (filters.Category !== undefined) {
-                payload['CategoryId'] = String(filters.Category.id);
-            }
+            const [oneoff, recurring] = await Promise.all([
+                oneoffPromise,
+                recurringPromise
+            ]);
 
-            if (filters.Shop !== undefined) {
-                payload['ShopId'] = String(filters.Shop.id);
-            }
-
-            if (filters.order) {
-                payload['orderKey'] = filters.order.key;
-                payload['order'] = filters.order.order;
-            }
-
-            if (!filters.isMonthlyTransaction) {
-                endpoint = '/api/transactions/oneoff';
-                if (filters.dateFrom !== undefined) {
-                    payload['dateFrom'] = filters.dateFrom;
-                }
-
-                if (filters.dateTo !== undefined) {
-                    payload['dateTo'] = filters.dateTo;
-                }
-            } else {
-                endpoint = '/api/transactions/monthly';
-                if (filters.monthFrom !== undefined) {
-                    payload['monthFrom'] = filters.monthFrom;
-                }
-
-                if (filters.monthTo !== undefined) {
-                    payload['monthTo'] = filters.monthTo;
-                }
-            }
-
-            const response = await fetch(endpoint + '?' + new URLSearchParams(payload));
-
-            if (!response.ok) {
-                throw new HttpError(response.status);
-            }
-
-            this.transactions = (await response.json()).data;
-            return this.transactions;
+            return { oneoff, recurring };
         },
         async update<T extends TransactionType>(
             type: T,
             id: number,
-            payload: T extends 'oneoff'
-                ? OneoffTransactionCreateParameters
-                : MonthlyTransactionCreateParameters
+            payload: UpdateParams<T>
         ) {
             const response = await fetch(`/api/transactions/${type}/${id}`, {
                 method: 'PATCH',
@@ -165,13 +229,6 @@ export const useTransactionStore = defineStore('Transaction', {
             if (!response.ok) {
                 throw new HttpError(response.status);
             }
-
-            for (let i = 0; i < this.transactions.length; i++) {
-                if (this.transactions[i].id == id) {
-                    this.transactions[i] = (await response.json()).data;
-                    return;
-                }
-            }
         },
         async delete(type: TransactionType, id: number) {
             const endpoint = `/api/transactions/${type}/${id}`;
@@ -180,13 +237,6 @@ export const useTransactionStore = defineStore('Transaction', {
             });
             if (!response.ok) {
                 throw new HttpError(response.status);
-            }
-
-            for (let i = 0; i < this.transactions.length; i++) {
-                if (this.transactions[i].id == id) {
-                    this.transactions.splice(i, 1);
-                    return;
-                }
             }
         }
     }

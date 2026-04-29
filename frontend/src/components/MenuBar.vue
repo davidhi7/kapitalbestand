@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
 
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
@@ -17,14 +17,11 @@ const compactMode = breakpoints.smaller('sm');
 
 const display_menu = ref(false);
 
-onMounted(() => {
-    display_menu.value = false;
-});
 watch(compactMode, () => {
     display_menu.value = false;
 });
 
-defineEmits(['logout']);
+const emit = defineEmits(['logout']);
 </script>
 
 <template>
@@ -35,8 +32,7 @@ defineEmits(['logout']);
         <!-- Button to toggle the menu, only visible on small screen devices -->
         <section class="self-end sm:hidden">
             <IconRouterLink
-                class="relative -left-0.5 text-2xl"
-                :icon="display_menu ? 'close' : 'menu'"
+                :icon="display_menu ? 'pi-times' : 'pi-bars'"
                 @click="display_menu = !display_menu"
             />
         </section>
@@ -47,30 +43,43 @@ defineEmits(['logout']);
             :class="{ 'msm:hidden': !display_menu }"
             @click="display_menu = false"
         >
-            <IconRouterLink to="/" icon="home" :label="compactMode ? 'Start' : null" />
-            <IconRouterLink to="/new" icon="add" label="Neue Transaktion" />
-            <IconRouterLink to="/list" icon="list" label="Liste" />
-            <IconRouterLink to="/analysis" icon="query_stats" label="Analyse" />
+            <IconRouterLink
+                to="/"
+                icon="pi-home"
+                :label="compactMode ? 'Start' : undefined"
+            />
+            <IconRouterLink to="/new" icon="pi-plus" label="Neue Transaktion" />
+            <IconRouterLink to="/list" icon="pi-list" label="Liste" />
+            <IconRouterLink
+                to="/analysis"
+                icon="pi-chart-line"
+                label="Analyse"
+            />
         </section>
 
         <!-- Separator between main pages and logout; only on small screens -->
-        <div class="m-1 h-px w-auto bg-main-dark sm:hidden" :class="{ hidden: !display_menu }" />
+        <div
+            class="m-1 h-px w-auto bg-main-dark sm:hidden"
+            :class="{ hidden: !display_menu }"
+        />
 
         <!-- Account settings & logout -->
-        <section class="flex msm:justify-between" :class="{ 'msm:hidden': !display_menu }">
+        <section
+            class="flex msm:justify-between"
+            :class="{ 'msm:hidden': !display_menu }"
+        >
             <IconRouterLink
                 to="/account"
-                icon="manage_accounts"
+                icon="pi-user"
                 :label="props.username"
-                :label-left="!compactMode"
-                class="flex-grow"
+                class="grow"
                 @click="display_menu = false"
             />
             <IconRouterLink
-                icon="logout"
+                icon="pi-sign-out"
                 @click="
                     display_menu = false;
-                    $emit('logout');
+                    emit('logout');
                 "
             />
         </section>
@@ -78,6 +87,8 @@ defineEmits(['logout']);
 </template>
 
 <style scoped>
+@reference '@/assets/base.css';
+
 nav * {
     @apply -outline-offset-4 outline-main;
 }

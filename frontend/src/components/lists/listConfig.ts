@@ -1,5 +1,3 @@
-import { MonthlyTransaction, OneoffTransaction } from '@backend-types/TransactionTypes';
-
 import {
     formatCurrency,
     longDateFormat,
@@ -7,87 +5,96 @@ import {
     shortDateFormat,
     shortYearMonthFormat
 } from '@/common';
+import {
+    OneoffTransaction,
+    Recurrence,
+    RecurringTransaction
+} from '@/stores/TransactionStore';
 
-export const breakpoints = ['', 'sm', 'md', 'lg', 'xl', '2xl'] as const;
-export type Breakpoint = (typeof breakpoints)[number];
-export type NotEmptyBreakpoint = Exclude<Breakpoint, ''>;
+export type Breakpoint = 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 
-export function formatMonthRange(transaction: MonthlyTransaction, format: 'long' | 'short') {
-    const yearMonthFormat = format === 'long' ? longYearMonthFormat : shortYearMonthFormat;
+export function formatRecurrenceRange(
+    recurrence: Recurrence,
+    format: 'long' | 'short'
+) {
+    const yearMonthFormat =
+        format === 'long' ? longYearMonthFormat : shortYearMonthFormat;
 
-    if (!transaction.monthTo) {
-        return `Ab ${yearMonthFormat.format(new Date(transaction.monthFrom))}`;
+    if (recurrence.frequency === 'monthly') {
+        if (!recurrence.monthTo) {
+            return `Ab ${yearMonthFormat.format(new Date(recurrence.monthFrom))}`;
+        }
+        return yearMonthFormat.formatRange(
+            new Date(recurrence.monthFrom),
+            new Date(recurrence.monthTo)
+        );
+    } else {
+        if (!recurrence.yearTo) {
+            return `Ab ${recurrence.yearFrom}`;
+        }
+        return `${recurrence.yearFrom} – ${recurrence.yearTo}`;
     }
-
-    return yearMonthFormat.formatRange(
-        new Date(transaction.monthFrom),
-        new Date(transaction.monthTo)
-    );
 }
 
-export interface ColumnSettings<T extends OneoffTransaction | MonthlyTransaction> {
+export interface ColumnSettings<
+    T extends OneoffTransaction | RecurringTransaction
+> {
     title: string;
     text_function: (instance: T, style: 'long' | 'short') => string;
     style_function?: (instance: T) => string;
-    breakpoint: Breakpoint;
+    breakpoint?: Breakpoint;
 }
 
-const genericCategories: ColumnSettings<OneoffTransaction | MonthlyTransaction>[] = [
+const genericCategories: ColumnSettings<
+    OneoffTransaction | RecurringTransaction
+>[] = [
     {
         title: 'Kategorie',
-        text_function: (transaction, style) => {
-            return String(transaction.Transaction.Category.name);
-        },
-        breakpoint: ''
+        text_function: (transaction, style) => transaction.category ?? ''
     },
     {
         title: 'Händler',
-        text_function: (transaction, style) => {
-            if (transaction.Transaction.Shop) {
-                return String(transaction.Transaction.Shop.name);
-            }
-            return '';
-        },
+        text_function: (transaction, style) => transaction.shop ?? '',
         breakpoint: 'sm'
     },
     {
         title: 'Betrag',
         text_function: (transaction, style) => {
-            const prefix = transaction.Transaction.isExpense ? '' : '+';
-            return prefix + formatCurrency(transaction.Transaction.amount);
+            const prefix = transaction.isExpense ? '' : '+';
+            return prefix + formatCurrency(transaction.amount);
         },
         style_function: (transaction) => {
-            if (!transaction.Transaction.isExpense) return 'text-positive font-semibold';
+            if (!transaction.isExpense) return 'text-positive font-semibold';
             return 'font-semibold';
-        },
-        breakpoint: ''
+        }
     },
     {
         title: 'Beschreibung',
-        text_function: (transaction, style) => transaction.Transaction.description,
+        text_function: (transaction, style) => transaction.description ?? '-',
         breakpoint: 'xl'
     }
 ];
 
-export const oneoffTransactionColumnSettings: ColumnSettings<OneoffTransaction>[] = [
-    {
-        title: 'Datum',
-        text_function: (transaction, style) => {
-            if (style === 'short') return shortDateFormat.format(new Date(transaction.date));
-            else return longDateFormat.format(new Date(transaction.date));
+export const oneoffTransactionColumnSettings: ColumnSettings<OneoffTransaction>[] =
+    [
+        {
+            title: 'Datum',
+            text_function: (transaction, style) => {
+                if (style === 'short')
+                    return shortDateFormat.format(new Date(transaction.date));
+                else return longDateFormat.format(new Date(transaction.date));
+            }
         },
-        breakpoint: ''
-    },
-    ...genericCategories
-];
+        ...genericCategories
+    ];
 
-export const monthlyTransactionColumnSettings: ColumnSettings<MonthlyTransaction>[] = [
-    {
-        title: 'Zeitraum',
-        text_function: (transaction, style) => {
-            return formatMonthRange(transaction, style);
+export const recurringTransactionColumnSettings: ColumnSettings<RecurringTransaction>[] =
+    [
+        {
+            title: 'Zeitraum',
+            text_function: (transaction, style) => {
+                return formatRecurrenceRange(transaction.recurrence, style);
+            }
         },
-        breakpoint: ''
-    },
-    ...genericCategories
-];
+        ...genericCategories
+    ];
