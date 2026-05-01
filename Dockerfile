@@ -8,10 +8,10 @@ RUN cargo build --release --locked
 
 FROM node:24-slim AS frontend-builder
 WORKDIR /build
+COPY package.json package-lock.json ./
 COPY frontend/ ./frontend/
-WORKDIR /build/frontend
-RUN npm ci
-RUN npm run build
+RUN npm ci --workspace=frontend
+RUN npm run --workspace=frontend build
 
 
 FROM debian:bookworm-slim
