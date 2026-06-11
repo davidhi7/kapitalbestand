@@ -6,7 +6,7 @@ use sqlx::{Postgres, QueryBuilder, prelude::FromRow};
 
 use crate::{
     app::{
-        api::json_field::JsonField,
+        api::tri_state_field::TriState,
         resources::{
             Resource,
             recurring_transactions::{
@@ -148,8 +148,9 @@ pub struct RecurringTransactionFetchParams {
     amount_to: Option<Amount>,
     #[garde(dive)]
     category_id: Option<UnvalidatedCategoryId>,
+    #[serde(default)]
     #[garde(dive)]
-    shop_id: JsonField<UnvalidatedShopId>,
+    shop_id: TriState<UnvalidatedShopId>,
     #[serde(default)]
     #[garde(skip)]
     ordering: Ordering,
@@ -167,12 +168,14 @@ pub struct RecurringTransactionUpdateParams {
     is_expense: Option<bool>,
     #[garde(dive)]
     amount: Option<Amount>,
+    #[serde(default)]
     #[garde(dive)]
-    description: JsonField<Description>,
+    description: TriState<Description>,
     #[garde(dive)]
     category_id: Option<UnvalidatedCategoryId>,
+    #[serde(default)]
     #[garde(dive)]
-    shop_id: JsonField<UnvalidatedShopId>,
+    shop_id: TriState<UnvalidatedShopId>,
 }
 
 impl Resource for RecurringTransaction {
@@ -328,11 +331,11 @@ impl Resource for RecurringTransaction {
                 .push_bind(category_id.validate(user, database).await?);
         }
 
-        if let JsonField::Defined(Some(shop_id)) = params.shop_id {
+        if let TriState::Defined(Some(shop_id)) = params.shop_id {
             query_builder
                 .push(" AND rt.shop_id = ")
                 .push_bind(shop_id.validate(user, database).await?);
-        } else if let JsonField::Defined(None) = params.shop_id {
+        } else if let TriState::Defined(None) = params.shop_id {
             query_builder.push(" AND rt.shop_id IS NULL");
         }
 
@@ -424,7 +427,7 @@ impl Resource for RecurringTransaction {
             bind_count += 1;
         }
 
-        if let JsonField::Defined(_) = params.description {
+        if let TriState::Defined(_) = params.description {
             query_parts.push(format!("description = ${bind_count}"));
             bind_count += 1;
         }
@@ -434,7 +437,7 @@ impl Resource for RecurringTransaction {
             bind_count += 1;
         }
 
-        if let JsonField::Defined(_) = params.shop_id {
+        if let TriState::Defined(_) = params.shop_id {
             query_parts.push(format!("shop_id = ${bind_count}"));
             bind_count += 1;
         }
@@ -487,7 +490,7 @@ impl Resource for RecurringTransaction {
             query = query.bind(*amount);
         }
 
-        if let JsonField::Defined(field) = &params.description {
+        if let TriState::Defined(field) = &params.description {
             query = query.bind(field.as_deref());
         }
 
@@ -495,7 +498,7 @@ impl Resource for RecurringTransaction {
             query = query.bind(category_id.validate(user, database).await?);
         }
 
-        if let JsonField::Defined(field) = params.shop_id {
+        if let TriState::Defined(field) = params.shop_id {
             query = query.bind(match field {
                 Some(value) => Some(value.validate(user, database).await?),
                 None => None,
@@ -1260,7 +1263,7 @@ mod tests {
             let user = get_user_by_id(&pool, 1).await; // Alice
             let shop = get_shop_by_name(&pool, user.id, "Netflix").await;
             let params = RecurringTransactionFetchParams {
-                shop_id: JsonField::Defined(Some(UnvalidatedShopId::from(shop.id))),
+                shop_id: TriState::Defined(Some(UnvalidatedShopId::from(shop.id))),
                 ..Default::default()
             };
 
@@ -1279,7 +1282,7 @@ mod tests {
         fn test_fetch_with_shop_null(pool: PgPool) -> anyhow::Result<()> {
             let user = get_user_by_id(&pool, 1).await; // Alice
             let params = RecurringTransactionFetchParams {
-                shop_id: JsonField::Defined(None),
+                shop_id: TriState::Defined(None),
                 ..Default::default()
             };
 
@@ -1302,7 +1305,7 @@ mod tests {
                 &pool,
                 &user,
                 RecurringTransactionFetchParams {
-                    shop_id: JsonField::Defined(Some(UnvalidatedShopId::from(999999))),
+                    shop_id: TriState::Defined(Some(UnvalidatedShopId::from(999999))),
                     ..Default::default()
                 },
                 Pagination::default(),
@@ -1314,7 +1317,7 @@ mod tests {
                 &pool,
                 &user,
                 RecurringTransactionFetchParams {
-                    shop_id: JsonField::Defined(Some(UnvalidatedShopId::from(16))),
+                    shop_id: TriState::Defined(Some(UnvalidatedShopId::from(16))),
                     ..Default::default()
                 },
                 Pagination::default(),
@@ -1331,7 +1334,7 @@ mod tests {
             let bob_shop = get_shop_by_name(&pool, 2, "Local Grocery").await;
 
             let params = RecurringTransactionFetchParams {
-                shop_id: JsonField::Defined(Some(UnvalidatedShopId::from(bob_shop.id))),
+                shop_id: TriState::Defined(Some(UnvalidatedShopId::from(bob_shop.id))),
                 ..Default::default()
             };
 
@@ -1846,7 +1849,7 @@ mod tests {
                 &user,
                 1,
                 RecurringTransactionUpdateParams {
-                    description: JsonField::Defined(Some(Description(
+                    description: TriState::Defined(Some(Description(
                         "new description".to_string(),
                     ))),
                     ..Default::default()
@@ -1889,7 +1892,7 @@ mod tests {
                 &user,
                 1,
                 RecurringTransactionUpdateParams {
-                    description: JsonField::Defined(None),
+                    description: TriState::Defined(None),
                     ..Default::default()
                 },
             )
@@ -1995,7 +1998,7 @@ mod tests {
                 &user,
                 1,
                 RecurringTransactionUpdateParams {
-                    shop_id: JsonField::Defined(Some(UnvalidatedShopId::from(4))),
+                    shop_id: TriState::Defined(Some(UnvalidatedShopId::from(4))),
                     ..Default::default()
                 },
             )
@@ -2033,7 +2036,7 @@ mod tests {
                 &user,
                 1,
                 RecurringTransactionUpdateParams {
-                    shop_id: JsonField::Defined(None),
+                    shop_id: TriState::Defined(None),
                     ..Default::default()
                 },
             )
@@ -2068,7 +2071,7 @@ mod tests {
                 &user,
                 1,
                 RecurringTransactionUpdateParams {
-                    shop_id: JsonField::Defined(Some(UnvalidatedShopId::from(999999))),
+                    shop_id: TriState::Defined(Some(UnvalidatedShopId::from(999999))),
                     ..Default::default()
                 },
             )
@@ -2080,7 +2083,7 @@ mod tests {
                 &user,
                 1,
                 RecurringTransactionUpdateParams {
-                    shop_id: JsonField::Defined(Some(UnvalidatedShopId::from(16))),
+                    shop_id: TriState::Defined(Some(UnvalidatedShopId::from(16))),
                     ..Default::default()
                 },
             )
@@ -2138,7 +2141,7 @@ mod tests {
                     &user,
                     user_2_transaction.id,
                     RecurringTransactionUpdateParams {
-                        description: JsonField::Defined(Some(Description(
+                        description: TriState::Defined(Some(Description(
                             "updated description".to_string()
                         ))),
                         ..Default::default()
@@ -2179,7 +2182,7 @@ mod tests {
                     &user,
                     999999,
                     RecurringTransactionUpdateParams {
-                        description: JsonField::Defined(Some(Description(
+                        description: TriState::Defined(Some(Description(
                             "updated description".to_string()
                         ))),
                         ..Default::default()

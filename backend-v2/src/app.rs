@@ -38,10 +38,12 @@ struct AppState {
 fn env_var_or_file(name: &str) -> Option<String> {
     let file_key = format!("{name}_FILE");
     if let Ok(path) = env::var(&file_key) {
-        Some(fs::read_to_string(&path)
-            .unwrap_or_else(|e| panic!("failed to read {file_key}={path}: {e}"))
-            .trim()
-            .to_string())
+        Some(
+            fs::read_to_string(&path)
+                .unwrap_or_else(|e| panic!("failed to read {file_key}={path}: {e}"))
+                .trim()
+                .to_string(),
+        )
     } else {
         env::var(name).ok()
     }
@@ -53,15 +55,19 @@ fn build_database_url() -> anyhow::Result<String> {
     }
 
     let host = env::var("DB_HOST").unwrap_or_else(|_| "localhost".to_string());
-    let database = env::var("DB_DATABASE").context("either DATABASE_URL or DB_DATABASE must be set")?;
-    let user = env_var_or_file("DB_USER").context("DB_USER or DB_USER_FILE must be set when using DB_DATABASE")?;
-    let password = env_var_or_file("DB_PASSWORD").context("DB_PASSWORD or DB_PASSWORD_FILE must be set when using DB_DATABASE")?;
+    let database =
+        env::var("DB_DATABASE").context("either DATABASE_URL or DB_DATABASE must be set")?;
+    let user = env_var_or_file("DB_USER")
+        .context("DB_USER or DB_USER_FILE must be set when using DB_DATABASE")?;
+    let password = env_var_or_file("DB_PASSWORD")
+        .context("DB_PASSWORD or DB_PASSWORD_FILE must be set when using DB_DATABASE")?;
 
     Ok(format!("postgres://{user}:{password}@{host}/{database}"))
 }
 
 impl App {
     pub async fn new() -> anyhow::Result<App> {
+        println!("here");
         let database_url = build_database_url()?;
         let pool = PgPoolOptions::new()
             .max_connections(5)
@@ -111,9 +117,7 @@ impl App {
             // The login_required macro above doesn't affect the auth routes, this module manually manages their routes
             .nest("/api/auth", auth::router())
             .route_layer(auth_layer)
-            .fallback_service(
-                ServeDir::new("static").fallback(ServeFile::new("static/index.html")),
-            )
+            .fallback_service(ServeDir::new("static").fallback(ServeFile::new("static/index.html")))
     }
 
     pub async fn serve(self) -> anyhow::Result<()> {

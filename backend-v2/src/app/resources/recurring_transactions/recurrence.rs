@@ -22,7 +22,7 @@ pub enum RecurrenceFrequency {
 pub enum Recurrence {
     Yearly {
         // 262143 is the max. year allowed for chrono NaiveDate
-        #[garde(range(min=1, max=262143))]
+        #[garde(range(min = 1, max = 262143))]
         year_from: i32,
         #[garde(custom(validate_year_range(self)))]
         year_to: Option<i32>,
@@ -119,13 +119,6 @@ mod tests {
         }
         .validate()
         .expect("No end year");
-
-        Recurrence::Yearly {
-            year_from: -100,
-            year_to: Some(100),
-        }
-        .validate()
-        .expect("Negative years");
     }
 
     #[test]
@@ -136,6 +129,13 @@ mod tests {
         }
         .validate()
         .expect_err("Invalid range");
+
+        Recurrence::Yearly {
+            year_from: -100,
+            year_to: Some(100),
+        }
+        .validate()
+        .expect_err("Negative years");
     }
 
     #[test]

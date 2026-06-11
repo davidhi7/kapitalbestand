@@ -5,8 +5,8 @@ use garde::Validate;
 use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, Postgres, QueryBuilder};
 
-use crate::app::api::json_field::JsonField;
 use crate::app::api::pagination::Pagination;
+use crate::app::api::tri_state_field::TriState;
 use crate::app::resources::Resource;
 use crate::app::transactions::{
     Amount, Description, OrderKey, Ordering, UnvalidatedCategoryId, UnvalidatedShopId,
@@ -63,8 +63,9 @@ pub struct OneoffTransactionFetchParams {
     amount_to: Option<Amount>,
     #[garde(dive)]
     category_id: Option<UnvalidatedCategoryId>,
+    #[serde(default)]
     #[garde(dive)]
-    shop_id: JsonField<UnvalidatedShopId>,
+    shop_id: TriState<UnvalidatedShopId>,
     #[serde(default)]
     #[garde(skip)]
     ordering: Ordering,
@@ -82,12 +83,14 @@ pub struct OneoffTransactionUpdateParams {
     is_expense: Option<bool>,
     #[garde(dive)]
     amount: Option<Amount>,
+    #[serde(default)]
     #[garde(dive)]
-    description: JsonField<Description>,
+    description: TriState<Description>,
     #[garde(dive)]
     category_id: Option<UnvalidatedCategoryId>,
+    #[serde(default)]
     #[garde(dive)]
-    shop_id: JsonField<UnvalidatedShopId>,
+    shop_id: TriState<UnvalidatedShopId>,
 }
 
 impl Resource for OneoffTransaction {
@@ -107,8 +110,8 @@ impl Resource for OneoffTransaction {
             OneoffTransaction,
             r#"
             WITH insert AS (
-                INSERT INTO oneoff_transactions (date, user_id, is_expense, amount, description, category_id, shop_id) 
-                VALUES ($1, $2, $3, $4, $5, $6, $7) 
+                INSERT INTO oneoff_transactions (date, user_id, is_expense, amount, description, category_id, shop_id)
+                VALUES ($1, $2, $3, $4, $5, $6, $7)
                 RETURNING *
             )
             SELECT insert.*, c.name as category, s.name as "shop?"
@@ -138,7 +141,7 @@ impl Resource for OneoffTransaction {
         params: Self::FetchParams,
         pagination: Pagination,
     ) -> Result<Self::VecReturnType, Self::Error> {
-        // "shop?" annotation is not needed in constrast to get_by_id which uses the macro
+        // "shop?" annotation is not needed in contrast to get_by_id which uses the macro
         let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(
             r#"
                 SELECT
@@ -148,7 +151,7 @@ impl Resource for OneoffTransaction {
                 FROM oneoff_transactions ot
                 INNER JOIN categories c ON ot.category_id = c.id
                 LEFT JOIN shops s ON ot.shop_id = s.id
-                WHERE ot.user_id = 
+                WHERE ot.user_id =
         "#,
         );
         query_builder.push_bind(user.id);
@@ -183,11 +186,11 @@ impl Resource for OneoffTransaction {
                 .push_bind(category_id.validate(user, database).await?);
         }
 
-        if let JsonField::Defined(Some(shop_id)) = params.shop_id {
+        if let TriState::Defined(Some(shop_id)) = params.shop_id {
             query_builder
                 .push(" AND ot.shop_id = ")
                 .push_bind(shop_id.validate(user, database).await?);
-        } else if let JsonField::Defined(None) = params.shop_id {
+        } else if let TriState::Defined(None) = params.shop_id {
             query_builder.push(" AND ot.shop_id IS NULL");
         }
 
@@ -265,7 +268,7 @@ impl Resource for OneoffTransaction {
             bind_count += 1;
         }
 
-        if let JsonField::Defined(_) = params.description {
+        if let TriState::Defined(_) = params.description {
             query_parts.push(format!("description = ${bind_count}"));
             bind_count += 1;
         }
@@ -275,7 +278,7 @@ impl Resource for OneoffTransaction {
             bind_count += 1;
         }
 
-        if let JsonField::Defined(_) = params.shop_id {
+        if let TriState::Defined(_) = params.shop_id {
             query_parts.push(format!("shop_id = ${bind_count}"));
             bind_count += 1;
         }
@@ -309,7 +312,7 @@ impl Resource for OneoffTransaction {
             query = query.bind(*amount);
         }
 
-        if let JsonField::Defined(field) = &params.description {
+        if let TriState::Defined(field) = &params.description {
             query = query.bind(field.as_deref());
         }
 
@@ -317,7 +320,7 @@ impl Resource for OneoffTransaction {
             query = query.bind(category_id.validate(user, database).await?);
         }
 
-        if let JsonField::Defined(field) = params.shop_id {
+        if let TriState::Defined(field) = params.shop_id {
             query = query.bind(match field {
                 Some(value) => Some(value.validate(user, database).await?),
                 None => None,
@@ -898,7 +901,7 @@ mod tests {
             let user = get_user_by_id(&pool, 1).await; // Alice
             let shop = get_shop_by_name(&pool, user.id, "Whole Foods").await;
             let params = OneoffTransactionFetchParams {
-                shop_id: JsonField::Defined(Some(UnvalidatedShopId::from(shop.id))),
+                shop_id: TriState::Defined(Some(UnvalidatedShopId::from(shop.id))),
                 ..Default::default()
             };
 
@@ -917,7 +920,7 @@ mod tests {
         fn test_fetch_with_shop_null(pool: PgPool) -> anyhow::Result<()> {
             let user = get_user_by_id(&pool, 1).await; // Alice
             let params = OneoffTransactionFetchParams {
-                shop_id: JsonField::Defined(None),
+                shop_id: TriState::Defined(None),
                 ..Default::default()
             };
 
@@ -940,7 +943,7 @@ mod tests {
                 &pool,
                 &user,
                 OneoffTransactionFetchParams {
-                    shop_id: JsonField::Defined(Some(UnvalidatedShopId::from(999999))),
+                    shop_id: TriState::Defined(Some(UnvalidatedShopId::from(999999))),
                     ..Default::default()
                 },
                 Pagination::default(),
@@ -952,7 +955,7 @@ mod tests {
                 &pool,
                 &user,
                 OneoffTransactionFetchParams {
-                    shop_id: JsonField::Defined(Some(UnvalidatedShopId::from(16))),
+                    shop_id: TriState::Defined(Some(UnvalidatedShopId::from(16))),
                     ..Default::default()
                 },
                 Pagination::default(),
@@ -969,7 +972,7 @@ mod tests {
             let bob_shop = get_shop_by_name(&pool, 2, "Local Grocery").await;
 
             let params = OneoffTransactionFetchParams {
-                shop_id: JsonField::Defined(Some(UnvalidatedShopId::from(bob_shop.id))),
+                shop_id: TriState::Defined(Some(UnvalidatedShopId::from(bob_shop.id))),
                 ..Default::default()
             };
 
@@ -1422,7 +1425,7 @@ mod tests {
                 &user,
                 1,
                 OneoffTransactionUpdateParams {
-                    description: JsonField::Defined(Some(Description(
+                    description: TriState::Defined(Some(Description(
                         "new description".to_string(),
                     ))),
                     ..Default::default()
@@ -1461,7 +1464,7 @@ mod tests {
                 &user,
                 1,
                 OneoffTransactionUpdateParams {
-                    description: JsonField::Defined(None),
+                    description: TriState::Defined(None),
                     ..Default::default()
                 },
             )
@@ -1567,7 +1570,7 @@ mod tests {
                 &user,
                 1,
                 OneoffTransactionUpdateParams {
-                    shop_id: JsonField::Defined(Some(UnvalidatedShopId::from(4))),
+                    shop_id: TriState::Defined(Some(UnvalidatedShopId::from(4))),
                     ..Default::default()
                 },
             )
@@ -1605,7 +1608,7 @@ mod tests {
                 &user,
                 1,
                 OneoffTransactionUpdateParams {
-                    shop_id: JsonField::Defined(None),
+                    shop_id: TriState::Defined(None),
                     ..Default::default()
                 },
             )
@@ -1640,7 +1643,7 @@ mod tests {
                 &user,
                 1,
                 OneoffTransactionUpdateParams {
-                    shop_id: JsonField::Defined(Some(UnvalidatedShopId::from(999999))),
+                    shop_id: TriState::Defined(Some(UnvalidatedShopId::from(999999))),
                     ..Default::default()
                 },
             )
@@ -1652,7 +1655,7 @@ mod tests {
                 &user,
                 1,
                 OneoffTransactionUpdateParams {
-                    shop_id: JsonField::Defined(Some(UnvalidatedShopId::from(16))),
+                    shop_id: TriState::Defined(Some(UnvalidatedShopId::from(16))),
                     ..Default::default()
                 },
             )
@@ -1674,9 +1677,9 @@ mod tests {
                     date: Some(NaiveDate::from_ymd_opt(2030, 1, 1).unwrap()),
                     is_expense: Some(false),
                     amount: Some(Amount(10000)),
-                    description: JsonField::Defined(None),
+                    description: TriState::Defined(None),
                     category_id: Some(UnvalidatedCategoryId::from(4)),
-                    shop_id: JsonField::Defined(Some(UnvalidatedShopId::from(4))),
+                    shop_id: TriState::Defined(Some(UnvalidatedShopId::from(4))),
                 },
             )
             .await?
@@ -1749,7 +1752,7 @@ mod tests {
                     &user,
                     user_2_transaction.id,
                     OneoffTransactionUpdateParams {
-                        description: JsonField::Defined(Some(Description(
+                        description: TriState::Defined(Some(Description(
                             "updated description".to_string()
                         ))),
                         ..Default::default()
@@ -1790,7 +1793,7 @@ mod tests {
                     &user,
                     999999,
                     OneoffTransactionUpdateParams {
-                        description: JsonField::Defined(Some(Description(
+                        description: TriState::Defined(Some(Description(
                             "updated description".to_string()
                         ))),
                         ..Default::default()

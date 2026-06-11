@@ -11,8 +11,8 @@ use serde::de::DeserializeOwned;
 
 use crate::{app::auth::AuthSession, errors::ServerError, users::User};
 
-pub mod json_field;
 pub mod pagination;
+pub mod tri_state_field;
 
 pub struct AuthUser(pub User);
 
