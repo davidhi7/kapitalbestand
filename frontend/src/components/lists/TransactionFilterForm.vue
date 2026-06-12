@@ -55,7 +55,7 @@ function setAll() {
 
 <template>
     <form
-        class="mx-4 flex min-h-0 flex-col gap-2 self-end py-2"
+        class="flex min-h-0 flex-col gap-2 self-end"
         @submit.prevent="emit('submit')"
     >
         <FieldSet legend="Typ">
@@ -200,15 +200,5 @@ function setAll() {
                 </FloatLabel>
             </div>
         </FieldSet>
-
-        <div class="flex justify-center gap-2">
-            <Button label="Suchen" type="submit" severity="success" />
-            <Button
-                label="Zurücksetzen"
-                type="button"
-                severity="secondary"
-                @click="emit('reset')"
-            />
-        </div>
     </form>
 </template>

@@ -23,8 +23,6 @@ import {
 } from '@/stores/TransactionStore';
 import { useTransactionStore } from '@/stores/TransactionStore';
 
-import VerticalSlidingTransition from '../transitions/VerticalSlidingTransition.vue';
-
 enum Ordering {
     Asc = 'Asc',
     Desc = 'Desc'
@@ -67,6 +65,10 @@ const defaultRules = ref<TransactionFilterRules>({
     recurrence: 'all'
 });
 const activeRules = ref<TransactionFilterRules>({ ...defaultRules.value });
+
+function resetFilters() {
+    activeRules.value = { ...defaultRules.value };
+}
 const activeOrder = ref<TransactionOrderRules>({
     ordering: Ordering.Asc,
     orderKey: OrderKey.Time
@@ -134,7 +136,7 @@ let {
 
 <template>
     <div
-        class="flex flex-col gap-y-8 lg:grid lg:grid-cols-[400px_auto] lg:gap-x-8 2xl:gap-x-12"
+        class="flex flex-col gap-y-8 lg:grid lg:grid-cols-[400px_auto] lg:gap-x-6"
     >
         <header class="flex flex-row items-center gap-2 md:col-start-2">
             <h1 class="grow text-left">Liste</h1>
@@ -148,48 +150,51 @@ let {
             />
         </header>
 
-        <aside
-            class="row-start-2 overflow-hidden rounded-lg border border-tertiary-bg shadow-xl lg:self-start dark:shadow-2xl"
-        >
-            <header
-                class="grid grid-cols-3 border-tertiary-bg"
-                :class="{ 'border-b': isExpanded }"
+        <aside class="row-start-2 lg:self-start">
+            <Panel
+                :toggleable="allowMinimizing"
+                :collapsed="allowMinimizing && !isExpanded"
+                @update:collapsed="(v: boolean) => (isExpanded = !v)"
             >
-                <div
-                    class="col-start-2 flex items-center justify-center gap-1 p-2 font-semibold"
-                >
-                    <span class="pi pi-filter" />
-                    <span>Filter</span>
-                </div>
-                <Button
-                    v-if="allowMinimizing"
-                    :icon="
-                        isExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'
-                    "
-                    text
-                    rounded
-                    severity="secondary"
-                    size="small"
-                    class="m-1 self-center justify-self-end"
-                    @click.prevent="isExpanded = !isExpanded"
-                />
-            </header>
-            <VerticalSlidingTransition
-                duration-class="duration-200"
-                :render="isExpanded || !allowMinimizing"
-            >
+                <template #header>
+                    <div class="flex grow items-center gap-2">
+                        <div class="flex items-center gap-2 font-semibold">
+                            <span class="pi pi-filter" />
+                            <span>Filter</span>
+                        </div>
+                        <div class="ml-auto flex items-center gap-1">
+                            <Button
+                                label="Suchen"
+                                severity="success"
+                                text
+                                size="small"
+                                @click="fetchTransactions()"
+                            />
+                            <Button
+                                label="Zurücksetzen"
+                                severity="secondary"
+                                text
+                                size="small"
+                                @click="resetFilters"
+                            />
+                        </div>
+                    </div>
+                </template>
                 <TransactionFilterForm
                     v-model="activeRules"
                     :default-filter-rules="activeRules"
                     @submit="fetchTransactions()"
                 />
-            </VerticalSlidingTransition>
+            </Panel>
         </aside>
 
-        <main
-            class="row-start-2 flex flex-col items-stretch gap-4 child:w-full"
-        >
+        <main class="row-start-2 flex flex-col items-stretch gap-6 *:w-full">
             <Panel>
+                <template #header>
+                    <div class="font-semibold">
+                        Wiederkehrende Transaktionen
+                    </div>
+                </template>
                 <TransactionList
                     v-if="transactionData.recurring"
                     :column-settings="recurringTransactionColumnSettings"
@@ -197,13 +202,17 @@ let {
                     :loading="isLoading"
                 />
             </Panel>
-            <TransactionList
-                v-if="transactionData.oneoff"
-                :column-settings="oneoffTransactionColumnSettings"
-                :transactions="transactionData.oneoff"
-                :loading="isLoading"
-                class="overflow-hidden rounded-lg border border-tertiary-bg shadow-xl lg:self-start dark:shadow-2xl"
-            />
+            <Panel>
+                <template #header>
+                    <div class="font-semibold">Einmalige Transaktionen</div>
+                </template>
+                <TransactionList
+                    v-if="transactionData.oneoff"
+                    :column-settings="oneoffTransactionColumnSettings"
+                    :transactions="transactionData.oneoff"
+                    :loading="isLoading"
+                />
+            </Panel>
         </main>
     </div>
 </template>

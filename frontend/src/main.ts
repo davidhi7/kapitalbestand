@@ -4,6 +4,7 @@ import PrimeVue from 'primevue/config';
 import ToastService from 'primevue/toastservice';
 import { createApp } from 'vue';
 
+import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
 
 import '@/assets/base.css';
@@ -13,6 +14,47 @@ import { authEventTarget, useAuthStateStore } from '@/stores/AuthStateStore';
 import { useCategoryShopStore } from '@/stores/CategoryShopStore';
 import { useTransactionStore } from '@/stores/TransactionStore';
 
+const Preset = definePreset(Aura, {
+    semantic: {
+        colorScheme: {
+            light: {
+                surface: {
+                    ground: '{surface.0}',
+                    0: '#ffffff',
+                    50: '{neutral.50}',
+                    100: '{neutral.100}',
+                    200: '{neutral.200}',
+                    300: '{neutral.300}',
+                    400: '{neutral.400}',
+                    500: '{neutral.500}',
+                    600: '{neutral.600}',
+                    700: '{neutral.700}',
+                    800: '{neutral.800}',
+                    900: '{neutral.900}',
+                    950: '{neutral.950}'
+                }
+            },
+            dark: {
+                surface: {
+                    ground: '{surface.900}',
+                    0: '#ffffff',
+                    50: '{neutral.50}',
+                    100: '{neutral.100}',
+                    200: '{neutral.200}',
+                    300: '{neutral.300}',
+                    400: '{neutral.400}',
+                    500: '{neutral.500}',
+                    600: '{neutral.600}',
+                    700: '{neutral.700}',
+                    800: '{neutral.800}',
+                    900: '{neutral.900}',
+                    950: '{neutral.950}'
+                }
+            }
+        }
+    }
+});
+
 const app = createApp(App);
 const pinia = createPinia();
 
@@ -20,7 +62,7 @@ app.use(router);
 app.use(pinia);
 app.use(PrimeVue, {
     theme: {
-        preset: Aura
+        preset: Preset
     },
     locale: {
         emptySearchMessage: 'Keine Einträge gefunden',
@@ -65,12 +107,6 @@ app.use(PrimeVue, {
         ],
         today: 'Heute',
         clear: 'Löschen'
-    },
-    pt: {
-        fieldset: {
-            root: { style: 'background: transparent' },
-            legend: { style: 'background: transparent' }
-        }
     }
 });
 app.use(ToastService);

@@ -1,8 +1,10 @@
 @import 'tailwindcss';
+@import 'tailwindcss-primeui';
 @config '../../tailwind.config.js';
+@source inline('{sm:,md:,lg:,xl:,2xl:,}grid-cols-{1,2,3,4,5,6,7,8,9,10,11,12}');
 
 body {
-    background-color: var(--main-bg);
+    background-color: var(--p-surface-ground);
     color: var(--main);
 }
 
@@ -21,11 +23,11 @@ body {
 } */
 
 .bg-gradient {
-    @apply bg-gradient-to-r from-gradient-0 to-gradient-1;
+    @apply bg-linear-to-r from-gradient-0 to-gradient-1;
 }
 
 h1 {
-    @apply text-center text-2xl font-semibold;
+    @apply text-2xl font-semibold;
 }
 
 :root {
@@ -34,14 +36,6 @@ h1 {
     --tertiary: #888;
 
     --main-dark: #ddd;
-
-    --main-bg: hsl(0, 0%, 100%);
-    --secondary-bg: hsl(0, 0%, 95%);
-    --tertiary-bg: hsl(0, 0%, 90%);
-
-    --input-bg: hsl(0, 0%, 93%);
-    --header-bg: hsl(0, 0%, 10%);
-    --header-bg-hover: hsl(0, 0%, 18%);
 
     /* tailwind green-600 */
     --positive: #16a34a;
@@ -59,14 +53,6 @@ h1 {
         --main: #ddd;
         --secondary: #ccc;
         --tertiary: #aaa;
-
-        --main-bg: hsl(0, 0%, 10%);
-        --secondary-bg: hsl(0, 0%, 13%);
-        --tertiary-bg: hsl(0, 0%, 20%);
-
-        --input-bg: hsl(0, 0%, 25%);
-        --header-bg: hsl(0, 0%, 5%);
-        --header-bg-hover: hsl(0, 0%, 13%);
 
         /* tailwind emerald-500 */
         --positive: var(--);

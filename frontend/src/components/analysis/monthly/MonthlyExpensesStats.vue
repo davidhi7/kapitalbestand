@@ -17,7 +17,7 @@
                 {{ formatCurrency(monthData.balance) }}
             </span>
         </div>
-        <div class="grid grid-cols-2 child:flex child:justify-center">
+        <div class="grid grid-cols-2 *:flex *:justify-center">
             <span class="text-tertiary-dark my-2">Ausgaben</span>
             <span class="text-tertiary-dark my-2">Einnahmen</span>
             <span class="text-3xl font-light text-red-400">

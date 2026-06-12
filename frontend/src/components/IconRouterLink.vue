@@ -21,27 +21,18 @@ const isActive = computed(() => props.to != null && route.path === props.to);
         :icon="icon ? 'pi ' + icon : undefined"
         :label="label"
         unstyled
-        class="nav-link flex cursor-pointer items-center gap-2 border-l-2 px-4 py-2 sm:border-b-2 sm:border-l-0"
+        class="flex items-center gap-2 border-l-4 border-r-0 border-transparent px-4 py-2 text-neutral-100 hover:bg-neutral-800 sm:border-b-4 sm:border-l-0 dark:text-neutral-200 dark:hover:bg-neutral-900"
         :class="{
-            'nav-link-active': isActive
+            'border-emerald-500! dark:border-neutral-200!': isActive
         }"
     />
 </template>
 
 <style scoped>
 .nav-link {
-    color: var(--main-dark);
+    /*color: var(--main-dark);*/
     border-radius: 0;
     border-color: transparent;
     border-style: solid;
-}
-
-.nav-link:hover {
-    background: var(--header-bg-hover);
-    color: var(--main-dark);
-}
-
-.nav-link-active {
-    border-color: var(--main-dark);
 }
 </style>

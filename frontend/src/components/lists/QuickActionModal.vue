@@ -19,6 +19,8 @@ defineExpose({
 
 <template>
     <Teleport to="body">
+        <!-- todo remove main-bg -->
+        <!-- todo remove tertiary bg -->
         <dialog
             ref="dialog"
             class="flex-col gap-4 rounded-lg border border-tertiary-bg bg-main-bg p-6 open:flex"

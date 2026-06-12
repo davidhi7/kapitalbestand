@@ -320,7 +320,7 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
             </div>
             <div
                 v-if="$form.recurrence?.value === 'monthly'"
-                class="mt-4 flex gap-2 msm:flex-col"
+                class="mt-4 flex gap-2 max-sm:flex-col"
             >
                 <FloatLabel variant="on" class="flex-1">
                     <DatePicker
@@ -329,7 +329,8 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
                         view="month"
                         date-format="mm.yy"
                         fluid
-                    ></DatePicker>
+                    >
+                    </DatePicker>
                     <label for="monthFrom">Erster Monat</label>
                 </FloatLabel>
                 <FloatLabel variant="on" class="flex-1">
@@ -345,7 +346,7 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
             </div>
             <div
                 v-if="$form.recurrence?.value === 'yearly'"
-                class="mt-4 flex gap-2 msm:flex-col"
+                class="mt-4 flex gap-2 max-sm:flex-col"
             >
                 <FloatLabel variant="on" class="flex-1">
                     <DatePicker

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
 
@@ -26,8 +26,8 @@ const emit = defineEmits(['logout']);
 
 <template>
     <nav
-        class="fixed top-0 z-10 flex w-full justify-between bg-header-bg text-xl text-main-dark msm:flex-col"
-        :class="{ 'msm:pb-1': display_menu }"
+        class="fixed top-0 z-10 flex w-full justify-between bg-neutral-900 text-xl text-neutral-200 max-sm:flex-col dark:bg-neutral-950"
+        :class="{ 'max-sm:pb-1': display_menu }"
     >
         <!-- Button to toggle the menu, only visible on small screen devices -->
         <section class="self-end sm:hidden">
@@ -40,7 +40,7 @@ const emit = defineEmits(['logout']);
         <!-- Main pages -->
         <section
             class="flex flex-col sm:flex-row"
-            :class="{ 'msm:hidden': !display_menu }"
+            :class="{ 'max-sm:hidden': !display_menu }"
             @click="display_menu = false"
         >
             <IconRouterLink
@@ -59,14 +59,14 @@ const emit = defineEmits(['logout']);
 
         <!-- Separator between main pages and logout; only on small screens -->
         <div
-            class="m-1 h-px w-auto bg-main-dark sm:hidden"
+            class="m-1 h-px w-auto bg-neutral-200 sm:hidden"
             :class="{ hidden: !display_menu }"
         />
 
         <!-- Account settings & logout -->
         <section
-            class="flex msm:justify-between"
-            :class="{ 'msm:hidden': !display_menu }"
+            class="flex max-sm:justify-between"
+            :class="{ 'max-sm:hidden': !display_menu }"
         >
             <IconRouterLink
                 to="/account"
@@ -90,6 +90,6 @@ const emit = defineEmits(['logout']);
 @reference '@/assets/base.css';
 
 nav * {
-    @apply -outline-offset-4 outline-main;
+    @apply -outline-offset-4 outline-neutral-700;
 }
 </style>

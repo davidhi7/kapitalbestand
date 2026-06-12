@@ -1,11 +1,21 @@
-<script setup lang="ts" generic="T extends OneoffTransaction | RecurringTransaction">
+<script
+    setup
+    lang="ts"
+    generic="T extends OneoffTransaction | RecurringTransaction"
+>
 import Button from 'primevue/button';
 import { useToast } from 'primevue/usetoast';
 import { ref } from 'vue';
 
 import { ColumnSettings } from '@/components/lists/listConfig';
-import { OneoffTransaction, RecurringTransaction } from '@/stores/TransactionStore';
-import { isOneoffTransaction, useTransactionStore } from '@/stores/TransactionStore';
+import {
+    OneoffTransaction,
+    RecurringTransaction
+} from '@/stores/TransactionStore';
+import {
+    isOneoffTransaction,
+    useTransactionStore
+} from '@/stores/TransactionStore';
 
 const props = defineProps<{
     transaction: T;
@@ -27,9 +37,17 @@ async function del() {
             isOneoffTransaction(props.transaction) ? 'oneoff' : 'recurring',
             props.transaction.id
         );
-        toast.add({ severity: 'success', summary: 'Transaktion gelöscht', life: 3000 });
+        toast.add({
+            severity: 'success',
+            summary: 'Transaktion gelöscht',
+            life: 3000
+        });
     } catch (e) {
-        toast.add({ severity: 'error', summary: 'Fehler bei Löschung', life: 3000 });
+        toast.add({
+            severity: 'error',
+            summary: 'Fehler bei Löschung',
+            life: 3000
+        });
     }
     requestPending.value = false;
     emit('done');
@@ -40,19 +58,25 @@ async function del() {
     <div class="flex flex-col gap-4">
         Folgende Transaktion wirklich löschen?
         <table>
+            <!-- todo remove secondary-bg -->
             <tr
                 v-for="(column, index) in props.columnSettings"
                 :key="index"
                 class="odd:bg-secondary-bg"
             >
-                <div v-if="column.text_function(props.transaction, 'long')" class="contents">
+                <div
+                    v-if="column.text_function(props.transaction, 'long')"
+                    class="contents"
+                >
                     <td class="p-1 text-center font-semibold">
                         {{ column.title }}
                     </td>
                     <td
                         class="p-1 text-center"
                         :class="
-                            column.style_function ? column.style_function(props.transaction) : ''
+                            column.style_function
+                                ? column.style_function(props.transaction)
+                                : ''
                         "
                     >
                         {{ column.text_function(props.transaction, 'long') }}
