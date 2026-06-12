@@ -120,8 +120,10 @@ impl App {
     }
 
     pub async fn serve(self) -> anyhow::Result<()> {
-        let listener = TcpListener::bind("0.0.0.0:8080").await?;
-        log::info!("App listening on 0.0.0.0:8080");
+        // This listens to IPv4 and IPv6 if not v6only
+        let addr = "[::]:8080";
+        let listener = TcpListener::bind(addr).await?;
+        log::info!("App listening on {addr}");
         axum::serve(listener, self.router()).await?;
 
         Ok(())
