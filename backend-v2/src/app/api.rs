@@ -28,7 +28,7 @@ where
             // Probably an internal server error for when AuthSession can't be created
             // Don't pass message to response so we don't accidently leak any data
             Err(err) => {
-                eprintln!("{}", err.1);
+                log::error!("{}", err.1);
                 return Err(ServerError::Generic(err.0, None));
             }
         };

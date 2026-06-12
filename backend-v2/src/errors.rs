@@ -27,6 +27,7 @@ pub enum ServerError {
     #[error(transparent)]
     SqlxError(#[from] sqlx::Error),
 
+    /// The optional message will be sent to the user.
     #[error("{:?}", .0.canonical_reason())]
     Generic(StatusCode, Option<String>),
 }
@@ -43,7 +44,7 @@ impl IntoResponse for ServerError {
                 (StatusCode::BAD_REQUEST, message).into_response()
             }
             ServerError::AxumAuthError(_) | ServerError::SqlxError(_) => {
-                eprintln!("{self:?}");
+                log::error!("{self:?}");
                 (StatusCode::INTERNAL_SERVER_ERROR).into_response()
             }
             ServerError::Generic(status, Some(message)) => (status, message).into_response(),
