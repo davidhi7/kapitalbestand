@@ -308,7 +308,6 @@ mod tests {
         let body = response.into_body().collect().await?.to_bytes();
 
         let parsed: Value = serde_json::from_slice(&body).unwrap();
-        println!("{:?}", parsed);
 
         assert_eq!(parsed["data"]["username"], "username2");
 
@@ -381,7 +380,6 @@ mod tests {
         let body = response.into_body().collect().await?.to_bytes();
 
         let parsed: Value = serde_json::from_slice(&body).unwrap();
-        println!("{:?}", parsed);
 
         assert_eq!(parsed["data"]["username"], "username2");
 

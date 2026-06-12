@@ -67,7 +67,6 @@ fn build_database_url() -> anyhow::Result<String> {
 
 impl App {
     pub async fn new() -> anyhow::Result<App> {
-        println!("here");
         let database_url = build_database_url()?;
         let pool = PgPoolOptions::new()
             .max_connections(5)
