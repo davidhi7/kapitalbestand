@@ -1,14 +1,18 @@
-use std::{env, fs};
+use std::{env, fs, time::Duration};
 
 use anyhow::Context;
-use axum::Router;
+use axum::{Router, http::StatusCode};
 use axum_login::{
     AuthManagerLayerBuilder, login_required,
     tower_sessions::{Expiry, MemoryStore, SessionManagerLayer},
 };
 use sqlx::{Pool, Postgres, postgres::PgPoolOptions};
-use tokio::net::TcpListener;
-use tower_http::services::{ServeDir, ServeFile};
+use tokio::{net::TcpListener, signal};
+use tower_http::{
+    services::{ServeDir, ServeFile},
+    timeout::TimeoutLayer,
+    trace::TraceLayer,
+};
 
 use crate::{
     app::resources::{
@@ -117,6 +121,13 @@ impl App {
             .nest("/api/auth", auth::router())
             .route_layer(auth_layer)
             .fallback_service(ServeDir::new("static").fallback(ServeFile::new("static/index.html")))
+            .layer((
+                TraceLayer::new_for_http(),
+                TimeoutLayer::with_status_code(
+                    StatusCode::REQUEST_TIMEOUT,
+                    Duration::from_secs(10),
+                ),
+            ))
     }
 
     pub async fn serve(self) -> anyhow::Result<()> {
@@ -124,8 +135,34 @@ impl App {
         let addr = "[::]:8080";
         let listener = TcpListener::bind(addr).await?;
         log::info!("App listening on {addr}");
-        axum::serve(listener, self.router()).await?;
+        axum::serve(listener, self.router())
+            .with_graceful_shutdown(shutdown_signal())
+            .await?;
 
         Ok(())
+    }
+}
+
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        signal::unix::signal(signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {},
     }
 }
