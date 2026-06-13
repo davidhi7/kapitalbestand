@@ -434,20 +434,22 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
             </div>
         </FieldSet>
 
-        <div class="flex justify-center gap-2">
-            <Button
-                type="submit"
-                label="Speichern"
-                severity="success"
-                :loading="locks.size > 0"
-                :disabled="locks.size > 0"
-            />
+        <!-- pt-2 to match the padding of the fieldset label -->
+        <div class="flex justify-end gap-2 pt-2">
+            <!-- TODO make this a button that conditionally resets or closes the dialog -->
             <Button
                 v-if="showCancelButton"
                 type="button"
                 :label="props.transaction ? 'Abbrechen' : 'Verwerfen'"
                 severity="secondary"
                 @click="emit('done')"
+            />
+            <Button
+                type="submit"
+                label="Speichern"
+                severity="success"
+                :loading="locks.size > 0"
+                :disabled="locks.size > 0"
             />
         </div>
     </Form>

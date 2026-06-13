@@ -196,9 +196,9 @@ let {
                     </div>
                 </template>
                 <TransactionList
-                    v-if="transactionData.recurring"
+                    v-if="transactionData.recurring || isLoading"
                     :column-settings="recurringTransactionColumnSettings"
-                    :transactions="transactionData.recurring"
+                    :transactions="transactionData.recurring || []"
                     :loading="isLoading"
                 />
             </Panel>
@@ -207,9 +207,9 @@ let {
                     <div class="font-semibold">Einmalige Transaktionen</div>
                 </template>
                 <TransactionList
-                    v-if="transactionData.oneoff"
+                    v-if="transactionData.oneoff || isLoading"
                     :column-settings="oneoffTransactionColumnSettings"
-                    :transactions="transactionData.oneoff"
+                    :transactions="transactionData.oneoff || []"
                     :loading="isLoading"
                 />
             </Panel>

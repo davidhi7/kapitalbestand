@@ -58,46 +58,41 @@ async function del() {
     <div class="flex flex-col gap-4">
         Folgende Transaktion wirklich löschen?
         <table>
-            <!-- todo remove secondary-bg -->
             <tr
-                v-for="(column, index) in props.columnSettings"
+                v-for="(column, index) in props.columnSettings.filter((c) =>
+                    c.text_function(props.transaction, 'long')
+                )"
                 :key="index"
-                class="odd:bg-secondary-bg"
             >
-                <div
-                    v-if="column.text_function(props.transaction, 'long')"
-                    class="contents"
+                <td class="p-1 text-center font-semibold">
+                    {{ column.title }}
+                </td>
+                <td
+                    class="p-1 text-center"
+                    :class="
+                        column.style_function
+                            ? column.style_function(props.transaction)
+                            : ''
+                    "
                 >
-                    <td class="p-1 text-center font-semibold">
-                        {{ column.title }}
-                    </td>
-                    <td
-                        class="p-1 text-center"
-                        :class="
-                            column.style_function
-                                ? column.style_function(props.transaction)
-                                : ''
-                        "
-                    >
-                        {{ column.text_function(props.transaction, 'long') }}
-                    </td>
-                </div>
+                    {{ column.text_function(props.transaction, 'long') }}
+                </td>
             </tr>
         </table>
 
-        <div class="flex justify-center gap-2">
+        <div class="flex justify-end gap-2">
+            <Button
+                label="Abbrechen"
+                severity="secondary"
+                :disabled="requestPending"
+                @click="emit('done')"
+            />
             <Button
                 label="Löschen"
                 severity="danger"
                 :disabled="requestPending"
                 :loading="requestPending"
                 @click="del"
-            />
-            <Button
-                label="Abbrechen"
-                severity="secondary"
-                :disabled="requestPending"
-                @click="emit('done')"
             />
         </div>
     </div>

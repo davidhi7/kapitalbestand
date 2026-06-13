@@ -21,7 +21,7 @@ const isActive = computed(() => props.to != null && route.path === props.to);
         :icon="icon ? 'pi ' + icon : undefined"
         :label="label"
         unstyled
-        class="flex items-center gap-2 border-l-4 border-r-0 border-transparent px-4 py-2 text-neutral-100 hover:bg-neutral-800 sm:border-b-4 sm:border-l-0 dark:text-neutral-200 dark:hover:bg-neutral-900"
+        class="flex items-center gap-2 border-l-4 border-r-0 border-transparent px-4 py-2 text-neutral-100 transition-colors hover:bg-neutral-700 sm:border-b-4 sm:border-l-0 dark:text-neutral-200 dark:hover:bg-neutral-900"
         :class="{
             'border-emerald-500! dark:border-neutral-200!': isActive
         }"
