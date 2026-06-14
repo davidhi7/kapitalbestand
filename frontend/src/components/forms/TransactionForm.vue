@@ -8,7 +8,7 @@ import InputText from 'primevue/inputtext';
 import RadioButton from 'primevue/radiobutton';
 import RadioButtonGroup from 'primevue/radiobuttongroup';
 import { useToast } from 'primevue/usetoast';
-import { computed, ref, watch } from 'vue';
+import { onActivated, onBeforeMount, ref, useTemplateRef, watch } from 'vue';
 
 import { Form } from '@primevue/forms';
 import type {
@@ -16,7 +16,7 @@ import type {
     FormResolverOptions,
     FormSubmitEvent
 } from '@primevue/forms';
-import { templateRef, useDateFormat, useNow } from '@vueuse/core';
+import { useDateFormat } from '@vueuse/core';
 
 import { dateToIsoDate, dateToYearMonth } from '@/common';
 import AutoComplete from '@/components/AutoComplete.vue';
@@ -66,19 +66,22 @@ const initialValues = ref<FormValues>({
     recurrence: 'oneoff-today'
 });
 const toast = useToast();
-const form = templateRef<FormInstance>('form');
-const categoryAutoComplete = templateRef<InstanceType<typeof AutoComplete>>(
+const form = useTemplateRef<FormInstance>('form');
+const categoryAutoComplete = useTemplateRef<InstanceType<typeof AutoComplete>>(
     'categoryAutoComplete'
 );
 const shopAutoComplete =
-    templateRef<InstanceType<typeof AutoComplete>>('shopAutoComplete');
+    useTemplateRef<InstanceType<typeof AutoComplete>>('shopAutoComplete');
 
-const today = useNow();
-const yesterday = computed(() => {
-    const d = new Date(today.value);
-    d.setDate(d.getDate() - 1);
-    return d;
-});
+const today = ref(new Date());
+const yesterday = ref(new Date());
+const refreshDates = () => {
+    today.value = new Date();
+    yesterday.value = new Date(today.value);
+    yesterday.value.setDate(yesterday.value.getDate() - 1);
+};
+onBeforeMount(refreshDates);
+onActivated(refreshDates);
 const formattedToday = useDateFormat(today, 'dddd, DD.MM.YYYY');
 const formattedYesterday = useDateFormat(yesterday, 'dddd, DD.MM.YYYY');
 
@@ -87,8 +90,8 @@ const isEditDialog = ref(false);
 type Lock = 'submit' | 'create_category' | 'create_shop';
 const locks = ref<Set<Lock>>(new Set());
 
+// Custom form validation function
 function resolver({ values }: FormResolverOptions) {
-    // TODO look at
     const invalid = (field: string) => ({ [field]: [{ message: '' }] });
     let errors: Record<string, { message: string }[]> = {};
 
@@ -134,7 +137,9 @@ async function createCategoryShop(type: 'category' | 'shop', name: string) {
     locks.value.add(`create_${type}`);
     try {
         const created = await CategoryShopStore.create(type, name);
-        if (type === 'category') {
+        if (!form.value) {
+            console.error('Form ref is null, cannot set field value');
+        } else if (type === 'category') {
             form.value.setFieldValue('category', created.name);
         } else {
             form.value.setFieldValue('shop', created.name);
@@ -226,6 +231,11 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
                     date: buildDate()
                 });
             }
+            toast.add({
+                severity: 'info',
+                summary: 'Transaktion aktualisiert',
+                life: 3000
+            });
         } else {
             if (isRecurring) {
                 await TransactionStore.create('recurring', {
@@ -238,6 +248,11 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
                     date: buildDate()
                 });
             }
+            toast.add({
+                severity: 'info',
+                summary: 'Transaktion erstellt',
+                life: 3000
+            });
         }
 
         emit('done');
@@ -444,6 +459,12 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
                 severity="secondary"
                 @click="emit('done')"
             />
+            <Button
+                v-else
+                type="reset"
+                label="Zurücksetzen"
+                severity="secondary"
+            ></Button>
             <Button
                 type="submit"
                 label="Speichern"
