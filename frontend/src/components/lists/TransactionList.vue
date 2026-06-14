@@ -9,16 +9,17 @@ import DataTable from 'primevue/datatable';
 import Dialog from 'primevue/dialog';
 import { ref, shallowRef } from 'vue';
 
+import { shortDateTimeFormat } from '@/common';
 import DeleteAction from '@/components/lists/DeleteAction.vue';
 import EditAction from '@/components/lists/EditAction.vue';
-import ExpandAction from '@/components/lists/ExpandAction.vue';
 import type { ColumnSettings } from '@/components/lists/listConfig';
 import {
+    isOneoffTransaction,
     OneoffTransaction,
     RecurringTransaction
 } from '@/stores/TransactionStore';
 
-const props = withDefaults(
+withDefaults(
     defineProps<{
         transactions: T[];
         columnSettings: ColumnSettings<T>[];
@@ -56,6 +57,41 @@ function closeDialog() {
 function breakpointClass(breakpoint?: string): string {
     if (!breakpoint) return '';
     return `hidden ${breakpoint}:table-cell`;
+}
+
+function keyValuePairs(
+    transaction: OneoffTransaction | RecurringTransaction
+): Record<string, string> {
+    const { isExpense, category, shop, createdAt, updatedAt, id } = transaction;
+    const isOneoff = isOneoffTransaction(transaction);
+    let type;
+    if (!isOneoff) {
+        const recurring = transaction as RecurringTransaction;
+        const freqLabel =
+            recurring.recurrence.frequency === 'yearly'
+                ? 'jährlich'
+                : 'monatlich';
+        if (isExpense) {
+            type = `${freqLabel}e Ausgabe`;
+        } else {
+            type = `${freqLabel}es Einkommen`;
+        }
+    } else {
+        if (isExpense) {
+            type = 'einmalige Ausgabe';
+        } else {
+            type = 'einmaliges Einkommen';
+        }
+    }
+
+    return {
+        Erstellt: shortDateTimeFormat.format(new Date(createdAt)),
+        Kategorie: category,
+        Aktualisiert: shortDateTimeFormat.format(new Date(updatedAt)),
+        Händler: shop ? shop : '-',
+        Identifikation: id.toString(),
+        Typ: type
+    };
 }
 </script>
 
@@ -112,7 +148,23 @@ function breakpointClass(breakpoint?: string): string {
         </Column>
 
         <template #expansion="{ data }">
-            <ExpandAction :transaction="data" />
+            <section v-if="data.description">
+                {{ data.description }}
+            </section>
+            <section class="grid grid-cols-2">
+                <div
+                    v-for="(value, key, index) in keyValuePairs(data)"
+                    :key="index"
+                    class="overflow-hidden text-ellipsis text-left"
+                >
+                    <span class="text-sm font-semibold after:content-[':']">{{
+                        key
+                    }}</span>
+                    <span class="text-sm before:content-['_']">{{
+                        value
+                    }}</span>
+                </div>
+            </section>
         </template>
     </DataTable>
 
