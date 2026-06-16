@@ -24,10 +24,7 @@ export function formatRecurrenceRange(
         if (!recurrence.monthTo) {
             return `Ab ${yearMonthFormat.format(new Date(recurrence.monthFrom))}`;
         }
-        return yearMonthFormat.formatRange(
-            new Date(recurrence.monthFrom),
-            new Date(recurrence.monthTo)
-        );
+        return `${yearMonthFormat.format(new Date(recurrence.monthFrom))} – ${yearMonthFormat.format(new Date(recurrence.monthTo))}`;
     } else {
         if (!recurrence.yearTo) {
             return `Ab ${recurrence.yearFrom}`;
