@@ -50,11 +50,12 @@ const emit = defineEmits(['logout']);
             />
             <IconRouterLink to="/new" icon="pi-plus" label="Neue Transaktion" />
             <IconRouterLink to="/list" icon="pi-list" label="Liste" />
-            <IconRouterLink
+            <!-- TODO revive -->
+            <!-- <IconRouterLink
                 to="/analysis"
                 icon="pi-chart-line"
                 label="Analyse"
-            />
+            /> -->
         </section>
 
         <!-- Separator between main pages and logout; only on small screens -->
