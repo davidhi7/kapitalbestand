@@ -8,7 +8,7 @@ import InputText from 'primevue/inputtext';
 import RadioButton from 'primevue/radiobutton';
 import RadioButtonGroup from 'primevue/radiobuttongroup';
 import { useToast } from 'primevue/usetoast';
-import { onActivated, onBeforeMount, ref, useTemplateRef, watch } from 'vue';
+import { computed, onActivated, ref, useTemplateRef, watch } from 'vue';
 
 import { Form } from '@primevue/forms';
 import type {
@@ -18,7 +18,7 @@ import type {
 } from '@primevue/forms';
 import { useDateFormat } from '@vueuse/core';
 
-import { dateToIsoDate, dateToYearMonth } from '@/common';
+import { dateToIsoDate, dateToYearMonth, parseYearMonth } from '@/common';
 import AutoComplete from '@/components/AutoComplete.vue';
 import { useCategoryShopStore } from '@/stores/CategoryShopStore';
 import {
@@ -37,18 +37,30 @@ type FormValues = {
         | 'oneoff-custom'
         | 'monthly'
         | 'yearly';
-    date?: Date;
-    monthFrom?: Date;
-    monthTo?: Date;
-    // if directly input without interacting with the primevue popup, this is a string
-    yearFrom?: Date | string;
-    // if directly input without interacting with the primevue popup, this is a string
-    yearTo?: Date | string;
     category?: string;
     shop?: string;
     amount?: number;
     description?: string;
 };
+
+// Date fields live outside the Form due to a PrimeVue regression (4.4.0+):
+// <DatePicker> inside <Form> doesn't render its input value from initialValues
+// until the user opens the popup (and then broken). See primefaces/primevue#8191.
+type DateFields = {
+    date?: Date;
+    monthFrom?: Date;
+    monthTo?: Date;
+    yearFrom?: Date;
+    yearTo?: Date;
+};
+const dateField = ref<Date | undefined>();
+const monthFromField = ref<Date | undefined>();
+const monthToField = ref<Date | undefined>();
+const yearFromField = ref<Date | undefined>();
+const yearToField = ref<Date | undefined>();
+// Tracks whether the user has attempted submit, so date-field error styling
+// only appears after the first submit attempt (matching Form's default UX).
+const dateFieldsSubmitted = ref(false);
 
 const props = defineProps<{
     transaction?: OneoffTransaction | RecurringTransaction;
@@ -61,10 +73,6 @@ const emit = defineEmits<{
 
 const CategoryShopStore = useCategoryShopStore();
 const TransactionStore = useTransactionStore();
-const initialValues = ref<FormValues>({
-    type: 'expense',
-    recurrence: 'oneoff-today'
-});
 const toast = useToast();
 const form = useTemplateRef<FormInstance>('form');
 const categoryAutoComplete = useTemplateRef<InstanceType<typeof AutoComplete>>(
@@ -75,17 +83,22 @@ const shopAutoComplete =
 
 const today = ref(new Date());
 const yesterday = ref(new Date());
-const refreshDates = () => {
+const setDates = () => {
     today.value = new Date();
     yesterday.value = new Date(today.value);
     yesterday.value.setDate(yesterday.value.getDate() - 1);
 };
-onBeforeMount(refreshDates);
-onActivated(refreshDates);
+setDates();
+onActivated(setDates);
 const formattedToday = useDateFormat(today, 'dddd, DD.MM.YYYY');
 const formattedYesterday = useDateFormat(yesterday, 'dddd, DD.MM.YYYY');
 
-const isEditDialog = ref(false);
+const mode = computed<'create' | 'edit-oneoff' | 'edit-recurring'>(() => {
+    if (props.transaction === undefined) return 'create';
+    return isOneoffTransaction(props.transaction)
+        ? 'edit-oneoff'
+        : 'edit-recurring';
+});
 
 type Lock = 'submit' | 'create_category' | 'create_shop';
 const locks = ref<Set<Lock>>(new Set());
@@ -98,39 +111,128 @@ function resolver({ values }: FormResolverOptions) {
     if (values.amount == null) Object.assign(errors, invalid('amount'));
     if (!values.category) Object.assign(errors, invalid('category'));
 
-    if (values.recurrence === 'oneoff-custom') {
-        if (!values.date) Object.assign(errors, invalid('date'));
-    } else if (values.recurrence === 'monthly') {
-        if (!values.monthFrom) Object.assign(errors, invalid('monthFrom'));
-        if (
-            values.monthTo &&
-            values.monthFrom &&
-            new Date(values.monthTo) < new Date(values.monthFrom)
-        )
-            Object.assign(errors, invalid('monthTo'));
-    } else if (values.recurrence === 'yearly') {
-        if (!values.yearFrom) Object.assign(errors, invalid('yearFrom'));
-        if (
-            values.yearTo &&
-            values.yearFrom &&
-            new Date(values.yearTo) < new Date(values.yearFrom)
-        )
-            Object.assign(errors, invalid('yearTo'));
-    }
-
     return { values, errors };
 }
 
-// TODO work
-// set form.recurrence.value to oneoff-custom/monthly/yearly depending in transaction type
-watch(
-    props,
-    (value: {
-        transaction: OneoffTransaction | RecurringTransaction | undefined;
-    }) => {},
-    {
-        immediate: true
+// Date fields are validated outside the Form (see DateFields comment above).
+function datesValid(recurrence: FormValues['recurrence']): boolean {
+    if (recurrence === 'oneoff-custom') return !!dateField.value;
+    if (recurrence === 'monthly') {
+        if (!monthFromField.value) return false;
+        if (monthToField.value && monthToField.value < monthFromField.value)
+            return false;
+        return true;
     }
+    if (recurrence === 'yearly') {
+        if (!yearFromField.value) return false;
+        if (yearToField.value && yearToField.value < yearFromField.value)
+            return false;
+        return true;
+    }
+    return true;
+}
+
+const dateInvalid = computed(
+    () => dateFieldsSubmitted.value && !dateField.value
+);
+const monthFromInvalid = computed(
+    () => dateFieldsSubmitted.value && !monthFromField.value
+);
+const monthToInvalid = computed(
+    () =>
+        dateFieldsSubmitted.value &&
+        monthToField.value !== undefined &&
+        monthFromField.value !== undefined &&
+        monthToField.value < monthFromField.value
+);
+const yearFromInvalid = computed(
+    () => dateFieldsSubmitted.value && !yearFromField.value
+);
+const yearToInvalid = computed(
+    () =>
+        dateFieldsSubmitted.value &&
+        yearToField.value !== undefined &&
+        yearFromField.value !== undefined &&
+        yearToField.value < yearFromField.value
+);
+
+function buildInitialState(
+    transaction?: OneoffTransaction | RecurringTransaction
+): { form: FormValues; dates: DateFields } {
+    if (transaction === undefined) {
+        return {
+            form: { type: 'expense', recurrence: 'oneoff-today' },
+            dates: {}
+        };
+    }
+
+    const base = {
+        type: (transaction.isExpense ? 'expense' : 'income') as
+            | 'expense'
+            | 'income',
+        amount: transaction.amount / 100,
+        category: transaction.category,
+        shop: transaction.shop,
+        description: transaction.description
+    };
+
+    if (isOneoffTransaction(transaction)) {
+        const dateIso = transaction.date;
+        if (dateIso === dateToIsoDate(today.value)) {
+            return {
+                form: { ...base, recurrence: 'oneoff-today' },
+                dates: {}
+            };
+        }
+        if (dateIso === dateToIsoDate(yesterday.value)) {
+            return {
+                form: { ...base, recurrence: 'oneoff-yesterday' },
+                dates: {}
+            };
+        }
+        return {
+            form: { ...base, recurrence: 'oneoff-custom' },
+            dates: { date: new Date(transaction.date) }
+        };
+    }
+
+    if (transaction.recurrence.frequency === 'monthly') {
+        const { monthFrom, monthTo } = transaction.recurrence;
+        return {
+            form: { ...base, recurrence: 'monthly' },
+            dates: {
+                monthFrom: parseYearMonth(monthFrom),
+                monthTo: monthTo ? parseYearMonth(monthTo) : undefined
+            }
+        };
+    }
+
+    const { yearFrom, yearTo } = transaction.recurrence;
+    return {
+        form: { ...base, recurrence: 'yearly' },
+        dates: {
+            yearFrom: new Date(yearFrom, 0, 1),
+            yearTo: yearTo ? new Date(yearTo, 0, 1) : undefined
+        }
+    };
+}
+
+const initialValues = computed<FormValues>(
+    () => buildInitialState(props.transaction).form
+);
+
+watch(
+    () => props.transaction,
+    (transaction) => {
+        const { dates } = buildInitialState(transaction);
+        dateField.value = dates.date;
+        monthFromField.value = dates.monthFrom;
+        monthToField.value = dates.monthTo;
+        yearFromField.value = dates.yearFrom;
+        yearToField.value = dates.yearTo;
+        dateFieldsSubmitted.value = false;
+    },
+    { immediate: true }
 );
 
 async function createCategoryShop(type: 'category' | 'shop', name: string) {
@@ -156,7 +258,9 @@ async function createCategoryShop(type: 'category' | 'shop', name: string) {
 }
 
 const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
-    if (!evt.valid) {
+    let values = evt.values as FormValues;
+    dateFieldsSubmitted.value = true;
+    if (!evt.valid || !datesValid(values.recurrence)) {
         toast.add({
             severity: 'error',
             summary: 'Ungültiges Formular',
@@ -166,7 +270,6 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
     }
 
     locks.value.add('submit');
-    let values = evt.values as FormValues;
 
     try {
         let basePayload = {
@@ -186,26 +289,16 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
             if (values.recurrence === 'monthly') {
                 return {
                     frequency: 'monthly',
-                    monthFrom: dateToYearMonth(values.monthFrom!),
-                    monthTo: values.monthTo
-                        ? dateToYearMonth(values.monthTo)
+                    monthFrom: dateToYearMonth(monthFromField.value!),
+                    monthTo: monthToField.value
+                        ? dateToYearMonth(monthToField.value)
                         : undefined
                 };
             } else {
-                var yearTo = undefined;
-                if (values.yearTo !== undefined) {
-                    yearTo =
-                        typeof values.yearTo == 'string'
-                            ? Number(values.yearTo)
-                            : values.yearTo!.getFullYear();
-                }
                 return {
                     frequency: 'yearly',
-                    yearFrom:
-                        typeof values.yearFrom == 'string'
-                            ? Number(values.yearFrom)
-                            : values.yearFrom!.getFullYear(),
-                    yearTo
+                    yearFrom: yearFromField.value!.getFullYear(),
+                    yearTo: yearToField.value?.getFullYear()
                 };
             }
         };
@@ -215,10 +308,10 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
                 return dateToIsoDate(today.value);
             if (values.recurrence === 'oneoff-yesterday')
                 return dateToIsoDate(yesterday.value);
-            return dateToIsoDate(values.date!);
+            return dateToIsoDate(dateField.value!);
         };
 
-        if (isEditDialog.value) {
+        if (mode.value !== 'create') {
             const transaction = props.transaction!;
             if (isRecurring) {
                 await TransactionStore.update('recurring', transaction.id, {
@@ -270,9 +363,11 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
 </script>
 
 <template>
+    <!-- key attribute is used to reactively update the initialValues if the underlying transaction changes -->
     <Form
         ref="form"
         v-slot="$form"
+        :key="props.transaction?.id ?? 'create'"
         :initial-values
         :resolver="resolver"
         class="flex flex-col gap-2"
@@ -292,40 +387,58 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
         </FieldSet>
         <FieldSet legend="Häufigkeit">
             <RadioButtonGroup
-                v-if="!isEditDialog"
                 name="recurrence"
                 class="flex w-full flex-col gap-1"
             >
-                <label class="flex items-center gap-2">
+                <label
+                    v-if="mode !== 'edit-recurring'"
+                    class="flex items-center gap-2"
+                >
                     <RadioButton value="oneoff-today" />
                     Einmalig, heute
                     <span class="text-tertiary">{{ formattedToday }}</span>
                 </label>
-                <label class="flex items-center gap-2">
+                <label
+                    v-if="mode !== 'edit-recurring'"
+                    class="flex items-center gap-2"
+                >
                     <RadioButton value="oneoff-yesterday" />
                     Einmalig, gestern
                     <span class="text-tertiary">{{ formattedYesterday }}</span>
                 </label>
-                <label class="flex items-center gap-2">
+                <label
+                    v-if="mode !== 'edit-recurring'"
+                    class="flex items-center gap-2"
+                >
                     <RadioButton value="oneoff-custom" />
                     Einmalig, anderer Tag
                 </label>
-                <label class="flex items-center gap-2">
+                <label
+                    v-if="mode !== 'edit-oneoff'"
+                    class="flex items-center gap-2"
+                >
                     <RadioButton value="monthly" />
                     Monatlich
                 </label>
-                <label class="flex items-center gap-2">
+                <label
+                    v-if="mode !== 'edit-oneoff'"
+                    class="flex items-center gap-2"
+                >
                     <RadioButton value="yearly" />
                     Jährlich
                 </label>
             </RadioButtonGroup>
             <div
-                v-if="$form.recurrence?.value === 'oneoff-custom'"
+                v-if="
+                    ($form.recurrence?.value ?? initialValues.recurrence) ===
+                    'oneoff-custom'
+                "
                 class="mt-4"
             >
                 <FloatLabel variant="on" class="flex-1">
                     <DatePicker
-                        name="date"
+                        v-model="dateField"
+                        :invalid="dateInvalid"
                         input-id="date"
                         date-format="dd.mm.yy"
                         fluid
@@ -334,12 +447,16 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
                 </FloatLabel>
             </div>
             <div
-                v-if="$form.recurrence?.value === 'monthly'"
+                v-if="
+                    ($form.recurrence?.value ?? initialValues.recurrence) ===
+                    'monthly'
+                "
                 class="mt-4 flex gap-2 max-sm:flex-col"
             >
                 <FloatLabel variant="on" class="flex-1">
                     <DatePicker
-                        name="monthFrom"
+                        v-model="monthFromField"
+                        :invalid="monthFromInvalid"
                         input-id="monthFrom"
                         view="month"
                         date-format="mm.yy"
@@ -350,7 +467,8 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
                 </FloatLabel>
                 <FloatLabel variant="on" class="flex-1">
                     <DatePicker
-                        name="monthTo"
+                        v-model="monthToField"
+                        :invalid="monthToInvalid"
                         input-id="monthTo"
                         view="month"
                         date-format="mm.yy"
@@ -360,12 +478,16 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
                 </FloatLabel>
             </div>
             <div
-                v-if="$form.recurrence?.value === 'yearly'"
+                v-if="
+                    ($form.recurrence?.value ?? initialValues.recurrence) ===
+                    'yearly'
+                "
                 class="mt-4 flex gap-2 max-sm:flex-col"
             >
                 <FloatLabel variant="on" class="flex-1">
                     <DatePicker
-                        name="yearFrom"
+                        v-model="yearFromField"
+                        :invalid="yearFromInvalid"
                         input-id="yearFrom"
                         view="year"
                         date-format="yy"
@@ -375,7 +497,8 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
                 </FloatLabel>
                 <FloatLabel variant="on" class="flex-1">
                     <DatePicker
-                        name="yearTo"
+                        v-model="yearToField"
+                        :invalid="yearToInvalid"
                         input-id="yearTo"
                         view="year"
                         date-format="yy"

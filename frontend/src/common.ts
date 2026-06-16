@@ -24,7 +24,10 @@ export const shortYearMonthFormat = new Intl.DateTimeFormat('de-DE', {
     month: '2-digit'
 });
 
-const currencyFormat = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
+const currencyFormat = new Intl.NumberFormat('de-DE', {
+    style: 'currency',
+    currency: 'EUR'
+});
 
 /**
  * Apply number format to amounts of money
@@ -47,6 +50,16 @@ export function normalizeStrings(input: string) {
  */
 export function dateToYearMonth(date: Date) {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+}
+
+/**
+ * Parse a `YYYY-MM` string into a local-time Date on the 1st of that month.
+ * Avoids `new Date("YYYY-MM")` which parses as UTC and can shift to the
+ * previous day/month in timezones west of UTC.
+ */
+export function parseYearMonth(yearMonth: string): Date {
+    const [year, month] = yearMonth.split('-').map(Number);
+    return new Date(year, month - 1, 1);
 }
 
 /**
