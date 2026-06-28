@@ -1,6 +1,4 @@
-t # CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+# CLAUDE.md
 
 ## Project Overview
 
@@ -10,27 +8,36 @@ Kapitalbestand is a personal finance/expense tracking application with a Rust ba
 
 - **backend-v2/**: Rust backend using Axum, SQLx (Postgres), axum-login for session auth, garde for validation
 - **frontend/**: Vue 3 + TypeScript SPA using Vite, PrimeVue (Aura theme), Pinia stores, Tailwind CSS, Chart.js
-- **Dockerfile**: Multi-stage build — compiles the Rust backend (`backend-v2/`, with `SQLX_OFFLINE=true`) and the Vue frontend, then bundles them into a `debian:bookworm-slim` image where the backend binary serves the built frontend from `./static/` on port 8080
 
-The backend uses a `Resource` trait pattern (`backend-v2/src/app/resources.rs`) with a `build_routes!` macro that generates standard CRUD endpoints (POST, GET, GET/:id, PATCH/:id, DELETE/:id) for any type implementing `Resource`. Resources: `Category`, `Shop`, `OneoffTransaction`, `RecurringTransaction`.
+The backend uses a `Resource` trait pattern (`backend-v2/src/app/resources.rs`) that abstracts standard CRUD endpoints (POST `/`, GET `/`, GET `/{id}`, PATCH `/{id}`, DELETE `/{id}`) for any type implementing `Resource`. The generic handlers in `resources.rs` are the single place CRUD HTTP semantics live (status codes, `Option`→404, etc.); per-resource logic lives in the `Resource` impls. Resources and their mount points (`app.rs::router`):
 
-All API routes are under `/api` and require session authentication (except `/api/auth/login` and `/api/auth/register`). API responses follow `{ "status": "success", "data": ... }` format.
+- `Category` → `/api/categories`
+- `Shop` → `/api/shops`
+- `OneoffTransaction` → `/api/transactions/oneoff`
+- `RecurringTransaction` → `/api/transactions/recurring`
 
-The frontend proxies `/api` requests to `localhost:8080` in dev mode.
+Per-resource API reference lives in `backend-v2/docs/` — one file per resource (`categories.md`, `shops.md`, `oneoff-transactions.md`, `recurring-transactions.md`). Update these when changing a resource's API.
+
+**JSON convention.** Rust structs are snake_case; the wire format is camelCase via `#[serde(rename_all = "camelCase")]`. The frontend uses camelCase throughout. When adding a field, the Rust field name and the JSON/TS name differ by case only. Amounts of money are integers representing cents, e.g. `amount: 1500` means 15.00 EUR.
 
 ## Development Commands
 
 ### Backend (from `backend-v2/`)
+
 ```bash
 cargo build                    # Build
 cargo run                      # Run (needs DATABASE_URL in .env)
 cargo test                     # Run tests (uses sqlx::test with real Postgres)
 cargo test test_name           # Run a single test
+cargo sqlx prepare             # Regenerate the .sqlx offline cache (needs sqlx-cli)
 ```
 
-Backend tests use `#[sqlx::test]` which requires a running Postgres instance. The test database is configured via `DATABASE_URL` in `backend-v2/.env`.
+Backend tests use `#[sqlx::test]`, which spins up an isolated database per test against a running Postgres instance (configured via `DATABASE_URL` in `backend-v2/.env`). Tests seed data with SQL fixtures from `backend-v2/src/app/resources/fixtures/` via `#[sqlx::test(fixtures("base", ...))]`.
+
+**SQLx offline cache (important):** the `query!`/`query_as!`/`query_scalar!` macros are type-checked against the DB at compile time. A committed `.sqlx/` cache lets the Docker build compile with `SQLX_OFFLINE=true` and no live DB. After changing any SQL in those macros, run `cargo sqlx prepare` against a live DB and commit the updated `.sqlx/` — otherwise the offline/Docker build fails or uses stale query metadata.
 
 ### Database
+
 ```bash
 # Start dev Postgres (tmpfs, ephemeral):
 backend-v2/scripts/database.sh
@@ -40,17 +47,13 @@ backend-v2/scripts/database.sh
 Migrations are in `backend-v2/migrations/` and run automatically on app startup via `sqlx::migrate!`.
 
 ### Frontend (from `frontend/`)
+
 ```bash
 npm run dev                    # Vite dev server
 npm run build                  # Production build
 npm run lint                   # ESLint
 npm run lint:fix               # ESLint with auto-fix
 npm run format                 # Prettier
-```
-
-### Docker (production)
-```bash
-docker compose up              # Starts Postgres + app on port 8080
 ```
 
 ## Code Style
