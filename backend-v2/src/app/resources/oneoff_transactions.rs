@@ -5,6 +5,7 @@ use garde::Validate;
 use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, Postgres, QueryBuilder};
 
+use crate::app::api::column_filter::{ColumnFilter, FilterMode};
 use crate::app::api::pagination::Pagination;
 use crate::app::api::tri_state_field::TriState;
 use crate::app::resources::Resource;
@@ -63,9 +64,10 @@ pub struct OneoffTransactionFetchParams {
     amount_to: Option<Amount>,
     #[garde(dive)]
     category_id: Option<UnvalidatedCategoryId>,
-    #[serde(default)]
+    #[garde(skip)]
+    shop_filter: Option<FilterMode>,
     #[garde(dive)]
-    shop_id: TriState<UnvalidatedShopId>,
+    shop_id: Option<UnvalidatedShopId>,
     #[serde(default)]
     #[garde(skip)]
     ordering: Ordering,
@@ -186,12 +188,16 @@ impl Resource for OneoffTransaction {
                 .push_bind(category_id.validate(user, database).await?);
         }
 
-        if let TriState::Defined(Some(shop_id)) = params.shop_id {
-            query_builder
-                .push(" AND ot.shop_id = ")
-                .push_bind(shop_id.validate(user, database).await?);
-        } else if let TriState::Defined(None) = params.shop_id {
-            query_builder.push(" AND ot.shop_id IS NULL");
+        match ColumnFilter::resolve(params.shop_filter, params.shop_id, "shop")? {
+            ColumnFilter::Any => {}
+            ColumnFilter::Null => {
+                query_builder.push(" AND ot.shop_id IS NULL");
+            }
+            ColumnFilter::Specific(shop_id) => {
+                query_builder
+                    .push(" AND ot.shop_id = ")
+                    .push_bind(shop_id.validate(user, database).await?);
+            }
         }
 
         // Handle ordering
@@ -901,7 +907,8 @@ mod tests {
             let user = get_user_by_id(&pool, 1).await; // Alice
             let shop = get_shop_by_name(&pool, user.id, "Whole Foods").await;
             let params = OneoffTransactionFetchParams {
-                shop_id: TriState::Defined(Some(UnvalidatedShopId::from(shop.id))),
+                shop_filter: Some(FilterMode::Specific),
+                shop_id: Some(UnvalidatedShopId::from(shop.id)),
                 ..Default::default()
             };
 
@@ -920,7 +927,7 @@ mod tests {
         fn test_fetch_with_shop_null(pool: PgPool) -> anyhow::Result<()> {
             let user = get_user_by_id(&pool, 1).await; // Alice
             let params = OneoffTransactionFetchParams {
-                shop_id: TriState::Defined(None),
+                shop_filter: Some(FilterMode::Null),
                 ..Default::default()
             };
 
@@ -943,7 +950,8 @@ mod tests {
                 &pool,
                 &user,
                 OneoffTransactionFetchParams {
-                    shop_id: TriState::Defined(Some(UnvalidatedShopId::from(999999))),
+                    shop_filter: Some(FilterMode::Specific),
+                    shop_id: Some(UnvalidatedShopId::from(999999)),
                     ..Default::default()
                 },
                 Pagination::default(),
@@ -955,7 +963,8 @@ mod tests {
                 &pool,
                 &user,
                 OneoffTransactionFetchParams {
-                    shop_id: TriState::Defined(Some(UnvalidatedShopId::from(16))),
+                    shop_filter: Some(FilterMode::Specific),
+                    shop_id: Some(UnvalidatedShopId::from(16)),
                     ..Default::default()
                 },
                 Pagination::default(),
@@ -972,7 +981,8 @@ mod tests {
             let bob_shop = get_shop_by_name(&pool, 2, "Local Grocery").await;
 
             let params = OneoffTransactionFetchParams {
-                shop_id: TriState::Defined(Some(UnvalidatedShopId::from(bob_shop.id))),
+                shop_filter: Some(FilterMode::Specific),
+                shop_id: Some(UnvalidatedShopId::from(bob_shop.id)),
                 ..Default::default()
             };
 
@@ -982,6 +992,56 @@ mod tests {
                 .expect_err(
                     "Oneoff transaction fetch with shop belonging to different user didn't fail",
                 );
+
+            Ok(())
+        }
+
+        #[sqlx::test(fixtures("base", "oneoff"))]
+        fn test_fetch_shop_filter_cross_field_rejected(pool: PgPool) -> anyhow::Result<()> {
+            let user = get_user_by_id(&pool, 1).await;
+            let shop = get_shop_by_name(&pool, user.id, "Whole Foods").await;
+
+            // shopFilter=specific without shopId
+            OneoffTransaction::fetch(
+                &pool,
+                &user,
+                OneoffTransactionFetchParams {
+                    shop_filter: Some(FilterMode::Specific),
+                    shop_id: None,
+                    ..Default::default()
+                },
+                Pagination::default(),
+            )
+            .await
+            .expect_err("shopFilter=specific without shopId didn't fail");
+
+            // shopId without shopFilter
+            OneoffTransaction::fetch(
+                &pool,
+                &user,
+                OneoffTransactionFetchParams {
+                    shop_filter: None,
+                    shop_id: Some(UnvalidatedShopId::from(shop.id)),
+                    ..Default::default()
+                },
+                Pagination::default(),
+            )
+            .await
+            .expect_err("shopId without shopFilter didn't fail");
+
+            // shopId with shopFilter=null
+            OneoffTransaction::fetch(
+                &pool,
+                &user,
+                OneoffTransactionFetchParams {
+                    shop_filter: Some(FilterMode::Null),
+                    shop_id: Some(UnvalidatedShopId::from(shop.id)),
+                    ..Default::default()
+                },
+                Pagination::default(),
+            )
+            .await
+            .expect_err("shopId with shopFilter=null didn't fail");
 
             Ok(())
         }

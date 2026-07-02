@@ -12,14 +12,14 @@ Base path: `/api/transactions/oneoff`
 
 All field names use camelCase. Unknown fields are rejected.
 
-| Field        | Type              | Required | Validation                              |
-|--------------|-------------------|----------|-----------------------------------------|
-| `date`       | string (YYYY-MM-DD) | yes    |                                         |
-| `isExpense`  | bool              | yes      |                                         |
-| `amount`     | int (cents)       | yes      | >= 1                                    |
-| `description`| string            | no       | min 1 grapheme if provided              |
-| `categoryId` | int               | yes      | must belong to authenticated user       |
-| `shopId`     | int               | no       | must belong to authenticated user       |
+| Field         | Type                | Required | Validation                        |
+| ------------- | ------------------- | -------- | --------------------------------- |
+| `date`        | string (YYYY-MM-DD) | yes      |                                   |
+| `isExpense`   | bool                | yes      |                                   |
+| `amount`      | int (cents)         | yes      | >= 1                              |
+| `description` | string              | no       | min 1 grapheme if provided        |
+| `categoryId`  | int                 | yes      | must belong to authenticated user |
+| `shopId`      | int                 | no       | must belong to authenticated user |
 
 ### Response
 
@@ -27,21 +27,21 @@ All field names use camelCase. Unknown fields are rejected.
 
 ```json
 {
-  "status": "success",
-  "data": {
-    "id": 1,
-    "date": "2024-01-15",
-    "userId": 1,
-    "createdAt": "2026-01-01T00:00:00Z",
-    "updatedAt": "2026-01-01T00:00:00Z",
-    "isExpense": true,
-    "amount": 8542,
-    "description": "Weekly grocery shopping",
-    "categoryId": 1,
-    "category": "Groceries",
-    "shopId": 1,
-    "shop": "Whole Foods"
-  }
+    "status": "success",
+    "data": {
+        "id": 1,
+        "date": "2024-01-15",
+        "userId": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "isExpense": true,
+        "amount": 8542,
+        "description": "Weekly grocery shopping",
+        "categoryId": 1,
+        "category": "Groceries",
+        "shopId": 1,
+        "shop": "Whole Foods"
+    }
 }
 ```
 
@@ -55,21 +55,22 @@ All field names use camelCase. Unknown fields are rejected.
 
 ### Query Parameters
 
-| Param        | Type              | Required | Default | Description                                  |
-|--------------|-------------------|----------|---------|----------------------------------------------|
-| `isExpense`  | bool              | no       |         | Filter by expense/income                     |
-| `dateFrom`   | string (YYYY-MM-DD) | no     |         | Inclusive lower bound                        |
-| `dateTo`     | string (YYYY-MM-DD) | no     |         | Inclusive upper bound                        |
-| `amountFrom` | int (cents)       | no       |         | Inclusive lower bound (>= 1)                 |
-| `amountTo`   | int (cents)       | no       |         | Inclusive upper bound (>= 1)                 |
-| `categoryId` | int               | no       |         | Exact match, must belong to user             |
-| `shopId`     | int/null          | no       |         | Exact match or `null` for no shop            |
-| `ordering`   | string            | no       | `Asc`   | `Asc` or `Desc`                              |
-| `orderKey`   | string            | no       | `Time`  | `Time`, `Amount`, `Category`, or `Shop`      |
-| `limit`      | int               | no       | 1000    | Max results (>= 0)                           |
-| `offset`     | int               | no       | 0       | Skip N results (>= 0)                        |
+| Param        | Type                | Required | Default | Description                                                         |
+| ------------ | ------------------- | -------- | ------- | ------------------------------------------------------------------- |
+| `isExpense`  | bool                | no       |         | Filter by expense/income                                            |
+| `dateFrom`   | string (YYYY-MM-DD) | no       |         | Inclusive lower bound                                               |
+| `dateTo`     | string (YYYY-MM-DD) | no       |         | Inclusive upper bound                                               |
+| `amountFrom` | int (cents)         | no       |         | Inclusive lower bound (>= 1)                                        |
+| `amountTo`   | int (cents)         | no       |         | Inclusive upper bound (>= 1)                                        |
+| `categoryId` | int                 | no       |         | Exact match, must belong to user                                    |
+| `shopFilter` | string              | no       |         | `null` or `specific`. Omit to not filter by shop.                   |
+| `shopId`     | int                 | no       |         | Shop id; allowed and expected if and only if `shopFilter=specific`. |
+| `ordering`   | string              | no       | `Asc`   | `Asc` or `Desc`                                                     |
+| `orderKey`   | string              | no       | `Time`  | `Time`, `Amount`, `Category`, or `Shop`                             |
+| `limit`      | int                 | no       | 1000    | Max results (>= 0)                                                  |
+| `offset`     | int                 | no       | 0       | Skip N results (>= 0)                                               |
 
-**`shopId` tri-state semantics**: omit the field to not filter; set to `null` to match transactions with no shop; set to an ID to match that shop.
+**Shop filter**: omit `shopFilter` to not filter by shop; `shopFilter=null` matches transactions with no shop; `shopFilter=specific` together with `shopId` matches that shop. Returns **400** if `shopId` is given without `shopFilter=specific`, or if `shopFilter=specific` is given without `shopId`.
 
 Secondary sort is always by `id` in the same direction as `ordering`.
 
@@ -79,8 +80,10 @@ Secondary sort is always by `id` in the same direction as `ordering`.
 
 ```json
 {
-  "status": "success",
-  "data": [ /* array of transaction objects */ ]
+    "status": "success",
+    "data": [
+        /* array of transaction objects */
+    ]
 }
 ```
 
@@ -108,14 +111,14 @@ All fields are optional. Only provided fields are updated. If no fields are prov
 
 ### Request Body
 
-| Field        | Type              | Required | Validation                              |
-|--------------|-------------------|----------|-----------------------------------------|
-| `date`       | string (YYYY-MM-DD) | no     |                                         |
-| `isExpense`  | bool              | no       |                                         |
-| `amount`     | int (cents)       | no       | >= 1                                    |
-| `description`| string/null       | no       | min 1 grapheme if string; `null` clears |
-| `categoryId` | int               | no       | must belong to user                     |
-| `shopId`     | int/null          | no       | must belong to user; `null` to clear    |
+| Field         | Type                | Required | Validation                              |
+| ------------- | ------------------- | -------- | --------------------------------------- |
+| `date`        | string (YYYY-MM-DD) | no       |                                         |
+| `isExpense`   | bool                | no       |                                         |
+| `amount`      | int (cents)         | no       | >= 1                                    |
+| `description` | string/null         | no       | min 1 grapheme if string; `null` clears |
+| `categoryId`  | int                 | no       | must belong to user                     |
+| `shopId`      | int/null            | no       | must belong to user; `null` to clear    |
 
 **`description` and `shopId` tri-state semantics**: omit the field to leave unchanged; set to `null` to clear; set to a value to update.
 
@@ -137,7 +140,7 @@ All fields are optional. Only provided fields are updated. If no fields are prov
 
 ```json
 {
-  "status": "success"
+    "status": "success"
 }
 ```
 

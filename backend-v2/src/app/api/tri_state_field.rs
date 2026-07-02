@@ -96,9 +96,6 @@ mod tests {
     }
 
     #[test]
-    fn test_query_defined_none() {}
-
-    #[test]
     fn test_query_defined_some() {
         let result = parse_query("http://localhost?field=");
         assert!(matches!(result.0.field, TriState::Defined(Some(_))));

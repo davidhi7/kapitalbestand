@@ -6,7 +6,10 @@ use sqlx::{Postgres, QueryBuilder, prelude::FromRow};
 
 use crate::{
     app::{
-        api::tri_state_field::TriState,
+        api::{
+            column_filter::{ColumnFilter, FilterMode},
+            tri_state_field::TriState,
+        },
         resources::{
             Resource,
             recurring_transactions::{
@@ -148,9 +151,10 @@ pub struct RecurringTransactionFetchParams {
     amount_to: Option<Amount>,
     #[garde(dive)]
     category_id: Option<UnvalidatedCategoryId>,
-    #[serde(default)]
+    #[garde(skip)]
+    shop_filter: Option<FilterMode>,
     #[garde(dive)]
-    shop_id: TriState<UnvalidatedShopId>,
+    shop_id: Option<UnvalidatedShopId>,
     #[serde(default)]
     #[garde(skip)]
     ordering: Ordering,
@@ -331,12 +335,16 @@ impl Resource for RecurringTransaction {
                 .push_bind(category_id.validate(user, database).await?);
         }
 
-        if let TriState::Defined(Some(shop_id)) = params.shop_id {
-            query_builder
-                .push(" AND rt.shop_id = ")
-                .push_bind(shop_id.validate(user, database).await?);
-        } else if let TriState::Defined(None) = params.shop_id {
-            query_builder.push(" AND rt.shop_id IS NULL");
+        match ColumnFilter::resolve(params.shop_filter, params.shop_id, "shop")? {
+            ColumnFilter::Any => {}
+            ColumnFilter::Null => {
+                query_builder.push(" AND rt.shop_id IS NULL");
+            }
+            ColumnFilter::Specific(shop_id) => {
+                query_builder
+                    .push(" AND rt.shop_id = ")
+                    .push_bind(shop_id.validate(user, database).await?);
+            }
         }
 
         // Handle ordering
@@ -1263,7 +1271,8 @@ mod tests {
             let user = get_user_by_id(&pool, 1).await; // Alice
             let shop = get_shop_by_name(&pool, user.id, "Netflix").await;
             let params = RecurringTransactionFetchParams {
-                shop_id: TriState::Defined(Some(UnvalidatedShopId::from(shop.id))),
+                shop_filter: Some(FilterMode::Specific),
+                shop_id: Some(UnvalidatedShopId::from(shop.id)),
                 ..Default::default()
             };
 
@@ -1282,7 +1291,7 @@ mod tests {
         fn test_fetch_with_shop_null(pool: PgPool) -> anyhow::Result<()> {
             let user = get_user_by_id(&pool, 1).await; // Alice
             let params = RecurringTransactionFetchParams {
-                shop_id: TriState::Defined(None),
+                shop_filter: Some(FilterMode::Null),
                 ..Default::default()
             };
 
@@ -1305,7 +1314,8 @@ mod tests {
                 &pool,
                 &user,
                 RecurringTransactionFetchParams {
-                    shop_id: TriState::Defined(Some(UnvalidatedShopId::from(999999))),
+                    shop_filter: Some(FilterMode::Specific),
+                    shop_id: Some(UnvalidatedShopId::from(999999)),
                     ..Default::default()
                 },
                 Pagination::default(),
@@ -1317,7 +1327,8 @@ mod tests {
                 &pool,
                 &user,
                 RecurringTransactionFetchParams {
-                    shop_id: TriState::Defined(Some(UnvalidatedShopId::from(16))),
+                    shop_filter: Some(FilterMode::Specific),
+                    shop_id: Some(UnvalidatedShopId::from(16)),
                     ..Default::default()
                 },
                 Pagination::default(),
@@ -1334,7 +1345,8 @@ mod tests {
             let bob_shop = get_shop_by_name(&pool, 2, "Local Grocery").await;
 
             let params = RecurringTransactionFetchParams {
-                shop_id: TriState::Defined(Some(UnvalidatedShopId::from(bob_shop.id))),
+                shop_filter: Some(FilterMode::Specific),
+                shop_id: Some(UnvalidatedShopId::from(bob_shop.id)),
                 ..Default::default()
             };
 
@@ -1344,6 +1356,56 @@ mod tests {
                 .expect_err(
                     "recurring transaction fetch with shop belonging to different user didn't fail",
                 );
+
+            Ok(())
+        }
+
+        #[sqlx::test(fixtures("base", "recurring"))]
+        fn test_fetch_shop_filter_cross_field_rejected(pool: PgPool) -> anyhow::Result<()> {
+            let user = get_user_by_id(&pool, 1).await;
+            let shop = get_shop_by_name(&pool, user.id, "Netflix").await;
+
+            // shopFilter=specific without shopId
+            RecurringTransaction::fetch(
+                &pool,
+                &user,
+                RecurringTransactionFetchParams {
+                    shop_filter: Some(FilterMode::Specific),
+                    shop_id: None,
+                    ..Default::default()
+                },
+                Pagination::default(),
+            )
+            .await
+            .expect_err("shopFilter=specific without shopId didn't fail");
+
+            // shopId without shopFilter
+            RecurringTransaction::fetch(
+                &pool,
+                &user,
+                RecurringTransactionFetchParams {
+                    shop_filter: None,
+                    shop_id: Some(UnvalidatedShopId::from(shop.id)),
+                    ..Default::default()
+                },
+                Pagination::default(),
+            )
+            .await
+            .expect_err("shopId without shopFilter didn't fail");
+
+            // shopId with shopFilter=null
+            RecurringTransaction::fetch(
+                &pool,
+                &user,
+                RecurringTransactionFetchParams {
+                    shop_filter: Some(FilterMode::Null),
+                    shop_id: Some(UnvalidatedShopId::from(shop.id)),
+                    ..Default::default()
+                },
+                Pagination::default(),
+            )
+            .await
+            .expect_err("shopId with shopFilter=null didn't fail");
 
             Ok(())
         }

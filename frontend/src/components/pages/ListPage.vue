@@ -18,6 +18,10 @@ import {
     recurringTransactionColumnSettings
 } from '@/components/lists/listConfig';
 import {
+    CategoryShopOption,
+    CategoryWithoutMeta
+} from '@/stores/CategoryShopStore';
+import {
     OneoffTransaction,
     RecurringTransaction
 } from '@/stores/TransactionStore';
@@ -47,8 +51,8 @@ export type TransactionFilterRules = {
     dateTo?: Date;
     amountFrom?: number;
     amountTo?: number;
-    category?: string;
-    shop?: string;
+    category?: CategoryWithoutMeta;
+    shop?: CategoryShopOption;
 };
 
 const TransactionStore = useTransactionStore();

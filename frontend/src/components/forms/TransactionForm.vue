@@ -20,7 +20,11 @@ import { useDateFormat } from '@vueuse/core';
 
 import { dateToIsoDate, dateToYearMonth, parseYearMonth } from '@/common';
 import AutoComplete from '@/components/AutoComplete.vue';
-import { useCategoryShopStore } from '@/stores/CategoryShopStore';
+import {
+    CategoryWithoutMeta,
+    ShopWithoutMeta,
+    useCategoryShopStore
+} from '@/stores/CategoryShopStore';
 import {
     OneoffTransaction,
     Recurrence,
@@ -37,8 +41,8 @@ type FormValues = {
         | 'oneoff-custom'
         | 'monthly'
         | 'yearly';
-    category?: string;
-    shop?: string;
+    category?: CategoryWithoutMeta;
+    shop?: ShopWithoutMeta;
     amount?: number;
     description?: string;
 };
@@ -171,8 +175,11 @@ function buildInitialState(
             | 'expense'
             | 'income',
         amount: transaction.amount / 100,
-        category: transaction.category,
-        shop: transaction.shop,
+        category: { id: transaction.categoryId, name: transaction.category },
+        shop:
+            transaction.shopId != null
+                ? { id: transaction.shopId, name: transaction.shop! }
+                : undefined,
         description: transaction.description
     };
 
@@ -242,9 +249,9 @@ async function createCategoryShop(type: 'category' | 'shop', name: string) {
         if (!form.value) {
             console.error('Form ref is null, cannot set field value');
         } else if (type === 'category') {
-            form.value.setFieldValue('category', created.name);
+            form.value.setFieldValue('category', created);
         } else {
-            form.value.setFieldValue('shop', created.name);
+            form.value.setFieldValue('shop', created);
         }
     } catch (e) {
         console.log(e);
@@ -275,10 +282,8 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
         let basePayload = {
             isExpense: values.type == 'expense',
             amount: Math.round(values.amount! * 100),
-            categoryId: CategoryShopStore.categories[values.category!].id,
-            shopId: values.shop
-                ? CategoryShopStore.shops[values.shop!].id
-                : undefined,
+            categoryId: values.category!.id,
+            shopId: values.shop?.id,
             description: values.description || undefined
         };
 
@@ -527,7 +532,9 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
                         ref="categoryAutoComplete"
                         input-id="category"
                         name="category"
-                        :suggestions="Object.keys(CategoryShopStore.categories)"
+                        :suggestions="
+                            Object.values(CategoryShopStore.categories)
+                        "
                         required
                         :suggest-create-object="true"
                         :loading="locks.has('create_category')"
@@ -546,7 +553,7 @@ const submitForm = async (evt: FormSubmitEvent<Record<string, any>>) => {
                         ref="shopAutoComplete"
                         input-id="shop"
                         name="shop"
-                        :suggestions="Object.keys(CategoryShopStore.shops)"
+                        :suggestions="Object.values(CategoryShopStore.shops)"
                         :suggest-create-object="true"
                         :loading="locks.has('create_shop')"
                         show-clear

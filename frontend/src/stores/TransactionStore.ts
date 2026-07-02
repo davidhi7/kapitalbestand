@@ -70,7 +70,8 @@ type BaseTransactionQueryParams = {
     amountFrom?: number;
     amountTo?: number;
     categoryId?: number;
-    shopId?: number | null;
+    shopFilter?: 'null' | 'specific';
+    shopId?: number;
 } & TransactionOrderRules;
 
 type OneoffTransactionQueryParams = {
@@ -163,6 +164,16 @@ export const useTransactionStore = defineStore('Transaction', {
                 baseParams.amountFrom = String(filters.amountFrom);
             if (filters.amountTo != null)
                 baseParams.amountTo = String(filters.amountTo);
+            if (filters.category)
+                baseParams.categoryId = String(filters.category.id);
+            if (filters.shop) {
+                if (filters.shop.id === null) {
+                    baseParams.shopFilter = 'null';
+                } else {
+                    baseParams.shopFilter = 'specific';
+                    baseParams.shopId = String(filters.shop.id);
+                }
+            }
 
             const oneoffPromise = fetchOneoff
                 ? (async (): Promise<OneoffTransaction[]> => {

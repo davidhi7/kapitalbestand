@@ -9,7 +9,13 @@ import RadioButtonGroup from 'primevue/radiobuttongroup';
 
 import AutoComplete from '@/components/AutoComplete.vue';
 import { TransactionFilterRules } from '@/components/pages/ListPage.vue';
-import { useCategoryShopStore } from '@/stores/CategoryShopStore';
+import {
+    CategoryShopOption,
+    useCategoryShopStore
+} from '@/stores/CategoryShopStore';
+
+/** Filter option selecting transactions without a shop; marked by `id: null`. */
+const NO_SHOP: CategoryShopOption = { id: null, name: '(Ohne Händler)' };
 
 const CategoryShopStore = useCategoryShopStore();
 
@@ -183,7 +189,9 @@ function setAll() {
                     <AutoComplete
                         v-model="form.category"
                         input-id="category"
-                        :suggestions="Object.keys(CategoryShopStore.categories)"
+                        :suggestions="
+                            Object.values(CategoryShopStore.categories)
+                        "
                         show-clear
                     />
                     <label for="category">Kategorie</label>
@@ -193,7 +201,10 @@ function setAll() {
                     <AutoComplete
                         v-model="form.shop"
                         input-id="shop"
-                        :suggestions="Object.keys(CategoryShopStore.shops)"
+                        :suggestions="[
+                            NO_SHOP,
+                            ...Object.values(CategoryShopStore.shops)
+                        ]"
                         show-clear
                     />
                     <label for="shop">Händler</label>

@@ -88,7 +88,7 @@ function keyValuePairs(
         Erstellt: shortDateTimeFormat.format(new Date(createdAt)),
         Kategorie: category,
         Aktualisiert: shortDateTimeFormat.format(new Date(updatedAt)),
-        Händler: shop ? shop : '-',
+        Händler: shop ? shop : '(Ohne Händler)',
         Identifikation: id.toString(),
         Typ: type
     };

@@ -15,6 +15,14 @@ type CategoryShopWithoutMeta = {
     name: string;
 };
 
+/**
+ * Widest value type of the category/shop autocompletes. `name` is for display
+ * only; `id` identifies the instance. `id: null` marks the shop-filter option
+ * for transactions without a shop and never occurs outside filtering — use
+ * `CategoryWithoutMeta`/`ShopWithoutMeta` wherever a real instance is required.
+ */
+export type CategoryShopOption = { id: number | null; name: string };
+
 export type CategoryShopType = 'category' | 'shop';
 
 export type Category = CategoryShop;
