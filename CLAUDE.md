@@ -58,6 +58,8 @@ npm run format                 # Prettier
 
 ## Code Style
 
+- Do not write organizational or comments that summarize the code. Comments should only be written in order to explain "why" the code is written in some way in the case there is a reason that is tricky / non-obvious.
+- Prefer implementing functionality in existing files unless it is a new logical component. Avoid creating many small files.
 - **Frontend**: 4-space indent, single quotes, semicolons, trailing commas off. Import order: external packages → `@/` aliases → relative. Enforced by Prettier and ESLint configs in `frontend/package.json` and `frontend/eslint.config.js`.
 - **Backend**: Rust 2024 edition. Uses `anyhow` for application errors, `thiserror` for library-style errors, `garde` derive macros for request validation.
 
