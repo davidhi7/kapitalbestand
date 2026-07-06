@@ -47,8 +47,8 @@ CREATE TABLE oneoff_transactions (
     is_expense boolean NOT NULL,
     amount integer NOT NULL,
     description text,
-    category_id integer NOT NULL REFERENCES categories(id) ON UPDATE CASCADE ON DELETE CASCADE,
-    shop_id integer REFERENCES shops(id) ON UPDATE CASCADE ON DELETE CASCADE
+    category_id integer NOT NULL REFERENCES categories(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    shop_id integer REFERENCES shops(id) ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
 CREATE TABLE recurring_transactions (
@@ -61,8 +61,8 @@ CREATE TABLE recurring_transactions (
     is_expense boolean NOT NULL,
     amount integer NOT NULL,
     description text,
-    category_id integer NOT NULL REFERENCES categories(id) ON UPDATE CASCADE ON DELETE CASCADE,
-    shop_id integer REFERENCES shops(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    category_id integer NOT NULL REFERENCES categories(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    shop_id integer REFERENCES shops(id) ON UPDATE CASCADE ON DELETE RESTRICT,
     frequency recurrence_frequency NOT NULL,
     CONSTRAINT recurring_transactions_interval_check
         CHECK (interval_to >= interval_from OR interval_to IS NULL),

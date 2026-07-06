@@ -1,3 +1,4 @@
+use axum::http::StatusCode;
 use chrono::{DateTime, Utc};
 use garde::Validate;
 use serde::{Deserialize, Serialize};
@@ -5,6 +6,7 @@ use sqlx::{PgPool, Postgres, QueryBuilder, prelude::FromRow};
 
 use crate::{
     app::{api::pagination::Pagination, resources::Resource},
+    errors::ServerError::{self, Generic},
     users::User,
 };
 
@@ -37,7 +39,7 @@ impl Resource for Category {
     type UpdateParams = CategoryShopCreate;
     type ReturnType = Category;
     type VecReturnType = Vec<Self::ReturnType>;
-    type Error = sqlx::Error;
+    type Error = ServerError;
 
     async fn create(
         database: &PgPool,
@@ -46,12 +48,13 @@ impl Resource for Category {
     ) -> Result<Option<Self::ReturnType>, Self::Error> {
         sqlx::query_as!(
             Category,
-            "INSERT INTO categories (user_id, name) VALUES ($1, $2) ON CONFLICT DO NOTHING RETURNING *", 
+            "INSERT INTO categories (user_id, name) VALUES ($1, $2) ON CONFLICT DO NOTHING RETURNING *",
             user.id,
             params.name
         )
         .fetch_optional(database)
         .await
+        .map_err(ServerError::from)
     }
 
     async fn fetch(
@@ -78,6 +81,7 @@ impl Resource for Category {
             .build_query_as::<Category>()
             .fetch_all(database)
             .await
+            .map_err(ServerError::from)
     }
 
     async fn get_by_id(
@@ -93,6 +97,7 @@ impl Resource for Category {
         )
         .fetch_optional(database)
         .await
+        .map_err(ServerError::from)
     }
 
     async fn update(
@@ -110,6 +115,7 @@ impl Resource for Category {
         )
         .fetch_optional(database)
         .await
+        .map_err(ServerError::from)
     }
 
     async fn remove(database: &sqlx::PgPool, user: &User, id: i32) -> Result<u64, Self::Error> {
@@ -122,6 +128,20 @@ impl Resource for Category {
         .execute(database)
         .await
         .map(|result| result.rows_affected())
+        // Apparently Postgres raises SQLSTATE 23001 (restrict_violation) for ON DELETE RESTRICT
+        // and 23503 (foreign_key_violation) for NO ACTION
+        // sqlx ErrorKind is `Other` in case of violations here (?)
+        .map_err(|err| match &err {
+            sqlx::Error::Database(e)
+                if matches!(e.code().as_deref(), Some("23001") | Some("23503")) =>
+            {
+                Generic(
+                    StatusCode::CONFLICT,
+                    Some("Cannot delete: still referenced by a transaction".to_string()),
+                )
+            }
+            _ => ServerError::from(err),
+        })
     }
 }
 
@@ -140,7 +160,7 @@ impl Resource for Shop {
     type UpdateParams = CategoryShopCreate;
     type ReturnType = Shop;
     type VecReturnType = Vec<Self::ReturnType>;
-    type Error = sqlx::Error;
+    type Error = ServerError;
 
     async fn create(
         database: &PgPool,
@@ -155,6 +175,7 @@ impl Resource for Shop {
         )
         .fetch_optional(database)
         .await
+        .map_err(ServerError::from)
     }
 
     async fn fetch(
@@ -177,7 +198,11 @@ impl Resource for Shop {
             .push(" OFFSET ")
             .push_bind(offset.0);
 
-        builder.build_query_as::<Shop>().fetch_all(database).await
+        builder
+            .build_query_as::<Shop>()
+            .fetch_all(database)
+            .await
+            .map_err(ServerError::from)
     }
 
     async fn get_by_id(
@@ -193,6 +218,7 @@ impl Resource for Shop {
         )
         .fetch_optional(database)
         .await
+        .map_err(ServerError::from)
     }
 
     async fn update(
@@ -210,6 +236,7 @@ impl Resource for Shop {
         )
         .fetch_optional(database)
         .await
+        .map_err(ServerError::from)
     }
 
     async fn remove(database: &sqlx::PgPool, user: &User, id: i32) -> Result<u64, Self::Error> {
@@ -222,6 +249,21 @@ impl Resource for Shop {
         .execute(database)
         .await
         .map(|result| result.rows_affected())
+        // Apparently Postgres raises SQLSTATE 23001 (restrict_violation) for ON DELETE RESTRICT
+        // and 23503 (foreign_key_violation) for NO ACTION
+        // sqlx ErrorKind is `Other` in case of violations here (?)
+        .map_err(|err| match &err {
+            sqlx::Error::Database(e)
+                if matches!(e.code().as_deref(), Some("23001") | Some("23503")) =>
+            {
+                // TODO forward this error and make api return something like '{"status": "error", "message": "..."}
+                Generic(
+                    StatusCode::CONFLICT,
+                    Some("Cannot delete: still referenced by a transaction".to_string()),
+                )
+            }
+            _ => ServerError::from(err),
+        })
     }
 }
 
@@ -231,6 +273,7 @@ mod category_tests {
     use crate::app::api::pagination::{Limit, Offset, Pagination};
     use crate::users::User;
     use sqlx::PgPool;
+    use std::assert_matches;
 
     async fn get_user_by_id(pool: &PgPool, id: i32) -> User {
         sqlx::query_as!(User, "SELECT * FROM users WHERE id = $1", id)
@@ -686,6 +729,30 @@ mod category_tests {
         Ok(())
     }
 
+    #[sqlx::test(fixtures("base", "oneoff"))]
+    async fn test_remove_category_restrict_violation(pool: PgPool) -> anyhow::Result<()> {
+        let user = get_user_by_id(&pool, 1).await;
+
+        // Get a category referenced by a transaction's foreign key
+        let category = Category::get_by_id(&pool, &user, 1)
+            .await?
+            .expect("Fixture data problem: Category with id 1 should exist");
+
+        // Try to delete, should be rejected
+        assert_matches!(
+            Category::remove(&pool, &user, category.id).await,
+            Err(ServerError::Generic(StatusCode::CONFLICT, _))
+        );
+
+        // Verify category still exists
+        let original_category = Category::get_by_id(&pool, &user, category.id)
+            .await?
+            .expect("Failed to find category");
+        assert_eq!(original_category, category);
+
+        Ok(())
+    }
+
     #[sqlx::test(fixtures("base"))]
     async fn test_category_timestamps(pool: PgPool) -> anyhow::Result<()> {
         let user = get_user_by_id(&pool, 1).await;
@@ -742,6 +809,7 @@ mod shop_tests {
     use crate::app::api::pagination::{Limit, Offset, Pagination};
     use crate::users::User;
     use sqlx::PgPool;
+    use std::assert_matches;
 
     async fn get_user_by_id(pool: &PgPool, id: i32) -> User {
         sqlx::query_as!(User, "SELECT * FROM users WHERE id = $1", id)
@@ -1184,6 +1252,30 @@ mod shop_tests {
             .await?
             .expect("Failed to find shop");
         assert_eq!(&original_shop, shop);
+
+        Ok(())
+    }
+
+    #[sqlx::test(fixtures("base", "oneoff"))]
+    async fn test_remove_shop_restrict_violation(pool: PgPool) -> anyhow::Result<()> {
+        let user = get_user_by_id(&pool, 1).await;
+
+        // Get a shop referenced by foreign key
+        let shop = Shop::get_by_id(&pool, &user, 1)
+            .await?
+            .expect("Fixture data problem: Shop with id 1 should exist");
+
+        // Try to delete, should be rejected
+        assert_matches!(
+            Shop::remove(&pool, &user, shop.id).await,
+            Err(ServerError::Generic(StatusCode::CONFLICT, _))
+        );
+
+        // Verify shop still exists
+        let original_shop = Shop::get_by_id(&pool, &user, shop.id)
+            .await?
+            .expect("Failed to find shop");
+        assert_eq!(original_shop, shop);
 
         Ok(())
     }
