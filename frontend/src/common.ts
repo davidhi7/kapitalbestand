@@ -63,8 +63,18 @@ export function parseYearMonth(yearMonth: string): Date {
 }
 
 /**
- * Format date as `YYYY-MM-DD` string
+ * Format date as `YYYY-MM-DD` string.
  */
 export function dateToIsoDate(date: Date) {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+/**
+ * Parse a `YYYY-MM-DD` string into a local-time Date. Avoids
+ * `new Date("YYYY-MM-DD")` which parses as UTC and can shift to the previous
+ * day in timezones west of UTC.
+ */
+export function parseIsoDate(isoDate: string): Date {
+    const [year, month, day] = isoDate.split('-').map(Number);
+    return new Date(year, month - 1, day);
 }

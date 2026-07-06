@@ -5,6 +5,8 @@ import IndexPage from '@/components/pages/IndexPage.vue';
 import ListPage from '@/components/pages/ListPage.vue';
 import TransactionForm from '@/components/pages/TransactionFormPage.vue';
 
+import CategoryShopPage from './components/pages/CategoryShopPage.vue';
+
 const routes = [
     {
         path: '/',
@@ -20,6 +22,10 @@ const routes = [
         meta: {
             fillWidth: true
         }
+    },
+    {
+        path: '/tags',
+        component: CategoryShopPage
     },
     {
         path: '/account',

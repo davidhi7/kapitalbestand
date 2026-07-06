@@ -50,6 +50,7 @@ const emit = defineEmits(['logout']);
             />
             <IconRouterLink to="/new" icon="pi-plus" label="Neue Transaktion" />
             <IconRouterLink to="/list" icon="pi-list" label="Liste" />
+            <IconRouterLink to="/tags" icon="pi-tags" label="Kategorien" />
             <!-- TODO revive -->
             <!-- <IconRouterLink
                 to="/analysis"

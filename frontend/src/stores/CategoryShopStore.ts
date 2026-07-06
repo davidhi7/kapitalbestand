@@ -30,7 +30,9 @@ export type CategoryWithoutMeta = CategoryShopWithoutMeta;
 export type Shop = CategoryShop;
 export type ShopWithoutMeta = CategoryShopWithoutMeta;
 
-type ConditionalType<T extends CategoryShopType> = T extends 'Category' ? Category : Shop;
+type ConditionalType<T extends CategoryShopType> = T extends 'Category'
+    ? Category
+    : Shop;
 
 interface State {
     categories: { [name: string]: Category };
@@ -45,15 +47,24 @@ export const useCategoryShopStore = defineStore('CategoryShop', {
         };
     },
     actions: {
-        async create(type: CategoryShopType, name: string): Promise<ConditionalType<typeof type>> {
-            let targetArray, endpoint;
+        target(type: CategoryShopType): {
+            targetArray: { [name: string]: CategoryShop };
+            endpoint: string;
+        } {
             if (type === 'category') {
-                targetArray = this.categories;
-                endpoint = '/api/categories';
+                return {
+                    targetArray: this.categories,
+                    endpoint: '/api/categories'
+                };
             } else {
-                targetArray = this.shops;
-                endpoint = '/api/shops';
+                return { targetArray: this.shops, endpoint: '/api/shops' };
             }
+        },
+        async create(
+            type: CategoryShopType,
+            name: string
+        ): Promise<ConditionalType<typeof type>> {
+            const { targetArray, endpoint } = this.target(type);
             const response = await fetch(endpoint, {
                 method: 'POST',
                 body: JSON.stringify({ name }),
@@ -69,19 +80,62 @@ export const useCategoryShopStore = defineStore('CategoryShop', {
             return instance;
         },
         async fetch() {
-            const [categories, shops]: [Category[], Shop[]] = await Promise.all([
-                fetch('/api/categories')
-                    .then((res) => res.json())
-                    .then((json) => json.data),
-                fetch('/api/shops')
-                    .then((res) => res.json())
-                    .then((json) => json.data)
-            ]);
+            const [categories, shops]: [Category[], Shop[]] = await Promise.all(
+                [
+                    fetch('/api/categories')
+                        .then((res) => res.json())
+                        .then((json) => json.data),
+                    fetch('/api/shops')
+                        .then((res) => res.json())
+                        .then((json) => json.data)
+                ]
+            );
             for (const category of categories) {
                 this.categories[category.name] = category;
             }
             for (const shop of shops) {
                 this.shops[shop.name] = shop;
+            }
+        },
+        async update(
+            type: CategoryShopType,
+            id: number,
+            name: string
+        ): Promise<ConditionalType<typeof type>> {
+            const { targetArray, endpoint } = this.target(type);
+            const response = await fetch(`${endpoint}/${id}`, {
+                method: 'PATCH',
+                body: JSON.stringify({ name }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (!response.ok) {
+                throw new HttpError(response.status);
+            }
+            const instance = (await response.json()).data;
+            const oldKey = Object.keys(targetArray).find(
+                (key) => targetArray[key].id === id
+            );
+            if (oldKey !== undefined) {
+                delete targetArray[oldKey];
+            }
+            targetArray[instance.name] = instance;
+            return instance;
+        },
+        async delete(type: CategoryShopType, id: number) {
+            const { targetArray, endpoint } = this.target(type);
+            const response = await fetch(`${endpoint}/${id}`, {
+                method: 'DELETE'
+            });
+            if (!response.ok) {
+                throw new HttpError(response.status);
+            }
+            const oldKey = Object.keys(targetArray).find(
+                (key) => targetArray[key].id === id
+            );
+            if (oldKey !== undefined) {
+                delete targetArray[oldKey];
             }
         }
     }
