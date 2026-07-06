@@ -34,7 +34,7 @@ enum Ordering {
 
 enum OrderKey {
     Time = 'Time',
-    Amount = 'Amont',
+    Amount = 'Amount',
     Category = 'Category',
     Shop = 'Shop'
 }
