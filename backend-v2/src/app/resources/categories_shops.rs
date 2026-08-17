@@ -1,3 +1,5 @@
+// TODO deduplication
+
 use axum::{Json, Router, extract::State, http::StatusCode, response::IntoResponse, routing::get};
 use chrono::{DateTime, Utc};
 use garde::Validate;
@@ -135,7 +137,7 @@ impl Resource for Category {
         .execute(database)
         .await
         .map(|result| result.rows_affected())
-        // Apparently Postgres raises SQLSTATE 23001 (restrict_violation) for ON DELETE RESTRICT
+        // Postgres raises SQLSTATE 23001 (restrict_violation) for ON DELETE RESTRICT
         // and 23503 (foreign_key_violation) for NO ACTION
         // sqlx ErrorKind is `Other` in case of violations here (?)
         .map_err(|err| match &err {
@@ -258,7 +260,7 @@ impl Resource for Shop {
         .execute(database)
         .await
         .map(|result| result.rows_affected())
-        // Apparently Postgres raises SQLSTATE 23001 (restrict_violation) for ON DELETE RESTRICT
+        // Postgres raises SQLSTATE 23001 (restrict_violation) for ON DELETE RESTRICT
         // and 23503 (foreign_key_violation) for NO ACTION
         // sqlx ErrorKind is `Other` in case of violations here (?)
         .map_err(|err| match &err {

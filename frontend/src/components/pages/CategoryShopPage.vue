@@ -130,7 +130,6 @@ async function saveRename() {
             life: 3000
         });
         renameVisible.value = false;
-        await reload();
     } catch (e) {
         console.error(e);
         toast.add({
@@ -139,6 +138,7 @@ async function saveRename() {
             life: 3000
         });
     }
+    await reload();
     requestPending.value = false;
 }
 
