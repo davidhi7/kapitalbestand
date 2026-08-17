@@ -1,11 +1,16 @@
-use axum::http::StatusCode;
+use axum::{Json, Router, extract::State, http::StatusCode, response::IntoResponse, routing::get};
 use chrono::{DateTime, Utc};
 use garde::Validate;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 use sqlx::{PgPool, Postgres, QueryBuilder, prelude::FromRow};
 
 use crate::{
-    app::{api::pagination::Pagination, resources::Resource},
+    app::{
+        AppState,
+        api::{AuthUser, ValidQuery, pagination::Pagination},
+        resources::Resource,
+    },
     errors::ServerError::{self, Generic},
     users::User,
 };
@@ -70,6 +75,8 @@ impl Resource for Category {
         if let Some(name) = params.name {
             builder.push(" AND name = ").push_bind(name);
         }
+
+        builder.push(" ORDER BY id ASC");
 
         builder
             .push(" LIMIT ")
@@ -192,6 +199,8 @@ impl Resource for Shop {
             builder.push(" AND name = ").push_bind(name);
         }
 
+        builder.push(" ORDER BY id ASC");
+
         builder
             .push(" LIMIT ")
             .push_bind(limit.0)
@@ -265,6 +274,144 @@ impl Resource for Shop {
             _ => ServerError::from(err),
         })
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct TransactionCounts {
+    pub oneoff: i64,
+    pub recurring: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct CategoryWithCounts {
+    pub category: Category,
+    pub counts: TransactionCounts,
+}
+
+impl Category {
+    /// Like [`Category::fetch`], but additionally counts the oneoff and recurring
+    /// transactions that reference each category via its foreign key.
+    pub async fn fetch_with_transaction_counts(
+        database: &PgPool,
+        user: &User,
+        Pagination { limit, offset }: Pagination,
+    ) -> Result<Vec<CategoryWithCounts>, ServerError> {
+        sqlx::query!(
+            r#"
+            SELECT
+                c.id, c.name, c.user_id, c.created_at, c.updated_at,
+                (SELECT COUNT(*) FROM oneoff_transactions o WHERE o.category_id = c.id) AS "oneoff!",
+                (SELECT COUNT(*) FROM recurring_transactions r WHERE r.category_id = c.id) AS "recurring!"
+            FROM categories c
+            WHERE c.user_id = $1
+            LIMIT $2 OFFSET $3
+            "#,
+            user.id,
+            i64::from(limit.0),
+            i64::from(offset.0),
+        )
+        .fetch_all(database)
+        .await
+        .map(|rows| {
+            rows.into_iter()
+                .map(|row| CategoryWithCounts {
+                    category: Category {
+                        id: row.id,
+                        name: row.name,
+                        user_id: row.user_id,
+                        created_at: row.created_at,
+                        updated_at: row.updated_at,
+                    },
+                    counts: TransactionCounts {
+                        oneoff: row.oneoff,
+                        recurring: row.recurring,
+                    },
+                })
+                .collect()
+        })
+        .map_err(ServerError::from)
+    }
+
+    /// Router exposing the transaction-count listing, meant to be nested under `/categories`.
+    pub fn counts_router() -> Router<AppState> {
+        Router::new().route("/counts", get(fetch_categories_with_counts))
+    }
+}
+
+async fn fetch_categories_with_counts(
+    State(state): State<AppState>,
+    AuthUser(user): AuthUser,
+    ValidQuery(pagination): ValidQuery<Pagination>,
+) -> Result<impl IntoResponse, ServerError> {
+    Ok(Json(
+        json!({ "status": "success", "data": Category::fetch_with_transaction_counts(&state.database, &user, pagination).await? }),
+    ))
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct ShopWithCounts {
+    pub shop: Shop,
+    pub counts: TransactionCounts,
+}
+
+impl Shop {
+    /// Like [`Shop::fetch`], but additionally counts the oneoff and recurring
+    /// transactions that reference each shop via its foreign key.
+    pub async fn fetch_with_transaction_counts(
+        database: &PgPool,
+        user: &User,
+        Pagination { limit, offset }: Pagination,
+    ) -> Result<Vec<ShopWithCounts>, ServerError> {
+        sqlx::query!(
+            r#"
+            SELECT
+                s.id, s.name, s.user_id, s.created_at, s.updated_at,
+                (SELECT COUNT(*) FROM oneoff_transactions o WHERE o.shop_id = s.id) AS "oneoff!",
+                (SELECT COUNT(*) FROM recurring_transactions r WHERE r.shop_id = s.id) AS "recurring!"
+            FROM shops s
+            WHERE s.user_id = $1
+            LIMIT $2 OFFSET $3
+            "#,
+            user.id,
+            i64::from(limit.0),
+            i64::from(offset.0),
+        )
+        .fetch_all(database)
+        .await
+        .map(|rows| {
+            rows.into_iter()
+                .map(|row| ShopWithCounts {
+                    shop: Shop {
+                        id: row.id,
+                        name: row.name,
+                        user_id: row.user_id,
+                        created_at: row.created_at,
+                        updated_at: row.updated_at,
+                    },
+                    counts: TransactionCounts {
+                        oneoff: row.oneoff,
+                        recurring: row.recurring,
+                    },
+                })
+                .collect()
+        })
+        .map_err(ServerError::from)
+    }
+
+    /// Router exposing the transaction-count listing, meant to be nested under `/shops`.
+    pub fn counts_router() -> Router<AppState> {
+        Router::new().route("/counts", get(fetch_shops_with_counts))
+    }
+}
+
+async fn fetch_shops_with_counts(
+    State(state): State<AppState>,
+    AuthUser(user): AuthUser,
+    ValidQuery(pagination): ValidQuery<Pagination>,
+) -> Result<impl IntoResponse, ServerError> {
+    Ok(Json(
+        json!({ "status": "success", "data": Shop::fetch_with_transaction_counts(&state.database, &user, pagination).await? }),
+    ))
 }
 
 #[cfg(test)]
@@ -801,6 +948,50 @@ mod category_tests {
 
         Ok(())
     }
+
+    #[sqlx::test(fixtures("base", "oneoff", "recurring"))]
+    async fn test_fetch_with_transaction_counts(pool: PgPool) -> anyhow::Result<()> {
+        let user = get_user_by_id(&pool, 1).await;
+
+        let results =
+            Category::fetch_with_transaction_counts(&pool, &user, Pagination::default()).await?;
+
+        // Only the user's own categories are returned.
+        for entry in &results {
+            assert_eq!(entry.category.user_id, user.id);
+        }
+
+        // "Restaurants" (id 2) is referenced by 3 oneoff and 1 recurring transaction.
+        let restaurants = results
+            .iter()
+            .find(|entry| entry.category.id == 2)
+            .expect("Fixture data problem: category 2 should belong to user 1");
+        assert_eq!(restaurants.category.name, "Restaurants");
+        assert_eq!(restaurants.counts.oneoff, 3);
+        assert_eq!(restaurants.counts.recurring, 1);
+
+        // A brand-new category is referenced by nothing, so both counts are zero.
+        let fresh = Category::create(
+            &pool,
+            &user,
+            CategoryShopCreate {
+                name: "Unreferenced Category".to_string(),
+            },
+        )
+        .await?
+        .expect("Failed to create category");
+
+        let results =
+            Category::fetch_with_transaction_counts(&pool, &user, Pagination::default()).await?;
+        let fresh = results
+            .iter()
+            .find(|entry| entry.category.id == fresh.id)
+            .expect("Newly created category should be present");
+        assert_eq!(fresh.counts.oneoff, 0);
+        assert_eq!(fresh.counts.recurring, 0);
+
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -1325,6 +1516,50 @@ mod shop_tests {
         assert!(updated.updated_at >= before_update);
         assert!(updated.updated_at <= after_update);
         assert!(updated.updated_at > created.updated_at,); // Should be newer
+
+        Ok(())
+    }
+
+    #[sqlx::test(fixtures("base", "oneoff", "recurring"))]
+    async fn test_fetch_with_transaction_counts(pool: PgPool) -> anyhow::Result<()> {
+        let user = get_user_by_id(&pool, 1).await;
+
+        let results =
+            Shop::fetch_with_transaction_counts(&pool, &user, Pagination::default()).await?;
+
+        // Only the user's own shops are returned.
+        for entry in &results {
+            assert_eq!(entry.shop.user_id, user.id);
+        }
+
+        // "Trader Joes" (id 2) is referenced by 2 oneoff and 1 recurring transaction.
+        let trader_joes = results
+            .iter()
+            .find(|entry| entry.shop.id == 2)
+            .expect("Fixture data problem: shop 2 should belong to user 1");
+        assert_eq!(trader_joes.shop.name, "Trader Joes");
+        assert_eq!(trader_joes.counts.oneoff, 2);
+        assert_eq!(trader_joes.counts.recurring, 1);
+
+        // A brand-new shop is referenced by nothing, so both counts are zero.
+        let fresh = Shop::create(
+            &pool,
+            &user,
+            CategoryShopCreate {
+                name: "Unreferenced Shop".to_string(),
+            },
+        )
+        .await?
+        .expect("Failed to create shop");
+
+        let results =
+            Shop::fetch_with_transaction_counts(&pool, &user, Pagination::default()).await?;
+        let fresh = results
+            .iter()
+            .find(|entry| entry.shop.id == fresh.id)
+            .expect("Newly created shop should be present");
+        assert_eq!(fresh.counts.oneoff, 0);
+        assert_eq!(fresh.counts.recurring, 0);
 
         Ok(())
     }

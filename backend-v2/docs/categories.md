@@ -10,9 +10,9 @@ Base path: `/api/categories`
 
 ### Request Body
 
-| Field  | Type   | Required | Validation       |
-|--------|--------|----------|------------------|
-| `name` | string | yes      | min 1 grapheme   |
+| Field  | Type   | Required | Validation     |
+| ------ | ------ | -------- | -------------- |
+| `name` | string | yes      | min 1 grapheme |
 
 Unknown fields are rejected.
 
@@ -22,14 +22,14 @@ Unknown fields are rejected.
 
 ```json
 {
-  "status": "success",
-  "data": {
-    "id": 1,
-    "name": "Groceries",
-    "user_id": 1,
-    "created_at": "2026-01-01T00:00:00Z",
-    "updated_at": "2026-01-01T00:00:00Z"
-  }
+    "status": "success",
+    "data": {
+        "id": 1,
+        "name": "Groceries",
+        "user_id": 1,
+        "created_at": "2026-01-01T00:00:00Z",
+        "updated_at": "2026-01-01T00:00:00Z"
+    }
 }
 ```
 
@@ -43,10 +43,10 @@ Unknown fields are rejected.
 
 ### Query Parameters
 
-| Param    | Type   | Required | Default | Description          |
-|----------|--------|----------|---------|----------------------|
-| `name`   | string | no       |         | Exact name filter    |
-| `limit`  | int    | no       | 1000    | Max results (>= 0)  |
+| Param    | Type   | Required | Default | Description           |
+| -------- | ------ | -------- | ------- | --------------------- |
+| `name`   | string | no       |         | Exact name filter     |
+| `limit`  | int    | no       | 1000    | Max results (>= 0)    |
 | `offset` | int    | no       | 0       | Skip N results (>= 0) |
 
 ### Response
@@ -55,20 +55,60 @@ Unknown fields are rejected.
 
 ```json
 {
-  "status": "success",
-  "data": [
-    {
-      "id": 1,
-      "name": "Groceries",
-      "user_id": 1,
-      "created_at": "2026-01-01T00:00:00Z",
-      "updated_at": "2026-01-01T00:00:00Z"
-    }
-  ]
+    "status": "success",
+    "data": [
+        {
+            "id": 1,
+            "name": "Groceries",
+            "user_id": 1,
+            "created_at": "2026-01-01T00:00:00Z",
+            "updated_at": "2026-01-01T00:00:00Z"
+        }
+    ]
 }
 ```
 
 Only returns categories belonging to the authenticated user.
+
+---
+
+## List Categories with Transaction Counts
+
+`GET /api/categories/counts`
+
+Like `List Categories`, but each category is annotated with the number of oneoff and recurring transactions referencing it via its foreign key.
+
+### Query Parameters
+
+| Param    | Type | Required | Default | Description           |
+| -------- | ---- | -------- | ------- | --------------------- |
+| `limit`  | int  | no       | 1000    | Max results (>= 0)    |
+| `offset` | int  | no       | 0       | Skip N results (>= 0) |
+
+### Response
+
+**200 OK**
+
+```json
+{
+    "status": "success",
+    "data": [
+        {
+            "category": {
+                "id": 1,
+                "name": "Groceries",
+                "user_id": 1,
+                "created_at": "2026-01-01T00:00:00Z",
+                "updated_at": "2026-01-01T00:00:00Z"
+            },
+            "counts": {
+                "oneoff": 3,
+                "recurring": 1
+            }
+        }
+    ]
+}
+```
 
 ---
 
@@ -90,9 +130,9 @@ Only returns categories belonging to the authenticated user.
 
 ### Request Body
 
-| Field  | Type   | Required | Validation       |
-|--------|--------|----------|------------------|
-| `name` | string | yes      | min 1 grapheme   |
+| Field  | Type   | Required | Validation     |
+| ------ | ------ | -------- | -------------- |
+| `name` | string | yes      | min 1 grapheme |
 
 ### Response
 
@@ -112,8 +152,10 @@ Only returns categories belonging to the authenticated user.
 
 ```json
 {
-  "status": "success"
+    "status": "success"
 }
 ```
 
 **404 Not Found** -- category does not exist or belongs to another user.
+
+**409 Conflict** -- the category is still referenced by one or more oneoff or recurring transactions. The category is not deleted.

@@ -35,8 +35,8 @@ type ConditionalType<T extends CategoryShopType> = T extends 'Category'
     : Shop;
 
 interface State {
-    categories: { [name: string]: Category };
-    shops: { [name: string]: Shop };
+    categories: { [id: number]: Category };
+    shops: { [id: number]: Shop };
 }
 
 export const useCategoryShopStore = defineStore('CategoryShop', {
@@ -48,7 +48,7 @@ export const useCategoryShopStore = defineStore('CategoryShop', {
     },
     actions: {
         target(type: CategoryShopType): {
-            targetArray: { [name: string]: CategoryShop };
+            targetArray: { [id: number]: CategoryShop };
             endpoint: string;
         } {
             if (type === 'category') {
@@ -76,7 +76,7 @@ export const useCategoryShopStore = defineStore('CategoryShop', {
                 throw new HttpError(response.status);
             }
             const instance = (await response.json()).data;
-            targetArray[instance.name] = instance;
+            targetArray[instance.id] = instance;
             return instance;
         },
         async fetch() {
@@ -91,10 +91,10 @@ export const useCategoryShopStore = defineStore('CategoryShop', {
                 ]
             );
             for (const category of categories) {
-                this.categories[category.name] = category;
+                this.categories[category.id] = category;
             }
             for (const shop of shops) {
-                this.shops[shop.name] = shop;
+                this.shops[shop.id] = shop;
             }
         },
         async update(
@@ -114,13 +114,7 @@ export const useCategoryShopStore = defineStore('CategoryShop', {
                 throw new HttpError(response.status);
             }
             const instance = (await response.json()).data;
-            const oldKey = Object.keys(targetArray).find(
-                (key) => targetArray[key].id === id
-            );
-            if (oldKey !== undefined) {
-                delete targetArray[oldKey];
-            }
-            targetArray[instance.name] = instance;
+            targetArray[instance.id] = instance;
             return instance;
         },
         async delete(type: CategoryShopType, id: number) {
@@ -131,12 +125,7 @@ export const useCategoryShopStore = defineStore('CategoryShop', {
             if (!response.ok) {
                 throw new HttpError(response.status);
             }
-            const oldKey = Object.keys(targetArray).find(
-                (key) => targetArray[key].id === id
-            );
-            if (oldKey !== undefined) {
-                delete targetArray[oldKey];
-            }
+            delete targetArray[id];
         }
     }
 });

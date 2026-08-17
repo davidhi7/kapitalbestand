@@ -107,8 +107,14 @@ impl App {
             .nest(
                 "/api",
                 Router::new()
-                    .nest("/categories", build_routes!(Category))
-                    .nest("/shops", build_routes!(Shop))
+                    .nest(
+                        "/categories",
+                        Router::merge(build_routes!(Category), Category::counts_router()),
+                    )
+                    .nest(
+                        "/shops",
+                        Router::merge(build_routes!(Shop), Shop::counts_router()),
+                    )
                     .nest("/transactions/oneoff", build_routes!(OneoffTransaction))
                     .nest(
                         "/transactions/recurring",

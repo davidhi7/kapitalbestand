@@ -6,55 +6,107 @@ import Dialog from 'primevue/dialog';
 import InputText from 'primevue/inputtext';
 import Panel from 'primevue/panel';
 import { useToast } from 'primevue/usetoast';
-import { computed, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import type { LocationQueryRaw } from 'vue-router';
 
+import HttpError from '@/HttpError';
 import {
-    Category,
-    CategoryShopType,
-    Shop,
-    useCategoryShopStore
+    useCategoryShopStore,
+    type CategoryShopType
 } from '@/stores/CategoryShopStore';
 
-const CategoryShopStore = useCategoryShopStore();
 const toast = useToast();
+const categoryShopStore = useCategoryShopStore();
 
-const categories = computed(() =>
-    Object.values(CategoryShopStore.categories).sort((a, b) =>
-        a.name.localeCompare(b.name)
-    )
-);
-const shops = computed(() =>
-    Object.values(CategoryShopStore.shops).sort((a, b) =>
-        a.name.localeCompare(b.name)
-    )
-);
+interface ItemWithCounts {
+    id: number;
+    name: string;
+    oneoff: number;
+    recurring: number;
+}
 
 const typeLabels: Record<CategoryShopType, string> = {
     category: 'Kategorie',
     shop: 'Händler'
 };
 
-// Query param used by ListPage to pre-populate the transaction filter.
+const categories = ref<ItemWithCounts[]>([]);
+const shops = ref<ItemWithCounts[]>([]);
+
+// The oneoff/recurring counts double as links into the transaction list,
+// pre-filtered by this category/shop and the matching recurrence.
+const countKinds = [
+    { key: 'oneoff', header: 'Einmalig', recurrence: 'oneoff' },
+    { key: 'recurring', header: 'Wiederkehrend', recurrence: 'recurring' }
+] as const;
+
+// Query params used by ListPage to pre-populate the transaction filter.
 function transactionsLink(
     type: CategoryShopType,
-    id: number
+    id: number,
+    recurrence?: 'oneoff' | 'recurring'
 ): LocationQueryRaw {
-    return type === 'category'
-        ? { categoryId: String(id) }
-        : { shopId: String(id) };
+    const query: LocationQueryRaw =
+        type === 'category'
+            ? { categoryId: String(id) }
+            : { shopId: String(id) };
+    if (recurrence) query.recurrence = recurrence;
+    return query;
+}
+
+async function fetchCounts(type: CategoryShopType): Promise<ItemWithCounts[]> {
+    const response = await fetch(
+        type === 'category' ? '/api/categories/counts' : '/api/shops/counts'
+    );
+    if (!response.ok) throw new HttpError(response.status);
+    const { data } = (await response.json()) as {
+        data: Array<
+            {
+                counts: { oneoff: number; recurring: number };
+            } & Record<CategoryShopType, { id: number; name: string }>
+        >;
+    };
+    return data
+        .map((entry): ItemWithCounts => {
+            const item = entry[type];
+            return {
+                id: item.id,
+                name: item.name,
+                oneoff: entry.counts.oneoff,
+                recurring: entry.counts.recurring
+            };
+        })
+        .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+async function reload() {
+    try {
+        const [nextCategories, nextShops] = await Promise.all([
+            fetchCounts('category'),
+            fetchCounts('shop')
+        ]);
+        categories.value = nextCategories;
+        shops.value = nextShops;
+    } catch (e) {
+        console.error(e);
+        toast.add({
+            severity: 'error',
+            summary: 'Fehler beim Laden',
+            life: 3000
+        });
+    }
 }
 
 // A single rename/delete dialog serves both tables; we track which type and
 // item it currently acts on.
 const activeType = ref<CategoryShopType>('category');
-const activeItem = ref<Category | Shop>();
+const activeItem = ref<ItemWithCounts>();
 const requestPending = ref(false);
 
 const renameVisible = ref(false);
 const editName = ref('');
 
-function openRename(type: CategoryShopType, item: Category | Shop) {
+function openRename(type: CategoryShopType, item: ItemWithCounts) {
     activeType.value = type;
     activeItem.value = item;
     editName.value = item.name;
@@ -67,7 +119,7 @@ async function saveRename() {
     if (!name) return;
     requestPending.value = true;
     try {
-        await CategoryShopStore.update(
+        await categoryShopStore.update(
             activeType.value,
             activeItem.value.id,
             name
@@ -78,6 +130,7 @@ async function saveRename() {
             life: 3000
         });
         renameVisible.value = false;
+        await reload();
     } catch (e) {
         console.error(e);
         toast.add({
@@ -91,7 +144,7 @@ async function saveRename() {
 
 const deleteVisible = ref(false);
 
-function openDelete(type: CategoryShopType, item: Category | Shop) {
+function openDelete(type: CategoryShopType, item: ItemWithCounts) {
     activeType.value = type;
     activeItem.value = item;
     deleteVisible.value = true;
@@ -101,13 +154,14 @@ async function confirmDelete() {
     if (!activeItem.value) return;
     requestPending.value = true;
     try {
-        await CategoryShopStore.delete(activeType.value, activeItem.value.id);
+        await categoryShopStore.delete(activeType.value, activeItem.value.id);
         toast.add({
             severity: 'success',
             summary: `${typeLabels[activeType.value]} gelöscht`,
             life: 3000
         });
         deleteVisible.value = false;
+        await reload();
     } catch (e) {
         console.error(e);
         toast.add({
@@ -120,7 +174,7 @@ async function confirmDelete() {
 }
 
 onMounted(() => {
-    CategoryShopStore.fetch();
+    reload();
 });
 </script>
 
@@ -147,24 +201,51 @@ onMounted(() => {
 
                 <Column field="name" header="Name" />
 
+                <Column
+                    v-for="kind in countKinds"
+                    :key="kind.key"
+                    :header="kind.header"
+                >
+                    <template #body="{ data }">
+                        <Button
+                            v-if="data[kind.key] > 0"
+                            :label="String(data[kind.key])"
+                            :as="'router-link'"
+                            text
+                            size="small"
+                            :to="{
+                                path: '/list',
+                                query: transactionsLink(
+                                    section.type,
+                                    data.id,
+                                    kind.recurrence
+                                )
+                            }"
+                        />
+                        <span v-else class="text-surface-400 px-3">0</span>
+                    </template>
+                </Column>
+
+                <Column header="Gesamt">
+                    <template #body="{ data }">
+                        <Button
+                            v-if="data.oneoff + data.recurring > 0"
+                            :label="String(data.oneoff + data.recurring)"
+                            :as="'router-link'"
+                            text
+                            size="small"
+                            :to="{
+                                path: '/list',
+                                query: transactionsLink(section.type, data.id)
+                            }"
+                        />
+                        <span v-else class="text-surface-400 px-3">0</span>
+                    </template>
+                </Column>
+
                 <Column header="Aktionen" header-class="flex justify-end">
                     <template #body="{ data }">
                         <div class="flex items-center justify-end gap-1">
-                            <Button
-                                label="Transaktionen"
-                                icon="pi pi-list"
-                                text
-                                size="small"
-                                severity="secondary"
-                                :as="'router-link'"
-                                :to="{
-                                    path: '/list',
-                                    query: transactionsLink(
-                                        section.type,
-                                        data.id
-                                    )
-                                }"
-                            />
                             <Button
                                 icon="pi pi-pencil"
                                 text
@@ -173,14 +254,25 @@ onMounted(() => {
                                 severity="info"
                                 @click="openRename(section.type, data)"
                             />
-                            <Button
-                                icon="pi pi-trash"
-                                text
-                                rounded
-                                size="small"
-                                severity="danger"
-                                @click="openDelete(section.type, data)"
-                            />
+                            <span
+                                v-tooltip.top="
+                                    data.oneoff > 0 || data.recurring > 0
+                                        ? 'Noch mit Transaktionen verknüpft'
+                                        : undefined
+                                "
+                            >
+                                <Button
+                                    icon="pi pi-trash"
+                                    text
+                                    rounded
+                                    size="small"
+                                    severity="danger"
+                                    :disabled="
+                                        data.oneoff > 0 || data.recurring > 0
+                                    "
+                                    @click="openDelete(section.type, data)"
+                                />
+                            </span>
                         </div>
                     </template>
                 </Column>
